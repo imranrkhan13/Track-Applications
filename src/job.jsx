@@ -3,13 +3,14 @@ import { useState } from "react";
 function Job() {
     const [companyname, setCompanyName] = useState("");
     const [role, setRole] = useState("");
-    const Availablestatus = ["Applied", "Rejected", "Interview"];
+    const Availablestatus = ["Applied", "Rejected", "Interview", "Accepted"];
     const [status, setStatus] = useState("");
 
     const statusMessages = {
         Applied: "Hope it changes to interview soon!",
         Rejected: "We go again.",
-        Interview: "Hell yeah, you got this!"
+        Interview: "Hell yeah, you got this!",
+        Accepted: "Congratulations, Time to start another chapter!!!"
     };
 
     return (
