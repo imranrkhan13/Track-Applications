@@ -121,29 +121,6 @@ Navigate to `http://localhost:5173`
 
 <img src="src/excalidraw.png"  width="600" />
 
-
-### Key Design Decisions
-
-**1. Empty State First**
-Instead of showing an empty table or complex UI, I show a single inviting button. First impressions matter - the app should feel approachable, not overwhelming.
-
-**2. Floating Action Button**
-The persistent 🌱 button stays with you as you scroll. It's always there when inspiration strikes to add another application.
-
-**3. Auto-Categorization**
-Jobs automatically sort themselves into sections. No manual organization needed - the app understands your workflow.
-
-**4. Progressive Disclosure**
-Only show "View all" when there are 5+ items in a section. The UI adapts to your data, not the other way around.
-
-**5. Responsive Grid**
-- **Mobile**: 2 columns (easy thumb reach)
-- **Tablet**: 3 columns (balanced view)
-- **Desktop**: 5 columns (maximize space)
-
-**6. Edit in Place**
-Clicking "Tend" opens the same form you used to create - consistency reduces cognitive load.
-
 ## 🛠️ Tech Stack
 
 - **React 18** - Frontend framework
