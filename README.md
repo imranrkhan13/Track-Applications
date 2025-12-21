@@ -2,16 +2,6 @@
 
 A beautiful, nature-themed job application tracker that helps you nurture your career growth. Watch your job applications grow from seeds 🌱 to full trees 🌳!
 
-![Career Garden](https://img.shields.io/badge/React-18.x-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Status](https://img.shields.io/badge/status-active-success)
-
-## 💭 Design Philosophy
-
-This project started from a simple sketch on paper - a vision of making job hunting less stressful and more visual. I wanted to create something that felt alive, where each application wasn't just data in a table, but a living thing you're nurturing.
-
-The garden metaphor came naturally: you plant seeds (apply), they sprout (interviews), and with care, they bloom into something beautiful (offers). Even the ones that don't make it (rejections) have their place in the garden as fallen leaves - reminders that growth isn't always linear.
-
-I designed the user flow to be intuitive: starting from an empty garden, adding your first seed, watching sections organize themselves automatically, and celebrating each stage of growth. The UI is deliberately minimal - no unnecessary clutter, just you and your growing career garden.
-
 ## ✨ Features
 
 ### 🎨 Beautiful Garden Theme
@@ -129,55 +119,7 @@ Navigate to `http://localhost:5173`
 
 ## 🗺️ User Flow & Architecture
 
-I mapped out the entire user experience before writing a single line of code. Here's the journey:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     EMPTY GARDEN STATE                       │
-│  Simple, centered "Plant Your First Seed" button            │
-│  Clean landing - no overwhelming UI                          │
-└─────────────────────────────────────────────────────────────┘
-                              ↓
-                    [User clicks Add button]
-                              ↓
-┌─────────────────────────────────────────────────────────────┐
-│                     MODAL FORM APPEARS                       │
-│  Backdrop blur for focus                                     │
-│  Garden-themed inputs with emoji labels                      │
-│  Minimal fields - just what matters                          │
-└─────────────────────────────────────────────────────────────┘
-                              ↓
-                   [User plants their seed]
-                              ↓
-┌─────────────────────────────────────────────────────────────┐
-│                   GARDEN VIEW ACTIVATED                      │
-│                                                               │
-│  ┌─────────────────────────────────────┐                    │
-│  │  Hello, [Name] 👋                    │  [Sign out]       │
-│  │  Your garden has X trees             │                   │
-│  └─────────────────────────────────────┘                    │
-│                                                               │
-│  🌱 Applied (4)                          [View all →]        │
-│  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐                       │
-│  │  🌱  │ │  🌱  │ │  🌱  │ │  🌱  │                       │
-│  │ Card │ │ Card │ │ Card │ │ Card │                       │
-│  └──────┘ └──────┘ └──────┘ └──────┘                       │
-│                                                               │
-│  🌿 Interview (2)                        [View all →]        │
-│  ┌──────┐ ┌──────┐                                          │
-│  │  🌿  │ │  🌿  │                                          │
-│  │ Card │ │ Card │                                          │
-│  └──────┘ └──────┘                                          │
-│                                                               │
-│  🌳 Accepted (1)                                             │
-│  ┌──────┐                                                    │
-│  │  🌳  │                                                    │
-│  │ Card │                                                    │
-│  └──────┘                                                    │
-│                                                               │
-│                                        [🌱 Floating button]  │
-└─────────────────────────────────────────────────────────────┘
-```
+<img src="src/excalidraw.png">
 
 ### Key Design Decisions
 
