@@ -119,7 +119,8 @@ Navigate to `http://localhost:5173`
 
 ## 🗺️ User Flow & Architecture
 
-<img src="src/excalidraw.png">
+<img src="src/excalidraw.png"  width="600" />
+
 
 ### Key Design Decisions
 
@@ -152,17 +153,8 @@ Clicking "Tend" opens the same form you used to create - consistency reduces cog
 - **LocalStorage** - Data persistence
 
 ## 📁 Project Structure
+<img src="src/file.png"  width="600" />
 
-```
-career-garden/
-├── src/
-│   ├── App.jsx           # Main application component
-│   ├── main.jsx          # Entry point
-│   └── index.css         # Global styles
-├── public/
-├── package.json
-└── README.md
-```
 
 ## 🎨 Components
 
@@ -206,12 +198,8 @@ Jobs are stored in browser's localStorage:
 - Browser storage size limits (~5-10MB)
 
 ## 🔮 Future Enhancements
-
-These are features I've sketched out but haven't implemented yet:
-
 - [ ] **Cloud Sync** - Firebase/Supabase integration for cross-device access
 - [ ] **Export Tools** - Download your garden as CSV/PDF
-- [ ] **Analytics Dashboard** - Visualize your job search journey
 - [ ] **Smart Reminders** - Email notifications for follow-ups
 - [ ] **Timeline View** - See your applications on a calendar
 - [ ] **Dark Mode** - For late-night application sessions
@@ -219,86 +207,6 @@ These are features I've sketched out but haven't implemented yet:
 - [ ] **Interview Prep** - Built-in preparation checklists
 - [ ] **Garden Themes** - Customize your garden aesthetic
 
-## 🎨 Design System
-
-I kept the design system deliberately simple:
-
-**Colors**
-- Primary: Emerald (`emerald-600`, `emerald-700`)
-- Backgrounds: Soft green gradients (`green-50`, `emerald-50`, `teal-50`)
-- Status colors: Semantic (green for growth, amber for progress, gray for neutral)
-
-**Typography**
-- Headers: Light weight for elegance
-- Body: Medium weight for readability
-- Monospace: For data/dates
-
-**Spacing**
-- Cards: Compact but breathable (`p-3` to `p-4`)
-- Sections: Clear separation (`mb-8` to `mb-10`)
-- Responsive: Adapts padding based on screen size
-
-**Animation**
-- Subtle: Hover effects and transitions
-- Purposeful: Bounce on empty state to draw attention
-- Performant: CSS transforms, not layout changes
-
 ## 🤝 Contributing
 
 Contributions are welcome! I'd love to see what you'd add to the garden.
-
-### How to Contribute
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-### Ideas for Contributors
-- Add new garden themes (cherry blossoms, autumn, winter?)
-- Implement dark mode
-- Create data visualization features
-- Add accessibility improvements
-- Write tests
-- Improve mobile experience
-
-## 🙏 Acknowledgments
-
-This project was born from personal experience - the frustration of tracking job applications in spreadsheets, the anxiety of not knowing where things stood, and the desire to make the process feel more human.
-
-Thanks to:
-- Everyone who's ever struggled with job hunting
-- The React community for amazing tools
-- Nature, for the perfect metaphor
-- Coffee ☕, for keeping the coding sessions going
-
-## 📝 Lessons Learned
-
-Building this taught me:
-
-1. **Metaphors Matter** - The garden theme isn't just decorative; it reframes job hunting as growth
-2. **Start Simple** - The MVP was just cards and a form. Everything else came later
-3. **Design for Emotion** - Job hunting is stressful; the UI should be calming
-4. **State Management** - LocalStorage + React state is enough for many apps
-5. **Responsive is Essential** - Most job seekers are on their phones
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 👏 Acknowledgments
-
-- Inspired by the growth metaphor of gardening
-- Built with love for job seekers everywhere
-- Special thanks to the React and Tailwind communities
-
-## 📧 Contact
-
-Your Name - [@yourtwitter](https://twitter.com/yourtwitter)
-
-Project Link: [https://github.com/yourusername/career-garden](https://github.com/yourusername/career-garden)
-
----
-
-**Made with 💚 and 🌱 - Happy Job Hunting!**
