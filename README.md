@@ -43,7 +43,7 @@ A beautiful, nature-themed job application tracker that helps you nurture your c
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/career-garden.git
+git clone https://github.com/imranrkhan13/career-garden.git
 cd career-garden
 ```
 
@@ -91,7 +91,7 @@ yarn dev
 ```
 
 7. **Open your browser**
-Navigate to `http://localhost:5173`
+Navigate to `http://localhost:3000`
 
 ## 🎯 Usage
 
