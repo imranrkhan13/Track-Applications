@@ -266,6 +266,8 @@ export default function App() {
     const [editingJob, setEditingJob] = useState(null);
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [search, setSearch] = useState("");
+
 
     // existing account logic
     useEffect(() => {
@@ -364,7 +366,14 @@ export default function App() {
         return <LoginScreen onLoginSuccess={handleLoginSuccess} />;
     }
 
-    const sortedJobs = [...jobs].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const filteredJobs = jobs.filter(job =>
+        job.company.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const sortedJobs = [...filteredJobs].sort(
+        (a, b) => new Date(b.date) - new Date(a.date)
+    );
+
     const applied = sortedJobs.filter(j => j.status === "Applied");
     const interview = sortedJobs.filter(j => j.status === "Interview");
     const rejected = sortedJobs.filter(j => j.status === "Rejected");
@@ -393,6 +402,15 @@ export default function App() {
                                 <p className="text-xs text-emerald-600 hidden sm:block">Your garden has {jobs.length} tree{jobs.length !== 1 ? 's' : ''}</p>
                             </div>
                         </div>
+                        {/* Search */}
+                        <div className="mb-6">
+                            <input
+                                type="text"
+                                placeholder="🔍 Search by company name..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="w-full sm:w-96 px-4 py-2.5 rounded-xl border-2 border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white text-sm" />
+                        </div>
                         <button
                             onClick={handleLogout}
                             className="px-4 py-2 text-xs sm:text-sm text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg font-medium transition-colors"
@@ -407,6 +425,11 @@ export default function App() {
                     >
                         🌱
                     </button>
+                        {search && sortedJobs.length === 0 && (
+                            <p className="text-center text-emerald-600 text-sm mb-6">
+                                🌱 No companies found
+                            </p>
+                        )}
 
                     <JobSection title="Applied" jobs={applied} onEdit={handleEdit} onDelete={handleDelete} />
                     <JobSection title="Interview" jobs={interview} onEdit={handleEdit} onDelete={handleDelete} />
