@@ -84,7 +84,7 @@ function JobSection({ title, jobs, onEdit, onDelete }) {
     const [expanded, setExpanded] = useState(false);
     if (jobs.length === 0) return null;
 
-    const visible = expanded ? jobs : jobs.slice(0, 4);
+    const visible = expanded ? jobs : jobs.slice(0, 5);
 
     const sectionEmojis = {
         Applied: "🌱",
@@ -103,7 +103,7 @@ function JobSection({ title, jobs, onEdit, onDelete }) {
                         {jobs.length}
                     </span>
                 </div>
-                {jobs.length > 4 && (
+                {jobs.length > 5 && (
                     <button
                         onClick={() => setExpanded(!expanded)}
                         className="text-emerald-600 hover:text-emerald-800 font-semibold transition-colors text-xs sm:text-sm underline"
