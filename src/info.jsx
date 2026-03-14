@@ -24,14 +24,7 @@ import { createClient } from "@supabase/supabase-js";
 /* ─────────────────────────── Supabase ──────────────────────────── */
 export const supabase = createClient(
     "https://podosiaizzetwtdxjyei.supabase.co",
-    "sb_publishable_t6fIvb_0shfoJcICHg8-cg_ea8FUUrA",
-    {
-        auth: {
-            persistSession: true,
-            autoRefreshToken: true,
-            detectSessionInUrl: true
-        }
-    }
+    "sb_publishable_t6fIvb_0shfoJcICHg8-cg_ea8FUUrA"
 );
 
 /* ─────────────────────────── Lazy imports ───────────────────────── */

@@ -27,9 +27,7 @@ export const supabase = createClient(
     "sb_publishable_t6fIvb_0shfoJcICHg8-cg_ea8FUUrA",
     {
         auth: {
-            persistSession: true,
-            autoRefreshToken: true,
-            detectSessionInUrl: true
+            flowType: "pkce",
         }
     }
 );
@@ -1004,9 +1002,13 @@ export const supabase = createClient(
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                    redirectTo: "https://career-garden.techiesaie.com/auth/callback"
+                    redirectTo: "https://career-garden.techiesaie.com/auth/callback",
+                    queryParams: {
+                        access_type: "offline",
+                        prompt: "consent",
+                    },
                 },
-            }); 
+            });
             if (error) { setError(error.message); setLoading(false); }
         }
 
