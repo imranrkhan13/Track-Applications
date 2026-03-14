@@ -996,8 +996,10 @@ import { Sprout, MousePointerClick, LayoutDashboard, BarChart3 } from 'lucide-re
             setError(null);
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: "google",
-                options: { redirectTo: `${window.location.origin}/auth/callback` },
-            });
+                options: {
+                    redirectTo: "https://career-garden.techiesaie.com/auth/callback"
+                },
+            }); 
             if (error) { setError(error.message); setLoading(false); }
         }
 
