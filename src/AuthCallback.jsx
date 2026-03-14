@@ -6,11 +6,31 @@ export default function AuthCallback() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        supabase.auth.getSession().then(({ data }) => {
-            if (data.session) navigate("/dashboard");
-            else navigate("/login");
-        });
-    }, []);
+        async function handleAuth() {
 
-    return <div>Logging you in...</div>;
+            // Wait for Supabase to read the URL token
+            const { data, error } = await supabase.auth.getSession();
+
+            if (error) {
+                console.error(error);
+                navigate("/login");
+                return;
+            }
+
+            if (data.session) {
+                navigate("/dashboard", { replace: true });
+            } else {
+                navigate("/login");
+            }
+        }
+
+        handleAuth();
+    }, [navigate]);
+
+    return (
+        <div className="loading-full">
+            <div className="loading-ring" />
+            <div className="loading-label">Signing you in…</div>
+        </div>
+    );
 }

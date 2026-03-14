@@ -22,10 +22,17 @@
 import { motion } from 'framer-motion';
 import { Sprout, MousePointerClick, LayoutDashboard, BarChart3 } from 'lucide-react';
     /* ─────────────────────────── Supabase ──────────────────────────── */
-    export const supabase = createClient(
-        "https://podosiaizzetwtdxjyei.supabase.co",
-        "sb_publishable_t6fIvb_0shfoJcICHg8-cg_ea8FUUrA"
-    );
+export const supabase = createClient(
+    "https://podosiaizzetwtdxjyei.supabase.co",
+    "sb_publishable_t6fIvb_0shfoJcICHg8-cg_ea8FUUrA",
+    {
+        auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true
+        }
+    }
+);
 
     /* ─────────────────────────── Lazy imports ───────────────────────── */
     const MainApp = lazy(() => import("./maine"));
