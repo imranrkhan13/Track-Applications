@@ -11,16 +11,11 @@ import {
     BrowserRouter, Routes, Route, Navigate,
     useNavigate, useLocation
 } from "react-router-dom";
-import { createClient } from "@supabase/supabase-js";
 import { motion } from 'framer-motion';
 import { Sprout, MousePointerClick, LayoutDashboard, BarChart3, Brain, Bell, Search, GitBranch } from 'lucide-react';
 
+import { supabase } from "./lib/supabase";
 /* ─────────────────────────── Supabase ──────────────────────────── */
-export const supabase = createClient(
-    "https://podosiaizzetwtdxjyei.supabase.co",
-    "sb_publishable_t6fIvb_0shfoJcICHg8-cg_ea8FUUrA",
-    { auth: { flowType: "pkce" } }
-);
 
 /* ─────────────────────────── Lazy imports ───────────────────────── */
 const MainApp = lazy(() => import("./maine"));

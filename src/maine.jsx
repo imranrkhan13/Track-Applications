@@ -7,7 +7,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { createPortal } from "react-dom";
 
-import { supabase } from "./App";
+import { supabase } from "./lib/supabase";
 import Info from "./info";
 import PrepPage from "./prepage";
 // ─── ICONS ────────────────────────────────────────────────────────────────────
@@ -690,11 +690,11 @@ function useToasts() {
 }
 
 // ─── ADD/EDIT MODAL ───────────────────────────────────────────────────────────
-function AddModal({ editing, onClose, onSave }) {
+function AddModal({ editing, initialStage = "Applied", onClose, onSave }) {
     const [tab, setTab] = useState("basics");
     const [co, setCo] = useState(editing?.company || "");
     const [role, setRole] = useState(editing?.role || "");
-    const [stage, setStage] = useState(editing?.status || "Applied");
+    const [stage, setStage] = useState(editing?.status || initialStage);
     const [day, setDay] = useState(editing?.date || new Date().toISOString().split("T")[0]);
     const [pay, setPay] = useState(editing?.salary || "");
     const [loc, setLoc] = useState(editing?.location || "");
@@ -1295,6 +1295,7 @@ export default function Main({ user }) {
     const [userPop, setUserPop] = useState(false);
     const [sbOpen, setSbOpen] = useState(true);
     const [sbMobile, setSbMobile] = useState(false);
+    const [addStage, setAddStage] = useState("Applied");
     const upRef = useRef(null);
     const { add: toast, Stack: Toasts } = useToasts();
 
@@ -1366,7 +1367,7 @@ export default function Main({ user }) {
         toast(`Moved to ${newStage}`);
     }
 
-    function openAdd() { setEditing(null); setModal(true); }
+    function openAdd() { setEditing(null); setAddStage(activeStage || "Applied"); setModal(true); }
     function openEdit(j) { setEditing(j); setModal(true); }
     async function logout() { await supabase.auth.signOut(); navigate("/"); }
 
@@ -1791,7 +1792,7 @@ export default function Main({ user }) {
                 </div>
             </nav>
 
-            {modal && <AddModal editing={editing} onClose={() => { setModal(false); setEditing(null); }} onSave={save} />}
+            {modal && <AddModal editing={editing} initialStage={addStage} onClose={() => { setModal(false); setEditing(null); }} onSave={save} />}
             {info && <Info onClose={() => setInfo(false)} />}
             {palette && <Palette jobs={jobs} onClose={() => setPalette(false)} onAdd={openAdd} navigate={navigate} />}
             <Toasts />

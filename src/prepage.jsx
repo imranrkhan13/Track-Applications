@@ -11,7 +11,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import React from "react";
-import { supabase } from "./App";
+import { supabase } from "./lib/supabase";
 
 // ─── ICONS ────────────────────────────────────────────────────────────────────
 const SVI = {
