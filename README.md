@@ -1,189 +1,68 @@
-# 🌳 Career Garden
+# track.
 
-A beautiful, nature-themed job application tracker that helps you nurture your career growth. Watch your job applications grow from seeds 🌱 to full trees 🌳!
+A focused career workspace for managing job applications, preparing for a specific role, and practicing interview answers out loud. The application is designed to work immediately in **demo mode** and can be connected to Supabase and server-side voice providers for production use.
 
-## ✨ Features
+## What is included
 
-### 🎨 Beautiful Garden Theme
-- **Seedling (Applied)** 🌱 - Just planted your application
-- **Sprouting (Interview)** 🌿 - Growing and progressing
-- **Bloomed (Accepted)** 🌳 - Success! Your tree is fully grown
-- **Withered (Rejected)** 🍂 - Didn't make it this time
+The redesigned workspace brings the complete search loop into one product. Users can maintain a pipeline with statuses, next steps, dates, compensation, links, and notes; switch between table and board views; open analytics for response-rate and source-mix signals; and keep a lightweight activity timeline.
 
-### 🔐 Secure Authentication
-- Google OAuth 2.0 integration
-- Personalized greetings with user's first name
-- Session persistence across visits
+The **Role Prep** area creates a private preparation room for a selected application. It accepts a job description or interview notes, builds a role-specific positioning brief, suggests focused questions, and maintains a story bank for behavioral answers. The **Mock Interview** room provides three practice prompts, browser voice capture where supported, an editable transcript, a provider-routing selector, a structured rating rubric, and saved answer history.
 
-### 📊 Smart Organization
-- Automatically categorized by status
-- Sortable by date
-- Expandable sections for better view
-- Mobile-responsive grid layout
+The rating rubric measures clarity, relevance, structure, and confidence. In production, the client calls server endpoints rather than provider APIs directly. If the rating endpoint is unavailable, the app uses a deterministic local rubric so the demo still returns useful feedback.
 
-### 💾 Data Persistence
-- LocalStorage for reliable data saving
-- User-specific job tracking
-- Edit and delete functionality
-- Optional notes for each application
+## Run locally
 
-### 📱 Fully Responsive
-- Works seamlessly on mobile, tablet, and desktop
-- Touch-friendly interface
-- Adaptive grid (2 columns mobile → 5 columns desktop)
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js (v14 or higher)
-- npm or yarn
-- Google Cloud Project with OAuth 2.0 credentials
-
-### Installation
-
-1. **Clone the repository**
-```bash
-git clone https://github.com/imranrkhan13/career-garden.git
-cd career-garden
-```
-
-2. **Install dependencies**
 ```bash
 npm install
-# or
-yarn install
-```
-
-3. **Install required packages**
-```bash
-npm install @react-oauth/google jwt-decode
-```
-
-4. **Set up Google OAuth**
-   - Go to [Google Cloud Console](https://console.cloud.google.com/)
-   - Create a new project or select existing one
-   - Enable Google+ API
-   - Create OAuth 2.0 credentials
-   - Add authorized origins (e.g., `http://localhost:5173`)
-   - Copy your Client ID
-
-5. **Configure the app**
-
-Open `src/main.jsx` and wrap your App with GoogleOAuthProvider:
-
-```jsx
-import { GoogleOAuthProvider } from '@react-oauth/google';
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <GoogleOAuthProvider clientId="YOUR_GOOGLE_CLIENT_ID_HERE">
-      <App />
-    </GoogleOAuthProvider>
-  </React.StrictMode>
-);
-```
-
-6. **Run the development server**
-```bash
 npm run dev
-# or
-yarn dev
 ```
 
-7. **Open your browser**
-Navigate to `http://localhost:3000`
+Open `http://localhost:5173` in a browser. With no environment variables, the app opens a sample workspace backed by browser local storage. This is the fastest way to review the product flows.
 
-## 🎯 Usage
+For a production-like build, run:
 
-### Adding a Job Application
-1. Click the floating 🌱 button (bottom-right)
-2. Fill in the form:
-   - **Company** (required)
-   - **Role** (required)
-   - **Growth Stage** (Applied/Interview/Rejected/Accepted)
-   - **Date Planted** (required)
-   - **Garden Notes** (optional)
-3. Click "🌱 Plant" to save
-
-### Managing Applications
-- **Edit**: Click "✏️ Tend" on any card
-- **Delete**: Click "🗑️" on any card
-- **View All**: Click "View all" when section has 5+ items
-- **Sign Out**: Click "Sign out" button in header
-
-### Understanding the Garden
-- **Applied** 🌱: Recently submitted applications
-- **Interview** 🌿: Applications in interview stage
-- **Accepted** 🌳: Successful applications
-- **Rejected** 🍂: Unsuccessful applications
-
-## 🗺️ User Flow & Architecture
-
-<img src="src/excalidraw.png"  width="600" />
-
-## 🛠️ Tech Stack
-
-- **React 18** - Frontend framework
-- **Vite** - Build tool and dev server
-- **Tailwind CSS** - Styling
-- **Google OAuth** - Authentication
-- **LocalStorage** - Data persistence
-
-## 📁 Project Structure
-<img src="src/file.png"  width="600" />
-
-
-## 🎨 Components
-
-### Main Components
-- **EmptyState** - Welcome screen when no jobs added
-- **LoginScreen** - Google OAuth login page
-- **JobCard** - Individual job application card
-- **JobSection** - Categorized job sections
-- **JobModal** - Add/Edit job form
-
-### Key Features
-- Responsive design with Tailwind CSS
-- Animated transitions and hover effects
-- Form validation
-- Confirm dialogs for destructive actions
-
-## 🔒 Data Storage
-
-Jobs are stored in browser's localStorage:
-- **Key format**: `career_garden_jobs_{userId}`
-- **Data structure**: Array of job objects
-- **User session**: `career_garden_user`
-
-### Job Object Schema
-```javascript
-{
-  id: number,
-  company: string,
-  role: string,
-  status: "Applied" | "Interview" | "Rejected" | "Accepted",
-  date: string (YYYY-MM-DD),
-  notes?: string
-}
+```bash
+npm run build
 ```
 
-## 🚧 Known Limitations
+## Environment configuration
 
-- Data stored locally (no cloud sync)
-- Single user per browser
-- No export/import functionality (yet!)
-- Browser storage size limits (~5-10MB)
+Copy `.env.example` to `.env.local` when configuring the application. Client-side `VITE_*` values are limited to non-sensitive feature flags and public Supabase configuration. Provider secrets must remain in the server or worker environment that implements `/api/voice/transcribe` and `/api/voice/rate`.
 
-## 🔮 Future Enhancements
-- [ ] **Cloud Sync** - Firebase/Supabase integration for cross-device access
-- [ ] **Export Tools** - Download your garden as CSV/PDF
-- [ ] **Smart Reminders** - Email notifications for follow-ups
-- [ ] **Timeline View** - See your applications on a calendar
-- [ ] **Dark Mode** - For late-night application sessions
-- [ ] **Company Intel** - Integrated research and notes
-- [ ] **Interview Prep** - Built-in preparation checklists
-- [ ] **Garden Themes** - Customize your garden aesthetic
+| Variable | Purpose |
+| --- | --- |
+| `VITE_SUPABASE_URL` | Public Supabase project URL. Optional in demo mode. |
+| `VITE_SUPABASE_ANON_KEY` | Public Supabase anonymous key. Optional in demo mode. |
+| `VITE_GOOGLE_CLIENT_ID` | Optional Google OAuth client ID used by the existing entrypoint. |
+| `VITE_ENABLE_DEEPGRAM` | Non-secret flag that marks the Deepgram server route as configured. |
+| `VITE_ENABLE_WHISPER` | Non-secret flag that marks the OpenAI Whisper server route as configured. |
+| `VITE_ENABLE_GRADIUM` | Non-secret flag that marks the Gradium server route as configured. |
+| `DEEPGRAM_API_KEY` | Server-side Deepgram credential. Never expose it through `VITE_*`. |
+| `OPENAI_API_KEY` | Server-side OpenAI credential for Whisper fallback. Never expose it through `VITE_*`. |
+| `GRADIUM_API_KEY` | Server-side Gradium credential. Never expose it through `VITE_*`. |
 
-## 🤝 Contributing
+The browser currently uses the Web Speech API when available. The service layer is prepared to send recorded audio to `/api/voice/transcribe` with `X-Voice-Provider: deepgram`, `whisper`, or `gradium`, and to send answer text to `/api/voice/rate`. A deployment target must provide those server routes to activate the external providers.
 
-Contributions are welcome! I'd love to see what you'd add to the garden.
+## Data model and persistence
+
+In demo mode, jobs, role briefs, mock interview sessions, and notes are stored under user-scoped local-storage keys. When Supabase is configured, the data helpers are structured to use tables for `jobs`, `role_briefs`, `interview_sessions`, and `notes`. The current UI remains usable without a database so product review and local development do not depend on external credentials.
+
+## Safety note for the credentials previously shared
+
+Do not commit provider keys to this repository or place them in browser-exposed environment variables. The credentials pasted into the earlier request should be revoked or rotated in each provider dashboard before production use. The implementation intentionally does not contain those values.
+
+## Main files
+
+| File | Responsibility |
+| --- | --- |
+| `src/AppNew.jsx` | Landing page, login/demo entrypoint, and authenticated workspace routing. |
+| `src/Workspace.jsx` | Application shell, navigation, dashboard, pipeline, analytics, settings, and job drawer. |
+| `src/InterviewPrep.jsx` | Role-specific brief, question set, and story-bank workflow. |
+| `src/MockInterview.jsx` | Voice practice room, provider selector, transcript, rating, and session history. |
+| `src/lib/appData.js` | Local persistence and Supabase-aware data helpers. |
+| `src/lib/voiceInterview.js` | Voice provider status, browser recognition, server hooks, and local scoring fallback. |
+| `src/index.css` | Responsive visual system for the full application. |
+
+## Verification
+
+The current repository passes `npm run build`. Vite emits only informational warnings about third-party module directives and an outdated Browserslist database; these do not block the production bundle.
