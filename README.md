@@ -1,6 +1,6 @@
-# track.
+# Career Garden
 
-A focused career workspace for managing job applications, preparing for a specific role, and practicing interview answers out loud. The application is designed to work immediately in **demo mode** and can be connected to Supabase and server-side voice providers for production use.
+A calmer career workspace for managing job applications, preparing for a specific role, and practicing interview answers out loud. The application is designed to work immediately in **demo mode** and can be connected to Supabase and server-side voice providers for production use.
 
 ## What is included
 
@@ -33,13 +33,17 @@ Copy `.env.example` to `.env.local` when configuring the application. Client-sid
 | --- | --- |
 | `VITE_SUPABASE_URL` | Public Supabase project URL. Optional in demo mode. |
 | `VITE_SUPABASE_ANON_KEY` | Public Supabase anonymous key. Optional in demo mode. |
-| `VITE_GOOGLE_CLIENT_ID` | Optional Google OAuth client ID used by the existing entrypoint. |
+| `VITE_GOOGLE_CLIENT_ID` | Legacy optional value; Google OAuth is now brokered through Supabase. |
 | `VITE_ENABLE_DEEPGRAM` | Non-secret flag that marks the Deepgram server route as configured. |
 | `VITE_ENABLE_WHISPER` | Non-secret flag that marks the OpenAI Whisper server route as configured. |
 | `VITE_ENABLE_GRADIUM` | Non-secret flag that marks the Gradium server route as configured. |
 | `DEEPGRAM_API_KEY` | Server-side Deepgram credential. Never expose it through `VITE_*`. |
 | `OPENAI_API_KEY` | Server-side OpenAI credential for Whisper fallback. Never expose it through `VITE_*`. |
 | `GRADIUM_API_KEY` | Server-side Gradium credential. Never expose it through `VITE_*`. |
+
+### Google login setup
+
+Google login is intentionally disabled when Supabase is not configured; the login screen shows the reason and keeps the demo garden available. To enable it, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` to `.env.local`, enable the Google provider in **Supabase → Authentication → Providers**, add the deployed site URL to the Supabase redirect allowlist, and add `${SITE_URL}/dashboard` as the OAuth redirect URL. The client uses Supabase PKCE flow and does not contain a Google client secret.
 
 The browser currently uses the Web Speech API when available. The service layer is prepared to send recorded audio to `/api/voice/transcribe` with `X-Voice-Provider: deepgram`, `whisper`, or `gradium`, and to send answer text to `/api/voice/rate`. A deployment target must provide those server routes to activate the external providers.
 

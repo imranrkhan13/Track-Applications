@@ -1,26 +1,88 @@
 import React, { useEffect, useState } from "react";
-import { ArrowDownRight, ArrowRight, Check, Leaf, LockKeyhole, Mic, MoveUpRight, Sprout } from "lucide-react";
+import { ArrowDown, ArrowRight, Check, ChevronRight, Leaf, LockKeyhole, Mic, MoveUpRight, Sparkles, Sprout } from "lucide-react";
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import Workspace from "./Workspace";
 import { DEMO_USER, isSupabaseConfigured, supabase } from "./lib/supabase";
 import { PLANT_STAGES } from "./lib/plantStages";
 
+const benefits = [
+    { icon: Sprout, title: "Capture the signal", body: "Save the role, context, and reason it matters before the tab disappears." },
+    { icon: Leaf, title: "Know the next move", body: "Every application gets a clear status, owner, date, and small action." },
+    { icon: Mic, title: "Practice before it counts", body: "Turn each job description into focused questions and confident answers." },
+];
+
+function Brand({ light = false }) {
+    return <div className={`brand-lockup ${light ? "light" : ""}`}><span className="brand-symbol"><Sprout size={17} /></span><span><strong>Career Garden</strong><small>your search, with roots</small></span></div>;
+}
+
 function Landing() {
-    const navigate = useNavigate(); const [activeStage, setActiveStage] = useState("Saved"); const active = PLANT_STAGES.find(stage => stage.id === activeStage) || PLANT_STAGES[0];
-    return <div className="editorial-landing">
-        <header className="editorial-nav"><div className="editorial-logo"><span className="editorial-logo-mark"><Sprout size={17} /></span><span>Career Garden</span></div><div className="editorial-nav-links"><a href="#journey">The journey</a><a href="#method">The method</a><a href="#practice">Practice</a></div><button className="editorial-nav-cta" onClick={() => navigate("/login")}>Open your garden <MoveUpRight size={14} /></button></header>
+    const navigate = useNavigate();
+    const [activeStage, setActiveStage] = useState("Saved");
+    const active = PLANT_STAGES.find(stage => stage.id === activeStage) || PLANT_STAGES[0];
+    return <div className="new-landing">
+        <header className="landing-nav"><Brand /><nav><a href="#why">Why it works</a><a href="#cycle">The growth cycle</a><a href="#practice">Practice</a></nav><button className="nav-button" onClick={() => navigate("/login")}>Open the garden <ArrowRight size={15} /></button></header>
         <main>
-            <section className="editorial-hero"><div className="hero-grid-lines" /><div className="editorial-hero-copy"><span className="editorial-eyebrow"><i />A calmer way to search</span><h1>Let your next<br /><em>move grow.</em></h1><p>Track every role with the care it deserves. Keep the signal, lose the scramble, and build the kind of confidence that shows up when it matters.</p><div className="editorial-hero-actions"><button className="editorial-primary" onClick={() => navigate("/login")}>Plant your first seed <ArrowRight size={15} /></button><a href="#journey">Explore the journey <ArrowDownRight size={15} /></a></div><div className="editorial-proof"><span><LockKeyhole size={12} />Your data stays yours</span><span><Leaf size={12} />Designed for steady progress</span></div></div><div className="editorial-hero-art"><div className="art-label label-top"><span>01 / 06</span><b>the beginning</b></div><div className="art-sun" /><div className="art-image-slot" aria-label="Future 3D image placement"><div className="art-ring ring-a" /><div className="art-ring ring-b" /><div className="art-ground" /><div className="art-plant"><div className="art-stem" /><div className="art-leaf art-leaf-left" /><div className="art-leaf art-leaf-right" /><div className="art-seed">✦</div></div><div className="art-pot"><span /><i /></div><div className="art-glow" /></div><div className="art-label label-bottom"><span>your search</span><b>in good hands</b></div><div className="art-note note-a"><span>GARDEN HEALTH</span><b>74%</b><i><em /></i></div><div className="art-note note-b"><span>NEXT CARE</span><b>Practice an answer</b><small>20 min · interview prep</small></div></div></section>
-            <section className="editorial-metrics"><div><strong>01</strong><span>space for every application</span></div><div><strong>06</strong><span>clear growth stages</span></div><div><strong>∞</strong><span>small moves that compound</span></div><p>Not another spreadsheet.<br /><b>A garden for your momentum.</b></p></section>
-            <section className="editorial-journey" id="journey"><div className="journey-heading"><span className="editorial-eyebrow dark"><i />The growth cycle</span><h2>Every role has<br /><em>a season.</em></h2><p>From the first spark of interest to the offer you have worked toward, every stage deserves a different kind of attention.</p></div><div className="journey-layout"><div className="journey-list">{PLANT_STAGES.map(stage => <button key={stage.id} className={stage.id === activeStage ? "journey-item active" : "journey-item"} onClick={() => setActiveStage(stage.id)}><span className="journey-number">{stage.step}</span><span className="journey-emoji">{stage.emoji}</span><span className="journey-label"><b>{stage.label}</b><small>{stage.title}</small></span><ArrowRight size={15} /></button>)}</div><div className="journey-feature" style={{ "--stage-color": active.color, "--stage-tint": active.tint }}><div className="feature-top"><span>Stage {active.step}</span><b>{active.soil}</b></div><div className="feature-symbol">{active.emoji}</div><h3>{active.label}</h3><p>{active.description}</p><div className="feature-footer"><span><i />{active.short}</span><button onClick={() => navigate("/login")}>Add this to your garden <MoveUpRight size={14} /></button></div></div></div></section>
-            <section className="editorial-method" id="method"><div className="method-intro"><span className="editorial-eyebrow dark"><i />The track method</span><h2>Keep the story<br /><em>in motion.</em></h2><p>Good searches are not built from frantic bursts. They are built from simple rituals you can return to.</p></div><div className="method-cards"><article><span>01</span><div className="method-icon"><Sprout size={17} /></div><h3>Capture the seed</h3><p>Save the role, why it matters, and the one thing you want to remember before the tab closes.</p></article><article><span>02</span><div className="method-icon"><Leaf size={17} /></div><h3>Tend the next step</h3><p>Give every application a date and a small action. Momentum becomes visible when it has somewhere to go.</p></article><article id="practice"><span>03</span><div className="method-icon"><Mic size={17} /></div><h3>Practice the bloom</h3><p>Turn the job description into role-specific questions, then practice your answer out loud until it has roots.</p></article></div></section>
-            <section className="editorial-cta"><div className="cta-orbit orbit-one" /><div className="cta-orbit orbit-two" /><div className="cta-copy"><span className="editorial-eyebrow"><i />Your next season starts here</span><h2>Make room for<br /><em>the right work.</em></h2><p>A beautiful, focused home for the search you are already doing.</p><button className="editorial-primary light" onClick={() => navigate("/login")}>Enter the garden <ArrowRight size={15} /></button></div><div className="cta-seed">✦</div></section>
-        </main><footer className="editorial-footer"><div className="editorial-logo"><span className="editorial-logo-mark"><Sprout size={17} /></span><span>Career Garden</span></div><span>For the next thoughtful move.</span><a href="#journey">Back to the garden <ArrowRight size={14} /></a></footer>
+            <section className="new-hero">
+                <div className="hero-noise" />
+                <div className="hero-copy reveal-up">
+                    <div className="eyebrow-pill"><span />A calmer job search for ambitious people</div>
+                    <h1>Your search<br /><em>deserves a system.</em></h1>
+                    <p className="hero-lede">One calm home for every role, every next step, and the proof that you are getting better.</p>
+                    <div className="hero-actions"><button className="primary-cta" onClick={() => navigate("/login")}>Start growing <ArrowRight size={16} /></button><a className="text-cta" href="#cycle">See how it works <ArrowDown size={15} /></a></div>
+                    <div className="hero-trust"><span><Check size={13} />Private by default</span><span><Check size={13} />Demo ready in seconds</span><span><Check size={13} />No spreadsheet required</span></div>
+                </div>
+                <div className="hero-scene reveal-scene" aria-label="An animated plant growing from a career search garden">
+                    <div className="scene-glow glow-one" /><div className="scene-glow glow-two" /><div className="scene-grid" />
+                    <div className="scene-caption"><span>THE SEARCH, IN MOTION</span><b>01 — 06</b></div>
+                    <div className="scene-card scene-card-top"><small>GARDEN HEALTH</small><strong>74%</strong><i><em /></i></div>
+                    <div className="scene-card scene-card-bottom"><small>NEXT CARE</small><strong>Practice an answer</strong><span>20 minutes · Role prep</span></div>
+                    <div className="scene-orbit orbit-one" /><div className="scene-orbit orbit-two" />
+                    <div className="scene-ground" /><div className="scene-pot"><span /><i /></div>
+                    <div className="scene-plant"><div className="plant-stem stem-one" /><div className="plant-stem stem-two" /><span className="plant-leaf leaf-one" /><span className="plant-leaf leaf-two" /><span className="plant-leaf leaf-three" /><b className="plant-bloom">✦</b></div>
+                    <div className="scene-label">A small system<br /><b>for the next right move.</b></div>
+                </div>
+            </section>
+            <section className="signal-bar"><div><strong>01</strong><span>Capture the opportunity</span></div><div><strong>06</strong><span>Stages with a purpose</span></div><div><strong>∞</strong><span>Progress you can feel</span></div><p>Less scramble.<br /><b>More signal.</b></p></section>
+            <section className="why-section" id="why"><div className="section-intro"><span className="section-kicker">The point of the garden</span><h2>A job search is a living thing.</h2><p>It needs a place to land, a rhythm to follow, and enough room for the good work between applications.</p></div><div className="benefit-grid">{benefits.map(({ icon: Icon, title, body }, index) => <article className="benefit-card" key={title} style={{ "--delay": `${index * 80}ms` }}><span className="benefit-index">0{index + 1}</span><div className="benefit-icon"><Icon size={19} /></div><h3>{title}</h3><p>{body}</p><ChevronRight size={16} /></article>)}</div></section>
+            <section className="cycle-section" id="cycle"><div className="section-intro cycle-intro"><span className="section-kicker">The growth cycle</span><h2>Every role gets<br /><em>a next step.</em></h2><p>Move from the first spark of interest to a confident conversation without losing the thread.</p></div><div className="cycle-layout"><div className="cycle-list">{PLANT_STAGES.map(stage => <button type="button" key={stage.id} className={`cycle-item ${activeStage === stage.id ? "active" : ""}`} onClick={() => setActiveStage(stage.id)}><span>{stage.step}</span><b>{stage.emoji}</b><strong>{stage.label}</strong><small>{stage.title}</small><ArrowRight size={15} /></button>)}</div><div className="cycle-feature" style={{ "--stage-color": active.color, "--stage-tint": active.tint }}><div className="cycle-feature-meta"><span>Stage {active.step}</span><b>{active.soil}</b></div><div className="cycle-feature-emoji">{active.emoji}</div><h3>{active.label}</h3><p>{active.description}</p><button type="button" onClick={() => navigate("/login")}>Add a role to your garden <MoveUpRight size={14} /></button></div></div></section>
+            <section className="practice-section" id="practice"><div className="practice-art"><div className="practice-ring" /><div className="practice-sprout"><Sprout size={70} strokeWidth={1.15} /></div><span>ROLE-SPECIFIC</span></div><div className="practice-copy"><span className="section-kicker">Before the interview</span><h2>Confidence is<br /><em>rehearsed.</em></h2><p>Paste a job description, get a focused question set, and practice out loud with a transcript and clear coaching.</p><div className="practice-points"><span><Check size={14} />Role-specific questions</span><span><Check size={14} />Voice practice with fallback support</span><span><Check size={14} />A score you can act on</span></div><button className="dark-cta" onClick={() => navigate("/login")}>Explore practice <ArrowRight size={16} /></button></div></section>
+            <section className="final-cta"><div className="final-cta-inner"><div><span className="section-kicker light-kicker">A better place to begin</span><h2>Make space for<br /><em>the right work.</em></h2><p>Start with one role. Give it a next step. Let the system do the remembering.</p></div><button className="light-cta" onClick={() => navigate("/login")}>Enter the garden <ArrowRight size={16} /></button></div></section>
+        </main><footer className="landing-footer"><Brand light /><span>For the next thoughtful move.</span><a href="#why">Back to the top <ArrowRight size={14} /></a></footer>
     </div>;
 }
 
-function Login() { const navigate = useNavigate(); const [loading, setLoading] = useState(false); const [error, setError] = useState(""); const signIn = async () => { setLoading(true); if (isSupabaseConfigured) { const { error: authError } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/dashboard` } }); if (authError) setError(authError.message); } else navigate("/dashboard"); setLoading(false); }; return <div className="auth-page botanical-auth"><div className="auth-side plant-auth-side"><button className="back-link" onClick={() => navigate("/")}><ArrowRight size={14} style={{ transform: "rotate(180deg)" }} />Back to the garden</button><div className="auth-side-copy"><span className="garden-kicker"><span className="kicker-dot" />Your next move starts here</span><h1>Give your search<br /><em>some sunlight.</em></h1><p>A home for the roles you want, the stories you tell, and the confidence you grow along the way.</p></div><div className="auth-testimonial"><span>“</span><p>I stopped treating my search like a spreadsheet and started seeing the story it was growing into.</p><small>— Product designer, 2026</small></div></div><div className="auth-main"><div className="auth-card botanical-auth-card"><div className="brand dark centered"><div className="brand-mark plant-mark"><Sprout size={18} /></div><div><strong>Career Garden</strong><small>grow your next move</small></div></div><h2>Welcome back</h2><p>Come tend to your garden.</p>{error && <div className="auth-error">{error}</div>}<button className="google-btn" onClick={signIn} disabled={loading}><span className="google-g">G</span>{loading ? "Opening your garden…" : isSupabaseConfigured ? "Continue with Google" : "Continue to demo garden"}<ArrowRight size={15} /></button><div className="auth-divider"><span>or</span></div><button className="demo-btn" onClick={() => navigate("/dashboard")}><Sprout size={15} />Explore with sample garden <ArrowRight size={15} /></button><p className="auth-note">Demo plants stay in this browser. Connect Supabase for production sync.</p></div></div></div>; }
+function Login() {
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const signIn = async () => {
+        setError("");
+        if (!isSupabaseConfigured) {
+            setError("Google sign-in is not connected in this environment yet. Use the demo garden below, or configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY for production auth.");
+            return;
+        }
+        setLoading(true);
+        try {
+            const { error: authError } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/dashboard`, queryParams: { access_type: "offline", prompt: "select_account" } } });
+            if (authError) setError(`${authError.message} Make sure Google is enabled in Supabase Authentication → Providers and this URL is in the redirect allowlist.`);
+        } catch (authError) {
+            setError(authError?.message || "Google sign-in could not be started. Please try again or use the demo garden.");
+        } finally { setLoading(false); }
+    };
+    return <div className="new-auth"><div className="auth-story"><button type="button" className="auth-back" onClick={() => navigate("/")}><ArrowRight size={14} style={{ transform: "rotate(180deg)" }} />Back to the garden</button><div className="auth-story-copy"><span className="section-kicker light-kicker">Your next move starts here</span><h1>Keep the good<br /><em>work growing.</em></h1><p>Every role has a story. Career Garden helps you keep hold of it from first click to final conversation.</p></div><div className="auth-story-footer"><span><LockKeyhole size={13} />Your demo stays in this browser.</span><span><Sparkles size={13} />Your progress gets easier to see.</span></div></div><div className="auth-panel"><div className="auth-panel-inner"><Brand /><div className="auth-heading"><span className="auth-overline">Welcome back</span><h2>Come tend to<br />your garden.</h2><p>Choose how you want to continue.</p></div>{error && <div className="auth-error" role="alert">{error}</div>}<button type="button" className="google-login" onClick={signIn} disabled={loading}><span className="google-mark">G</span><span>{loading ? "Opening Google…" : "Continue with Google"}</span><ArrowRight size={15} /></button><div className="auth-separator"><span>or</span></div><button type="button" className="demo-login" onClick={() => navigate("/dashboard")}><Sprout size={16} /><span>Open the demo garden</span><ArrowRight size={15} /></button><p className="auth-footnote">Demo mode is ready now. Production Google login requires a configured Supabase project.</p><div className={`auth-status ${isSupabaseConfigured ? "ready" : "demo"}`}><i />{isSupabaseConfigured ? "Google auth is configured" : "Demo mode is active"}</div></div></div></div>;
+}
 
-function Authenticated() { const [user, setUser] = useState(DEMO_USER); const navigate = useNavigate(); useEffect(() => { if (!supabase) return undefined; supabase.auth.getSession().then(({ data }) => { if (data.session) setUser(data.session.user); }); const { data: listener } = supabase.auth.onAuthStateChange((_, session) => setUser(session?.user || DEMO_USER)); return () => listener.subscription.unsubscribe(); }, []); const signOut = async () => { if (supabase) await supabase.auth.signOut(); setUser(DEMO_USER); navigate("/"); }; return <Workspace user={user} onSignOut={signOut} />; }
+function Authenticated() {
+    const [user, setUser] = useState(DEMO_USER);
+    const navigate = useNavigate();
+    useEffect(() => {
+        if (!supabase) return undefined;
+        supabase.auth.getSession().then(({ data }) => { if (data.session) setUser(data.session.user); });
+        const { data: listener } = supabase.auth.onAuthStateChange((_, session) => setUser(session?.user || DEMO_USER));
+        return () => listener.subscription.unsubscribe();
+    }, []);
+    const signOut = async () => { if (supabase) await supabase.auth.signOut(); setUser(DEMO_USER); navigate("/"); };
+    return <Workspace user={user} onSignOut={signOut} />;
+}
 
 export default function AppNew() { return <BrowserRouter><Routes><Route path="/" element={<Landing />} /><Route path="/login" element={<Login />} /><Route path="/dashboard/*" element={<Authenticated />} /><Route path="*" element={<Navigate to="/" replace />} /></Routes></BrowserRouter>; }
