@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Check, ClipboardList, FileText, Mic, Plus, Sparkles, Target, Trash2 } from "lucide-react";
 import { getRoleBriefs } from "./lib/appData";
 

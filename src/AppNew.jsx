@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import { ArrowRight, BarChart3, Check, Mic, ShieldCheck, Sparkles, Target, WandSparkles } from "lucide-react";
 import Workspace from "./Workspace";

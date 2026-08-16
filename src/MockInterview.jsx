@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Clock3, Headphones, Mic, Pause, Play, RotateCcw, Sparkles, Square, Star, Volume2 } from "lucide-react";
 import { getSessions, saveSession } from "./lib/appData";
-import { MOCK_QUESTIONS, getBrowserSpeechRecognition, localRateAnswer, providerStatus, rateAnswer, startBrowserRecognition } from "./lib/voiceInterview";
+import { MOCK_QUESTIONS, getBrowserSpeechRecognition, providerStatus, rateAnswer, startBrowserRecognition } from "./lib/voiceInterview";
 
 function scoreColor(score) { return score >= 80 ? "#16a34a" : score >= 60 ? "#d97706" : "#dc2626"; }
 
