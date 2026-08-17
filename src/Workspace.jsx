@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
-    Activity, Archive, ArrowRight, BarChart3, Bell, BriefcaseBusiness, CalendarDays, Check, ChevronDown, CircleHelp, Clock3,
-    FileText, Filter, LayoutDashboard, Leaf, Mic, MoreHorizontal, Pencil, Plus, Search, Settings, Sparkles, Sprout, Target, Trash2, TrendingUp,
+    Activity, Archive, ArrowRight, BarChart3, BriefcaseBusiness, CalendarDays, Check, CircleHelp, Clock3,
+    FileText, Filter, LayoutDashboard, Leaf, Mic, MoreHorizontal, Pencil, Plus, Settings, Sparkles, Sprout, Target, Trash2, TrendingUp,
     Upload, Users, X, Zap,
 } from "lucide-react";
 import { DEMO_USER } from "./lib/supabase";
@@ -32,16 +32,16 @@ function Sidebar({ page, setPage, jobs, user, onSignOut }) {
     const counts = { applications: jobs.filter(job => job.status !== "Rejected").length, mock: jobs.filter(job => job.status === "Interview").length };
     const renderItem = ([id, label, NavIcon]) => <button type="button" key={id} className={page === id ? "nav-item active" : "nav-item"} onClick={() => setPage(id)}><Icon><NavIcon size={17} /></Icon><span>{label}</span>{counts[id] ? <em>{counts[id]}</em> : null}</button>;
     return <aside className="sidebar-new compact-sidebar">
-        <div className="sidebar-top"><div className="brand"><div className="brand-mark"><Sprout size={18} /></div><div><strong>Career Garden</strong><small>grow your next move</small></div></div><div className="workspace-switch"><div className="avatar small">{initials(user)}</div><div><b>Personal search</b><small>Workspace</small></div><ChevronDown size={14} /></div></div>
+        <div className="sidebar-top"><div className="brand"><div className="brand-mark"><Sprout size={18} /></div><div><strong>Career Garden</strong><small>grow your next move</small></div></div></div>
         <nav className="side-nav"><div className="nav-group"><p>Workspace</p>{primary.map(renderItem)}</div><div className="nav-group"><p>Insights</p>{insights.map(renderItem)}</div><div className="nav-group nav-group-account"><p>Account</p>{renderItem(["settings", "Settings", Settings])}<button type="button" className="nav-item" onClick={onSignOut}><Icon><Archive size={17} /></Icon><span>Sign out</span></button></div></nav>
-        <div className="sidebar-footer"><div className="upgrade-card"><div className="upgrade-icon"><Leaf size={15} /></div><b>Next care</b><p>One focused action keeps your search growing.</p><button type="button" onClick={() => setPage("prep")}>Open prep hub <ArrowRight size={13} /></button></div><div className="user-row"><div className="avatar">{initials(user)}</div><div><b>{user?.user_metadata?.full_name || "Alex Morgan"}</b><small>{user?.email || "demo account"}</small></div><MoreHorizontal size={17} /></div></div>
+        <div className="sidebar-footer"><div className="user-row"><div className="avatar">{initials(user)}</div><div><b>{user?.user_metadata?.full_name || "Alex Morgan"}</b><small>{user?.email || "demo account"}</small></div><MoreHorizontal size={17} /></div></div>
     </aside>;
 }
 
 function Topbar({ page, search, setSearch, onAdd, onSignOut }) {
     const titles = { overview: ["Good morning, Alex", "Here’s what needs attention in your garden."], applications: ["Applications", "Grow and manage every opportunity in one focused pipeline."], prep: ["Interview prep", "Prepare for the conversation with role-specific context."], mock: ["Practice", "Build confidence out loud, one answer at a time."], analytics: ["Statistics", "Understand where your effort is taking root."], activity: ["Activity", "A clear history of the progress in your search."], settings: ["Settings", "Keep your workspace and integrations ready for the next move."] };
     const [title, subtitle] = titles[page] || titles.overview;
-    return <header className="topbar-new compact-topbar"><div><div className="crumb"><span>Workspace</span><ArrowRight size={12} /><b>{title.replace("Good morning, Alex", "Overview")}</b></div><h1>{title}</h1><p>{subtitle}</p></div><div className="top-actions"><label className="global-search"><Search size={16} /><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search jobs, roles, companies" /><kbd>⌘ K</kbd></label><button type="button" className="icon-btn" title="Notifications"><Bell size={18} /><i /></button><button type="button" className="primary-btn" onClick={onAdd}><Plus size={17} />Add application</button><button type="button" className="avatar top-avatar" onClick={onSignOut}>AM</button></div></header>;
+    return <header className="topbar-new compact-topbar"><div><div className="crumb"><span>Workspace</span><ArrowRight size={12} /><b>{title.replace("Good morning, Alex", "Overview")}</b></div><h1>{title}</h1><p>{subtitle}</p></div><div className="top-actions"><button type="button" className="primary-btn" onClick={onAdd}><Plus size={17} />Add application</button><button type="button" className="avatar top-avatar" onClick={onSignOut} title="Sign out">AM</button></div></header>;
 }
 
 function MobileNav({ page, setPage, onAdd }) { const items = [["overview", "My Garden", LayoutDashboard], ["applications", "Applications", BriefcaseBusiness], ["prep", "Prep", Sparkles], ["mock", "Practice", Mic]]; return <nav className="mobile-nav"><div className="mobile-nav-items">{items.map(([id, label, NavIcon]) => <button type="button" key={id} className={page === id ? "active" : ""} onClick={() => setPage(id)}><NavIcon size={17} /><span>{label}</span></button>)}<button type="button" className="mobile-add" onClick={onAdd}><Plus size={19} /></button></div></nav>; }
