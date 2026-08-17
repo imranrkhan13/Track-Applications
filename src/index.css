@@ -59,3 +59,37 @@ body,button,input,select,textarea{font-family:Inter,ui-sans-serif,system-ui,-app
 @media (max-width:980px){.sidebar-new{width:200px}.main-new{margin-left:200px}.topbar-new{padding-left:28px;padding-right:28px}.content-new{padding-left:28px;padding-right:28px}.global-search{width:190px}}
 @media (max-width:720px){.sidebar-new{display:none}.main-new{margin-left:0}.topbar-new{min-height:92px;padding:22px 18px 16px}.topbar-new h1{font-size:21px}.topbar-new p{font-size:11px}.content-new{padding:20px 16px 90px}.stats-grid{grid-template-columns:repeat(2,1fr)}.two-col{grid-template-columns:1fr}.lower{grid-template-columns:1fr}.top-actions{gap:6px}.global-search{display:none}.top-actions .icon-btn{display:none}.top-avatar{display:none}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+
+/* White + dark-green product palette */
+:root{--ink:#123d2b;--deep:#123d2b;--muted:#6d8074;--line:#e5eee8;--surface:#fff;--canvas:#f6fbf7;--mint:#edf8f0;--green:#187447;--shadow:0 1px 2px rgba(20,52,35,.02),0 8px 22px rgba(20,52,35,.035)}
+body{background:#fff;color:var(--ink)}
+.app-shell,.main-new,.sidebar-new{background:#fff}
+.main-new{min-height:100vh}
+.topbar-new{background:#fff;border-bottom:1px solid #e8efe9}
+.content-new{background:var(--canvas);max-width:none;min-height:calc(100vh - 104px);padding:30px clamp(18px,4vw,52px) 60px}
+.content-new>.page-grid{max-width:1320px;margin:0 auto}
+.sidebar-new{border-right:1px solid #e8efe9}
+.brand strong,.topbar-new h1,.panel-heading h2,.prep-selector h2,.mock-selector h2,.stat-card>strong,.drawer-head h2,.drawer-role b,.role-cell b,.quote-strip p,.focus-panel h2{color:#123d2b}
+.stat-card,.panel,.health-card,.applications-table,.quote-strip,.section-toolbar,.board-column{background:#fff;border-color:#e7efe9;box-shadow:var(--shadow)}
+.stat-card .stat-top,.panel .eyebrow,.crumb,.topbar-new p,.muted,.upcoming-copy span{color:#6f8276}
+.stat-card .trend,.text-btn,.nav-item.active,.nav-item:hover,.next-cell{color:#187447}
+.nav-item.active{background:#f0f8f2;box-shadow:inset 2px 0 #2c9a61}
+.nav-item:hover{background:#f7fbf8}
+.health-card{background:#f8fcf8;border:1px solid #deeee1}
+.pipeline-panel,.upcoming-panel,.recent-panel,.focus-panel{background:#fff}
+.focus-panel{background:#fff;border:1px solid #dfeee3;color:#123d2b}
+.focus-panel .eyebrow{color:#5e856c}.focus-panel h2,.focus-panel .focus-hero b{color:#123d2b}.focus-panel .focus-hero{border-color:#e5efe7}.focus-panel .focus-hero p,.focus-checklist button{color:#6f8276}.focus-orb{background:#eef8f0;color:#187447}.focus-panel .primary-btn{background:#123d2b;color:#fff}.focus-badge{background:#edf8f0;color:#35734d}
+.quote-strip{background:#fff}.quote-strip p{color:#356d4c}.quote-mark{color:#62ad7e}
+.upcoming-row{border-top-color:#edf2ee}.upcoming-row:hover{background:#fbfefb}
+.board-column{background:#f8fcf9}.board-card{background:#fff;border-color:#e5eee8}
+.form-grid input,.form-grid select,.form-grid textarea,.settings-fields input,.transcript-box textarea,.prep-grid textarea{background:#fff;border-color:#dfeae2}
+@media (max-width:720px){.content-new{background:var(--canvas);padding-left:14px;padding-right:14px}}
+
+/* Final palette overrides: keep the product white, readable, and restrained */
+.app-shell,.main-new,.sidebar-new,.topbar-new{background:#fff!important;color:#123d2b!important}
+.content-new{background:#f6fbf7!important}
+.panel,.stat-card,.health-card,.applications-table,.quote-strip,.section-toolbar,.board-column,.board-card{background:#fff!important;color:#123d2b!important}
+.focus-panel{background:#fff!important;color:#123d2b!important;border:1px solid #dfeee3!important}
+.focus-panel h2,.focus-panel .focus-hero b,.focus-panel .focus-hero p,.focus-checklist button{color:#123d2b!important}.focus-panel .focus-hero{border-color:#e5efe7!important}.focus-panel .primary-btn{background:#123d2b!important;color:#fff!important}
+body,.app-shell,button,input,select,textarea{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important}
+.brand strong,.topbar-new h1,.panel-heading h2,.prep-selector h2,.mock-selector h2,.stat-card>strong,.drawer-head h2,.drawer-role b{font-family:Inter,ui-sans-serif,system-ui,sans-serif!important;color:#123d2b!important}
