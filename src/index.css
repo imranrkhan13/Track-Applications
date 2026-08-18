@@ -148,3 +148,18 @@ body{background:var(--cg-canvas);color:var(--cg-ink)}
 @media (prefers-reduced-motion: reduce) {
   .settings-section, .provider-list > div, .timeline-row { transition: none; }
 }
+
+/* Accessible sidebar contrast fix */
+.sidebar-new .nav-item,
+.sidebar-new .nav-item span,
+.sidebar-new .nav-item svg { color: #456055 !important; opacity: 1 !important; }
+.sidebar-new .nav-item:hover,
+.sidebar-new .nav-item:hover span,
+.sidebar-new .nav-item:hover svg { color: #163D26 !important; }
+.sidebar-new .nav-item.active,
+.sidebar-new .nav-item.active span,
+.sidebar-new .nav-item.active svg { color: #0D2818 !important; opacity: 1 !important; }
+.sidebar-new .nav-item.active { background: #DCEBDF !important; box-shadow: inset 3px 0 #287A4B !important; }
+.sidebar-new .nav-item em { color: #FFFFFF !important; background: #287A4B !important; opacity: 1 !important; }
+.sidebar-new .nav-group > p { color: #627268 !important; opacity: 1 !important; }
+.sidebar-new .brand strong, .sidebar-new .brand small { opacity: 1 !important; }
