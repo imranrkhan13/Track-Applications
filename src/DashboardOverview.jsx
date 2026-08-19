@@ -68,15 +68,17 @@ function Upcoming({ jobs, onOpen }) {
     </section>;
 }
 
-export default function DashboardOverview({ jobs, setPage, openJob, addJob }) {
+export default function DashboardOverview({ jobs, setPage, openJob, addJob, user }) {
     const active = jobs.filter(job => !["Rejected", "Offer"].includes(job.status)).length;
     const interviews = jobs.filter(job => job.status === "Interview").length;
     const offers = jobs.filter(job => job.status === "Offer").length;
     const followUps = jobs.filter(job => job.next_date && job.status !== "Rejected" && daysAway(job.next_date) <= 3).length;
     const nextAction = useMemo(() => jobs.filter(job => job.next_date && job.status !== "Rejected").sort((a, b) => new Date(a.next_date) - new Date(b.next_date))[0] || jobs.find(job => job.status === "Interview") || null, [jobs]);
     const recent = jobs.filter(job => job.status !== "Rejected").slice(0, 5);
-    return <div className="dashboard-v2">
-        <div className="dashboard-intro"><div><span className="section-kicker">Overview</span><h2>Good morning, Alex.</h2><p>Here’s what’s moving in your search.</p></div><button type="button" className="primary-btn dashboard-add" onClick={addJob}><Plus size={16} />Add application</button></div>
+    const displayName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.user_metadata?.preferred_username || user?.email?.split("@")[0] || "there";
+    const firstName = displayName.trim().split(/\s+/)[0] || "there";
+    return <div className="dashboard-v2 account-aware-dashboard">
+        <div className="dashboard-intro"><div><span className="section-kicker">Your garden</span><h2>Welcome back, {firstName}.</h2><p>A clear view of what is moving in your search.</p></div><div className="dashboard-intro-status"><span className="status-orb" />{jobs.length ? `${jobs.length} opportunities in your garden` : "Your garden is ready to plant"}</div></div>
         <div className="metrics-strip"><Metric label="Active applications" value={active} detail={`${active ? active : "No"} roles still in motion`} icon={BriefcaseBusiness} tone="active" /><Metric label="Interviews" value={interviews} detail={interviews ? `${interviews} conversation${interviews === 1 ? "" : "s"} ahead` : "Nothing scheduled yet"} icon={Mic} tone="interview" /><Metric label="Offers" value={offers} detail={offers ? "Roles fully bloomed" : "Keep the momentum"} icon={Target} tone="offer" /><Metric label="Follow-ups" value={followUps} detail={followUps ? `${followUps} due in the next 3 days` : "No follow-ups due"} icon={TrendingUp} tone="follow" /></div>
         <div className="dashboard-main-grid"><Pipeline jobs={jobs} onApplications={() => setPage("applications")} /><NextAction job={nextAction} onOpen={openJob} onPrep={job => { openJob(job); setPage("prep"); }} onAdd={addJob} /></div>
         <div className="dashboard-secondary-grid"><RecentApplications jobs={recent} onOpen={openJob} /><Upcoming jobs={jobs} onOpen={openJob} /></div>

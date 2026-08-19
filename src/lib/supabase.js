@@ -11,5 +11,5 @@ export const supabase = isSupabaseConfigured
 export const DEMO_USER = {
     id: "demo-user",
     email: "demo@trackapplications.app",
-    user_metadata: { full_name: "Alex Morgan", avatar_url: "" },
+    user_metadata: { full_name: "Demo User", avatar_url: "" },
 };

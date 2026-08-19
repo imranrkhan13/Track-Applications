@@ -643,3 +643,72 @@ html,body,#root{max-width:100%;overflow-x:hidden}
 .data-error-panel small { max-width: 700px; color: #819188; line-height: 1.6; }
 .data-error-panel code { padding: 2px 5px; border-radius: 4px; background: #eef5ef; color: #185d3c; }
 @media (max-width: 720px) { .data-source-pill { display: none; } .data-error-panel { min-height: 280px; padding: 24px; } }
+
+
+/* Account-aware desktop remake: a calmer, more legible product composition. */
+.dashboard-intro-status{display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:0 12px;border:1px solid #d8e8dc;border-radius:999px;background:rgba(255,255,255,.72);color:#557363;font-size:11px;font-weight:700;white-space:nowrap}
+.status-orb{width:7px;height:7px;border-radius:50%;background:#2e9b60;box-shadow:0 0 0 4px #e4f3e7}
+.account-aware-dashboard .dashboard-intro{border-bottom:1px solid rgba(210,227,214,.72)}
+@media (min-width:981px){
+  .app-shell{background:#f3f8f3}
+  .sidebar-new{width:248px;padding:28px 20px 22px;background:#fff;border-right:1px solid #e4eee6}
+  .main-new{margin-left:248px;background:#f3f8f3}
+  .sidebar-top{padding:0 8px 34px}
+  .brand{gap:11px}
+  .brand-mark{width:34px;height:34px;border-radius:11px}
+  .brand strong{font-size:14px;letter-spacing:-.025em}
+  .brand small{font-size:8px;letter-spacing:.14em}
+  .side-nav{padding:0 2px}
+  .nav-group{margin-bottom:26px}
+  .nav-group p{margin:0 10px 9px;color:#91a097;font-size:8px;letter-spacing:.15em}
+  .nav-group-account{margin-top:36px}
+  .nav-item{min-height:40px;padding:0 12px;border-radius:11px;gap:11px;color:#53665a;font-size:12px}
+  .nav-item.active{background:#e0efe3!important;box-shadow:inset 3px 0 #258451!important;color:#123b27}
+  .sidebar-footer{padding:16px 2px 0}
+  .account-card{padding:11px;border-radius:15px;background:#f7fbf8;border-color:#dfece2;box-shadow:0 8px 24px rgba(18,61,43,.04)}
+  .account-identity{padding:3px 2px 11px}
+  .account-signout{margin-top:8px;height:33px}
+  .topbar-new{min-height:88px;padding:18px 40px;background:#fff!important;border-bottom:1px solid #e4eee6}
+  .topbar-new h1{font-size:25px;letter-spacing:-.05em}
+  .topbar-new p{font-size:11px}
+  .top-actions{gap:10px}
+  .content-new{padding:34px 40px 72px;background:#f3f8f3!important}
+  .content-new>.page-grid,.dashboard-v2{max-width:1480px;margin-left:auto;margin-right:auto}
+  .account-aware-dashboard{gap:18px}
+  .account-aware-dashboard .dashboard-intro{padding:4px 0 18px;align-items:flex-end}
+  .account-aware-dashboard .dashboard-intro h2{margin:8px 0 7px;font-size:34px;letter-spacing:-.065em}
+  .account-aware-dashboard .dashboard-intro p{font-size:13px}
+  .metrics-strip{min-height:126px;border-radius:16px;box-shadow:0 8px 24px rgba(18,61,43,.04)}
+  .metric-card{padding:20px 22px 18px}
+  .metric-card strong{margin:12px 0 5px;font-size:38px;letter-spacing:-.06em}
+  .metric-label{font-size:11px}
+  .metric-detail{font-size:10px}
+  .dashboard-main-grid,.dashboard-secondary-grid{grid-template-columns:minmax(0,1.42fr) minmax(330px,.78fr);gap:18px}
+  .dashboard-card{padding:22px;border-radius:16px;border-color:#dfece2;box-shadow:0 8px 26px rgba(18,61,43,.035)}
+  .dashboard-card-head{margin-bottom:20px}
+  .dashboard-card-head h2{font-size:18px;letter-spacing:-.035em}
+  .pipeline-v2{min-height:300px}
+  .pipeline-v2-track{min-height:166px;gap:11px}
+  .pipeline-v2-bar{height:100px;border-radius:8px 8px 4px 4px;background:#f1f6f2}
+  .pipeline-v2-stage>span:not(.pipeline-v2-index){font-size:11px}
+  .pipeline-v2-stage small{font-size:10px}
+  .next-action-card{min-height:300px;padding:23px 24px;border-radius:16px}
+  .next-action-card h2{max-width:300px;margin:18px 0 18px;font-size:24px;letter-spacing:-.055em}
+  .recent-v2,.upcoming-v2{min-height:260px}
+  .recent-row-v2{padding:12px 3px}
+  .dashboard-footnote{padding:4px 2px;font-size:10px}
+}
+@media (min-width:981px) and (max-width:1180px){
+  .sidebar-new{width:224px;padding-left:15px;padding-right:15px}
+  .main-new{margin-left:224px}
+  .topbar-new{padding-left:26px;padding-right:26px}
+  .content-new{padding-left:26px;padding-right:26px}
+  .account-aware-dashboard .dashboard-intro h2{font-size:29px}
+  .dashboard-intro-status{font-size:10px}
+  .dashboard-main-grid,.dashboard-secondary-grid{grid-template-columns:minmax(0,1.28fr) minmax(280px,.78fr)}
+  .top-account-copy{max-width:100px}
+}
+@media (max-width:720px){
+  .dashboard-intro-status{align-self:flex-start;font-size:9px}
+  .account-aware-dashboard .dashboard-intro{border-bottom:0}
+}
