@@ -1243,3 +1243,272 @@
     width: 54px;
   }
 }
+
+
+/* Final closed-rail replacement: compact, attached, and vertically coherent */
+@media (min-width: 721px) {
+  .sidebar-new.compact-sidebar.is-collapsed {
+    width: 80px;
+    padding: 14px 8px 12px;
+    border-right: 1px solid #d9e8dd;
+    box-shadow: 5px 0 18px rgba(18, 61, 43, .028);
+  }
+
+  .app-shell.sidebar-is-collapsed .main-new {
+    margin-left: 80px;
+  }
+
+  .sidebar-new.is-collapsed .sidebar-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+    min-height: 0;
+    padding: 0 0 14px;
+    border-bottom: 1px solid #edf3ee;
+  }
+
+  .sidebar-new.is-collapsed .brand {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin: 0;
+    border: 1px solid #e1ece3;
+    border-radius: 13px;
+    background: #f7fbf7;
+  }
+
+  .sidebar-new.is-collapsed .brand-mark {
+    display: grid;
+    place-items: center;
+    width: 31px;
+    height: 31px;
+    border-radius: 9px;
+    color: #ffffff;
+    background: #31935d;
+    box-shadow: none;
+  }
+
+  .sidebar-new.is-collapsed .sidebar-collapse-toggle {
+    position: static;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 29px;
+    margin: 0;
+    border: 1px solid #dce8df;
+    border-radius: 9px;
+    color: #647a6c;
+    background: #ffffff;
+    opacity: 1;
+  }
+
+  .sidebar-new.is-collapsed .sidebar-collapse-toggle:hover {
+    color: #ffffff;
+    border-color: #2d8252;
+    background: #2d8252;
+  }
+
+  .sidebar-new.is-collapsed .side-nav {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 11px;
+    padding: 16px 0 12px;
+  }
+
+  .sidebar-new.is-collapsed .nav-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+  }
+
+  .sidebar-new.is-collapsed .nav-group + .nav-group,
+  .sidebar-new.is-collapsed .nav-group-account {
+    margin-top: 3px;
+    padding-top: 12px;
+    border-top: 1px solid #edf3ee;
+  }
+
+  .sidebar-new.is-collapsed .nav-group > p {
+    display: none;
+  }
+
+  .sidebar-new.is-collapsed .nav-item,
+  .sidebar-new.is-collapsed .account-identity,
+  .sidebar-new.is-collapsed .account-signout {
+    position: relative;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 48px;
+    min-height: 46px;
+    margin: 0 auto;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 12px;
+  }
+
+  .sidebar-new.is-collapsed .nav-item > .icon-slot {
+    display: grid !important;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    color: #71857a;
+  }
+
+  .sidebar-new.is-collapsed .nav-item > .nav-label,
+  .sidebar-new.is-collapsed .account-identity > span,
+  .sidebar-new.is-collapsed .account-identity > svg,
+  .sidebar-new.is-collapsed .account-signout > span {
+    display: none !important;
+  }
+
+  .sidebar-new.is-collapsed .nav-item:hover,
+  .sidebar-new.is-collapsed .account-identity:hover,
+  .sidebar-new.is-collapsed .account-signout:hover {
+    border-color: #c1dcc7;
+    background: #f4faf5;
+    transform: none;
+  }
+
+  .sidebar-new.is-collapsed .nav-item.active {
+    color: #ffffff;
+    border-color: #2d8252;
+    background: #2d8252;
+    box-shadow: 0 6px 13px rgba(45, 130, 82, .18);
+  }
+
+  .sidebar-new.is-collapsed .nav-item.active > .icon-slot {
+    color: #ffffff;
+  }
+
+  .sidebar-new.is-collapsed .nav-item.active::before {
+    top: 9px;
+    bottom: 9px;
+    left: -1px;
+    width: 3px;
+    border-radius: 0 4px 4px 0;
+    background: #b7e6bf;
+  }
+
+  .sidebar-new.is-collapsed .nav-item > em {
+    position: absolute;
+    top: 3px;
+    right: 2px;
+    display: grid !important;
+    place-items: center;
+    min-width: 15px;
+    height: 15px;
+    margin: 0;
+    padding: 0 3px;
+    border: 2px solid #ffffff;
+    border-radius: 99px;
+    color: #ffffff;
+    background: #2f8957;
+    font-size: 8px;
+    font-style: normal;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .sidebar-new.is-collapsed .nav-item.active > em {
+    border-color: #2d8252;
+    background: #b5dfbc;
+    color: #1d5d38;
+  }
+
+  .sidebar-new.is-collapsed .sidebar-footer {
+    flex: 0 0 auto;
+    margin-top: auto;
+    padding: 11px 0 0;
+    border-top: 1px solid #edf3ee;
+  }
+
+  .sidebar-new.is-collapsed .account-card {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 0;
+  }
+
+  .sidebar-new.is-collapsed .account-identity {
+    min-height: 42px;
+    background: #f7faf7;
+  }
+
+  .sidebar-new.is-collapsed .account-identity .avatar {
+    width: 31px;
+    height: 31px;
+    border: 2px solid #ffffff;
+    color: #1c5936;
+    background: #dceec8;
+    box-shadow: none;
+    font-size: 10px;
+  }
+
+  .sidebar-new.is-collapsed .account-signout {
+    min-height: 35px;
+    color: #819087;
+  }
+
+  .sidebar-new.is-collapsed .account-signout:hover {
+    color: #a54842;
+    background: #fff7f6;
+  }
+}
+
+@media (max-width: 900px) and (min-width: 721px) {
+  .sidebar-new.compact-sidebar.is-collapsed {
+    width: 80px;
+    padding-inline: 8px;
+  }
+
+  .app-shell.sidebar-is-collapsed .main-new {
+    margin-left: 80px;
+  }
+}
+
+
+/* Specificity bridge for the legacy stylesheet's important collapsed rules */
+@media (min-width: 721px) {
+  .sidebar-new.is-collapsed .side-nav {
+    gap: 11px !important;
+  }
+
+  .sidebar-new.is-collapsed .nav-group + .nav-group,
+  .sidebar-new.is-collapsed .nav-group-account {
+    margin-top: 3px !important;
+  }
+
+  .sidebar-new.is-collapsed .nav-item,
+  .sidebar-new.is-collapsed .account-identity,
+  .sidebar-new.is-collapsed .account-signout {
+    width: 48px !important;
+    min-height: 46px !important;
+  }
+
+  .sidebar-new.is-collapsed .nav-item.active {
+    color: #ffffff !important;
+    background: #2d8252 !important;
+    border-color: #2d8252 !important;
+    box-shadow: 0 6px 13px rgba(45, 130, 82, .18) !important;
+  }
+
+  .sidebar-new.is-collapsed .nav-item.active > .icon-slot,
+  .sidebar-new.is-collapsed .nav-item.active > .icon-slot svg {
+    color: #ffffff !important;
+  }
+
+  .sidebar-new.is-collapsed .nav-item > em {
+    display: grid !important;
+    top: 3px !important;
+    right: 2px !important;
+  }
+
+  .sidebar-new.is-collapsed .sidebar-footer {
+    margin-top: auto !important;
+  }
+}
