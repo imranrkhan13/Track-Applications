@@ -712,3 +712,111 @@ html,body,#root{max-width:100%;overflow-x:hidden}
   .dashboard-intro-status{align-self:flex-start;font-size:9px}
   .account-aware-dashboard .dashboard-intro{border-bottom:0}
 }
+
+
+/* Minimal sidebar pass — desktop only. Keep mobile navigation untouched. */
+@media (min-width:721px){
+  .sidebar-new.compact-sidebar{
+    width:212px;
+    padding:22px 14px 16px;
+    background:#fff;
+    border-right:1px solid #e8efe9;
+  }
+  .main-new{margin-left:212px}
+  .sidebar-top{padding:0 8px 28px}
+  .compact-sidebar .brand{gap:9px}
+  .compact-sidebar .brand-mark{width:30px;height:30px;border-radius:9px}
+  .compact-sidebar .brand-mark svg{width:16px;height:16px}
+  .compact-sidebar .brand strong{font-size:12px;letter-spacing:-.015em}
+  .compact-sidebar .brand small{font-size:7px;letter-spacing:.1em}
+  .compact-sidebar .side-nav{gap:24px}
+  .compact-sidebar .nav-group{gap:4px}
+  .compact-sidebar .nav-group>p{
+    margin:0 10px 5px;
+    color:#9aaba0;
+    font-size:8px;
+    font-weight:700;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+  }
+  .compact-sidebar .nav-item{
+    position:relative;
+    min-height:38px;
+    padding:0 10px;
+    gap:10px;
+    border-radius:9px;
+    color:#718077;
+    font-size:12px;
+    font-weight:600;
+    transition:background .16s ease,color .16s ease,transform .16s ease;
+  }
+  .compact-sidebar .nav-item:hover{background:#f5f9f6;color:#24543b}
+  .compact-sidebar .nav-item:active{transform:scale(.985)}
+  .compact-sidebar .nav-item.active{
+    background:#edf6ef;
+    color:#154f31;
+    box-shadow:none;
+  }
+  .compact-sidebar .nav-item.active::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:10px;
+    bottom:10px;
+    width:3px;
+    border-radius:0 3px 3px 0;
+    background:#2d9a61;
+  }
+  .compact-sidebar .nav-item .icon-slot{width:18px;color:currentColor}
+  .compact-sidebar .nav-item em{
+    min-width:18px;
+    height:18px;
+    padding:0 5px;
+    border:0;
+    background:#e7f2e9;
+    color:#26734a;
+    font-size:9px;
+    line-height:18px;
+  }
+  .compact-sidebar .nav-group-account{margin-top:2px}
+  .compact-sidebar .sidebar-footer{padding:0 4px}
+  .compact-sidebar .account-card{
+    padding:14px 0 0;
+    border:0;
+    border-top:1px solid #edf2ee;
+    border-radius:0;
+    background:transparent;
+  }
+  .compact-sidebar .account-identity{gap:8px;padding:0 0 10px}
+  .compact-sidebar .account-identity .avatar{width:28px;height:28px;font-size:9px}
+  .compact-sidebar .account-identity b{font-size:11px}
+  .compact-sidebar .account-identity small{font-size:9px}
+  .compact-sidebar .account-identity>svg{width:14px;height:14px;color:#9aaba0}
+  .compact-sidebar .account-signout{
+    justify-content:flex-start;
+    gap:7px;
+    margin:0;
+    padding:7px 2px;
+    border:0;
+    border-radius:7px;
+    background:transparent;
+    color:#89988f;
+    font-size:10px;
+    font-weight:650;
+  }
+  .compact-sidebar .account-signout:hover{background:#fff5f4;color:#a34444;border:0}
+}
+
+@media (min-width:721px) and (max-width:1180px){
+  .sidebar-new.compact-sidebar{width:198px}
+  .main-new{margin-left:198px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .compact-sidebar .nav-item{transition:none}
+}
+
+/* Keep the mobile shell on its existing compact navigation model. */
+@media (max-width:720px){
+  .sidebar-new.compact-sidebar{width:100%}
+}
