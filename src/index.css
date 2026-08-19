@@ -532,3 +532,16 @@ html,body,#root{max-width:100%;overflow-x:hidden}
 @media (min-width:721px){
   .mobile-account-strip{display:none!important}
 }
+
+
+/* Wide laptop composition: use the available workspace canvas instead of a narrow centered desktop column. */
+@media (min-width:1181px){
+  .content-new{padding-left:32px;padding-right:32px}
+  .content-new>.page-grid{max-width:none}
+  .dashboard-v2{max-width:none;gap:20px}
+  .dashboard-main-grid,.dashboard-secondary-grid{grid-template-columns:minmax(0,1.68fr) minmax(360px,.82fr);gap:20px}
+  .metrics-strip{min-height:132px}
+  .metric-card{padding:20px 22px 18px}
+  .dashboard-card{padding:24px}
+  .next-action-card{min-height:312px;padding:25px 25px 23px}
+}
