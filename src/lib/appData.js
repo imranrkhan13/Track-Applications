@@ -23,20 +23,25 @@ function readStore() {
 }
 
 function writeStore(next) { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
+function isRealUser(userId) { return Boolean(supabase && userId && userId !== "demo-user"); }
+function requireRemote(result, resource) {
+    if (result.error) throw new Error(`Could not load ${resource} from Supabase: ${result.error.message}`);
+    return result.data;
+}
 
 export async function getJobs(userId = "demo-user") {
-    if (supabase && userId !== "demo-user") {
-        const { data, error } = await supabase.from("jobs").select("*").eq("user_id", userId).order("created_at", { ascending: false });
-        if (!error && data) return data;
+    if (isRealUser(userId)) {
+        const result = await supabase.from("jobs").select("*").eq("user_id", userId).order("created_at", { ascending: false });
+        return requireRemote(result, "applications") || [];
     }
     return readStore().jobs;
 }
 
 export async function saveJob(job, userId = "demo-user") {
     const payload = { ...job, user_id: userId, updated_at: now(), created_at: job.created_at || now() };
-    if (supabase && userId !== "demo-user") {
-        const { data, error } = await supabase.from("jobs").upsert(payload).select().single();
-        if (!error && data) return data;
+    if (isRealUser(userId)) {
+        const result = await supabase.from("jobs").upsert(payload).select().single();
+        return requireRemote(result, "application");
     }
     const store = readStore();
     const id = payload.id || `job-${Date.now()}`;
@@ -46,37 +51,53 @@ export async function saveJob(job, userId = "demo-user") {
 }
 
 export async function deleteJob(id, userId = "demo-user") {
-    if (supabase && userId !== "demo-user") await supabase.from("jobs").delete().eq("id", id).eq("user_id", userId);
+    if (isRealUser(userId)) {
+        const result = await supabase.from("jobs").delete().eq("id", id).eq("user_id", userId);
+        requireRemote(result, "application");
+        return;
+    }
     const store = readStore();
     writeStore({ ...store, jobs: store.jobs.filter(job => job.id !== id), roleBriefs: store.roleBriefs.filter(brief => brief.jobId !== id) });
 }
 
-export async function getRoleBriefs(jobId) {
-    if (supabase) {
-        const { data, error } = await supabase.from("interview_preps").select("*").eq("job_id", jobId).order("created_at", { ascending: false });
-        if (!error && data) return data;
+export async function getRoleBriefs(jobId, userId = "demo-user") {
+    if (isRealUser(userId)) {
+        const result = await supabase.from("role_briefs").select("*").eq("job_id", jobId).eq("user_id", userId).order("created_at", { ascending: false });
+        return requireRemote(result, "role preparation") || [];
     }
     return readStore().roleBriefs.filter(brief => brief.jobId === jobId);
 }
 
 export async function saveRoleBrief(brief, userId = "demo-user") {
     const payload = { ...brief, id: brief.id || `brief-${Date.now()}`, user_id: userId, created_at: brief.created_at || now() };
-    if (supabase && userId !== "demo-user") {
-        const { data, error } = await supabase.from("interview_preps").upsert({ ...payload, job_id: payload.jobId }).select().single();
-        if (!error && data) return data;
+    if (isRealUser(userId)) {
+        const { jobId, ...rest } = payload;
+        const result = await supabase.from("role_briefs").upsert({ ...rest, job_id: jobId }).select().single();
+        return requireRemote(result, "role preparation");
     }
     const store = readStore();
     writeStore({ ...store, roleBriefs: [payload, ...store.roleBriefs.filter(item => item.id !== payload.id)] });
     return payload;
 }
 
-export async function getSessions(jobId) {
+function normalizeSession(row) { return { ...row, jobId: row.jobId || row.job_id }; }
+
+export async function getSessions(jobId, userId = "demo-user") {
+    if (isRealUser(userId)) {
+        const result = await supabase.from("interview_sessions").select("*").eq("job_id", jobId).eq("user_id", userId).order("created_at", { ascending: false });
+        return (requireRemote(result, "interview sessions") || []).map(normalizeSession);
+    }
     return readStore().sessions.filter(session => session.jobId === jobId).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 }
 
-export async function saveSession(session) {
-    const store = readStore();
+export async function saveSession(session, userId = "demo-user") {
     const payload = { ...session, id: session.id || `session-${Date.now()}`, created_at: session.created_at || now() };
+    if (isRealUser(userId)) {
+        const { jobId, ...rest } = payload;
+        const result = await supabase.from("interview_sessions").insert({ ...rest, user_id: userId, job_id: jobId }).select().single();
+        return normalizeSession(requireRemote(result, "interview session"));
+    }
+    const store = readStore();
     writeStore({ ...store, sessions: [payload, ...store.sessions.filter(item => item.id !== payload.id)] });
     return payload;
 }

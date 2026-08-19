@@ -74,15 +74,27 @@ function Login() {
 }
 
 function Authenticated() {
-    const [user, setUser] = useState(DEMO_USER);
     const navigate = useNavigate();
+    const [user, setUser] = useState(isSupabaseConfigured ? null : DEMO_USER);
+    const [authChecked, setAuthChecked] = useState(!isSupabaseConfigured);
     useEffect(() => {
         if (!supabase) return undefined;
-        supabase.auth.getSession().then(({ data }) => { if (data.session) setUser(data.session.user); });
-        const { data: listener } = supabase.auth.onAuthStateChange((_, session) => setUser(session?.user || DEMO_USER));
-        return () => listener.subscription.unsubscribe();
-    }, []);
-    const signOut = async () => { if (supabase) await supabase.auth.signOut(); setUser(DEMO_USER); navigate("/"); };
+        let active = true;
+        supabase.auth.getSession().then(({ data }) => {
+            if (!active) return;
+            if (data.session) setUser(data.session.user);
+            else navigate("/login", { replace: true });
+            setAuthChecked(true);
+        });
+        const { data: listener } = supabase.auth.onAuthStateChange((_, session) => {
+            if (!active) return;
+            if (session) setUser(session.user);
+            else { setUser(null); navigate("/login", { replace: true }); }
+        });
+        return () => { active = false; listener.subscription.unsubscribe(); };
+    }, [navigate]);
+    const signOut = async () => { if (supabase) await supabase.auth.signOut(); setUser(isSupabaseConfigured ? null : DEMO_USER); navigate("/"); };
+    if (!authChecked || (isSupabaseConfigured && !user)) return <div className="loading-state"><div className="spinner" /><b>Checking your garden</b><span>Restoring your Supabase session…</span></div>;
     return <Workspace user={user} onSignOut={signOut} />;
 }
 

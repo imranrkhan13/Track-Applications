@@ -27,7 +27,7 @@ const questionLabels = {
     collaboration: "Collaboration",
 };
 
-export default function MockInterview({ jobs, selectedJob, setSelectedJob }) {
+export default function MockInterview({ jobs, selectedJob, setSelectedJob, userId = "demo-user" }) {
     const [jobId, setJobId] = useState(selectedJob?.id || jobs.find(job => job.status === "Interview")?.id || jobs[0]?.id || "");
     const job = jobs.find(item => item.id === jobId) || selectedJob || jobs[0];
     const [questionIndex, setQuestionIndex] = useState(0);
@@ -51,8 +51,8 @@ export default function MockInterview({ jobs, selectedJob, setSelectedJob }) {
     useEffect(() => {
         if (!job) return;
         setJobId(job.id);
-        getSessions(job.id).then(setHistory);
-    }, [job?.id]);
+        getSessions(job.id, userId).then(setHistory);
+    }, [job?.id, userId]);
 
     useEffect(() => () => {
         recognitionRef.current?.stop?.();
@@ -96,7 +96,7 @@ export default function MockInterview({ jobs, selectedJob, setSelectedJob }) {
                 score: scored.overall,
                 rubric: scored,
                 duration: elapsed,
-            });
+            }, userId);
             setHistory(current => [saved, ...current]);
         } catch (cause) {
             setError(cause?.message || "We could not rate this answer. Try again or keep practicing locally.");

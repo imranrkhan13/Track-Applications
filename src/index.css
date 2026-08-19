@@ -629,3 +629,17 @@ html,body,#root{max-width:100%;overflow-x:hidden}
   .board-column{padding:14px;border:1px solid #e1ebe4;border-radius:16px;background:#fff;box-shadow:0 7px 22px rgba(19,57,36,.03)}
   .helper-banner{margin-top:18px;border-radius:14px}
 }
+
+/* Explicit data-source and remote-load states */
+.data-source-pill { display: inline-flex; align-items: center; gap: 7px; min-height: 30px; padding: 0 10px; border: 1px solid var(--line, #e7eee8); border-radius: 999px; color: #587064; background: #fbfdfb; font-size: 10px; font-weight: 700; letter-spacing: .02em; white-space: nowrap; }
+.data-source-pill i { width: 6px; height: 6px; border-radius: 50%; background: #a6b4aa; }
+.data-source-pill.connected { color: #17613f; border-color: #cce8d4; background: #f2fbf4; }
+.data-source-pill.connected i { background: #2caa69; box-shadow: 0 0 0 3px rgba(44,170,105,.12); }
+.data-source-pill.demo { color: #756d54; background: #fffcf2; border-color: #eee5c7; }
+.data-source-pill.demo i { background: #c6a954; }
+.data-error-panel { min-height: 360px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 10px; padding: 40px; }
+.data-error-panel h2 { margin: 0; max-width: 520px; }
+.data-error-panel p:not(.eyebrow) { max-width: 620px; color: #5f6f66; }
+.data-error-panel small { max-width: 700px; color: #819188; line-height: 1.6; }
+.data-error-panel code { padding: 2px 5px; border-radius: 4px; background: #eef5ef; color: #185d3c; }
+@media (max-width: 720px) { .data-source-pill { display: none; } .data-error-panel { min-height: 280px; padding: 24px; } }
