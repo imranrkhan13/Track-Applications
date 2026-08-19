@@ -251,3 +251,39 @@ button,.nav-item,.mobile-nav button{touch-action:manipulation}.nav-item,.mobile-
 @media (prefers-reduced-motion: reduce){
   .mobile-nav button,.dashboard-card,.metric-card,.recent-row-v2,.timeline-item-v2,.board-card,.primary-btn,.secondary-btn{transition:none!important;transform:none!important}
 }
+
+
+/* Narrow-screen repair: no page overflow, no sliced metrics, no hidden action cards */
+html,body,#root{max-width:100%;overflow-x:hidden}
+.main-new,.content-new,.dashboard-v2,.page-grid{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+@media (max-width:640px){
+  .main-new{overflow-x:hidden}
+  .content-new{padding-left:14px;padding-right:14px;padding-bottom:128px;overflow-x:hidden}
+  .dashboard-v2{overflow:visible}
+  .metrics-strip{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;overflow:visible;width:100%;}
+  .metric-card{min-width:0;width:auto;min-height:108px;padding:14px 12px;border-right:1px solid var(--cg-border);border-bottom:1px solid var(--cg-border)}
+  .metric-card:nth-child(2n){border-right:0}
+  .metric-card:nth-last-child(-n+2){border-bottom:0}
+  .metric-card strong{font-size:30px}
+  .metric-label{font-size:11px;line-height:1.25;align-items:flex-start}
+  .metric-detail{font-size:10px;white-space:normal;line-height:1.3}
+  .dashboard-main-grid,.dashboard-secondary-grid{width:100%;min-width:0}
+  .dashboard-card,.next-action-card{width:100%;min-width:0;box-sizing:border-box}
+  .pipeline-v2-track{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;width:100%;min-width:0;overflow:visible}
+  .pipeline-v2-stage{min-width:0;overflow:hidden}
+  .pipeline-v2-top{gap:3px}
+  .pipeline-v2-index{font-size:8px}
+  .pipeline-v2-top strong{font-size:17px}
+  .pipeline-v2-bar{height:76px}
+  .pipeline-v2-stage>span:not(.pipeline-v2-index){font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pipeline-v2-stage small{font-size:8px;white-space:normal;line-height:1.25;min-height:20px}
+  .pipeline-v2-footer{font-size:10px}
+  .next-action-card{min-height:250px;margin-bottom:4px}
+  .next-action-card h2{max-width:100%;font-size:20px}
+  .recent-v2,.upcoming-v2{min-width:0;width:100%;overflow:hidden}
+  .recent-row-v2{min-width:0;width:100%}
+  .upcoming-row{min-width:0}
+  .upcoming-copy{min-width:0}
+  .upcoming-copy b,.upcoming-copy span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mobile-nav{padding-left:8px;padding-right:8px}
+}
