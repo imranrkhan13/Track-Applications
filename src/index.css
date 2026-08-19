@@ -1073,3 +1073,125 @@ html,body,#root{max-width:100%;overflow-x:hidden}
     display: none;
   }
 }
+
+
+/* Collapsed rail visual correction */
+@media (min-width: 721px) {
+  .sidebar-new {
+    border-right: 1px solid rgba(21, 92, 58, 0.08);
+    box-shadow: 7px 0 20px rgba(19, 60, 40, 0.035);
+  }
+
+  .sidebar-new.is-collapsed {
+    width: 88px;
+    box-shadow: 7px 0 20px rgba(19, 60, 40, 0.04);
+  }
+
+  .sidebar-new.is-collapsed .sidebar-top {
+    min-height: 78px;
+    padding-inline: 16px;
+    border-bottom: 1px solid rgba(21, 92, 58, 0.07);
+  }
+
+  .sidebar-new.is-collapsed .sidebar-collapse-toggle {
+    right: 10px;
+    top: 12px;
+    width: 26px;
+    height: 26px;
+    color: #527564;
+    background: #f5faf6;
+    border-color: #dbe9df;
+    box-shadow: 0 2px 8px rgba(19, 60, 40, 0.06);
+  }
+
+  .sidebar-new.is-collapsed .sidebar-collapse-toggle:hover,
+  .sidebar-new.is-collapsed .sidebar-collapse-toggle:focus-visible {
+    color: #fff;
+    background: #155c3a;
+    border-color: #155c3a;
+  }
+
+  .sidebar-new.is-collapsed .side-nav {
+    padding: 24px 16px;
+  }
+
+  .sidebar-new.is-collapsed .nav-group {
+    gap: 10px;
+  }
+
+  .sidebar-new.is-collapsed .nav-group + .nav-group {
+    margin-top: 30px;
+  }
+
+  .sidebar-new.is-collapsed .nav-item {
+    position: relative;
+    width: 56px;
+    height: 48px;
+    border: 1px solid transparent;
+    border-radius: 15px;
+  }
+
+  .sidebar-new.is-collapsed .nav-item:hover {
+    border-color: #b9d8c3;
+    background: #f0f8f2;
+  }
+
+  .sidebar-new.is-collapsed .nav-item.is-active,
+  .sidebar-new.is-collapsed .nav-item.active {
+    color: #fff;
+    background: #155c3a;
+    border-color: #155c3a;
+    box-shadow: 0 7px 16px rgba(21, 92, 58, 0.16);
+  }
+
+  .sidebar-new.is-collapsed .nav-item.is-active .icon-slot,
+  .sidebar-new.is-collapsed .nav-item.active .icon-slot {
+    color: #fff;
+  }
+
+  .sidebar-new.is-collapsed .nav-item > em {
+    display: grid;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    min-width: 15px;
+    height: 15px;
+    padding: 0 4px;
+    place-items: center;
+    border: 1px solid #d2e6d8;
+    border-radius: 99px;
+    color: #155c3a;
+    background: #fff;
+    font-size: 8px;
+    font-style: normal;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .sidebar-new.is-collapsed .nav-item.is-active > em,
+  .sidebar-new.is-collapsed .nav-item.active > em {
+    color: #155c3a;
+    background: #e4f2e8;
+    border-color: rgba(255, 255, 255, 0.78);
+  }
+
+  .sidebar-new.is-collapsed .account-card {
+    padding: 14px 0 16px;
+    border-top: 1px solid rgba(21, 92, 58, 0.08);
+  }
+
+  .sidebar-new.is-collapsed .account-identity,
+  .sidebar-new.is-collapsed .account-signout {
+    width: 56px;
+    min-height: 48px;
+    border-radius: 15px;
+  }
+
+  .sidebar-new.is-collapsed .account-signout:hover {
+    border-color: #efd0cd;
+  }
+
+  .app-shell.sidebar-is-collapsed .main-new {
+    margin-left: 88px;
+  }
+}
