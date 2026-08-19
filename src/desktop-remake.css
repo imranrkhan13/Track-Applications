@@ -1035,3 +1035,211 @@
     font-size: 10px;
   }
 }
+
+
+/* Closed desktop rail: intentional compact navigation, not an empty strip */
+@media (min-width: 721px) {
+  .sidebar-new.compact-sidebar.is-collapsed {
+    width: 96px;
+    padding: 18px 10px 14px;
+    background: #ffffff;
+    border-right: 1px solid #dce9df;
+    box-shadow: 8px 0 24px rgba(18, 61, 43, .035);
+  }
+
+  .sidebar-new.is-collapsed .sidebar-top {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    min-height: 0;
+    padding: 0 0 17px;
+    border-bottom: 1px solid #edf3ee;
+  }
+
+  .sidebar-new.is-collapsed .brand {
+    display: grid;
+    place-items: center;
+    width: 58px;
+    height: 48px;
+    margin: 0 auto;
+    border: 1px solid #e0ede3;
+    border-radius: 15px;
+    background: #f7fbf7;
+  }
+
+  .sidebar-new.is-collapsed .brand-mark {
+    width: 31px;
+    height: 31px;
+    border-radius: 10px;
+    color: #ffffff;
+    background: var(--garden-forest);
+    box-shadow: 0 5px 12px rgba(18, 61, 43, .15);
+  }
+
+  .sidebar-new.is-collapsed .sidebar-collapse-toggle {
+    position: static;
+    display: grid;
+    place-items: center;
+    width: 58px;
+    height: 29px;
+    margin: 0 auto;
+    border: 1px solid #dce9df;
+    border-radius: 9px;
+    color: #587265;
+    background: #ffffff;
+    opacity: 1;
+  }
+
+  .sidebar-new.is-collapsed .sidebar-collapse-toggle:hover {
+    color: var(--garden-forest);
+    border-color: #a8ccb0;
+    background: #f2f8f3;
+  }
+
+  .sidebar-new.is-collapsed .side-nav {
+    gap: 15px;
+    padding: 18px 0 12px;
+  }
+
+  .sidebar-new.is-collapsed .nav-group {
+    position: relative;
+    gap: 7px;
+  }
+
+  .sidebar-new.is-collapsed .nav-group + .nav-group {
+    padding-top: 15px;
+  }
+
+  .sidebar-new.is-collapsed .nav-group + .nav-group::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 15px;
+    left: 15px;
+    height: 1px;
+    background: #edf3ee;
+  }
+
+  .sidebar-new.is-collapsed .nav-item,
+  .sidebar-new.is-collapsed .account-identity,
+  .sidebar-new.is-collapsed .account-signout {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 58px;
+    min-height: 48px;
+    margin-inline: auto;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 14px;
+  }
+
+  .sidebar-new.is-collapsed .nav-item:hover,
+  .sidebar-new.is-collapsed .account-identity:hover,
+  .sidebar-new.is-collapsed .account-signout:hover {
+    border-color: #b9d5be;
+    background: #f4faf5;
+    transform: translateY(-1px);
+  }
+
+  .sidebar-new.is-collapsed .nav-item.active {
+    border-color: #c1ddc7;
+    color: var(--garden-forest);
+    background: #e5f1e6;
+    box-shadow: 0 7px 16px rgba(37, 111, 62, .10);
+  }
+
+  .sidebar-new.is-collapsed .nav-item.active::before {
+    top: 12px;
+    bottom: 12px;
+    left: -1px;
+    width: 3px;
+    border-radius: 0 4px 4px 0;
+    background: #3a9a5d;
+  }
+
+  .sidebar-new.is-collapsed .nav-item .icon-slot {
+    width: 22px;
+    height: 22px;
+    color: #73887b;
+  }
+
+  .sidebar-new.is-collapsed .nav-item.active .icon-slot {
+    color: var(--garden-forest);
+  }
+
+  .sidebar-new.is-collapsed .nav-item > em {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    display: grid;
+    place-items: center;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    border: 2px solid #ffffff;
+    border-radius: 99px;
+    color: #ffffff;
+    background: #3c9c61;
+    font-size: 9px;
+    font-style: normal;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .sidebar-new.is-collapsed .nav-item.active > em {
+    border-color: #e5f1e6;
+    background: var(--garden-forest);
+  }
+
+  .sidebar-new.is-collapsed .sidebar-footer {
+    padding-top: 12px;
+    border-top: 1px solid #edf3ee;
+  }
+
+  .sidebar-new.is-collapsed .account-card {
+    display: grid;
+    gap: 8px;
+    padding: 0;
+  }
+
+  .sidebar-new.is-collapsed .account-identity {
+    min-height: 46px;
+    background: #f7faf7;
+  }
+
+  .sidebar-new.is-collapsed .account-identity .avatar {
+    width: 31px;
+    height: 31px;
+    border: 2px solid #ffffff;
+    color: #ffffff;
+    background: #2e7650;
+    box-shadow: 0 3px 8px rgba(18, 61, 43, .12);
+    font-size: 10px;
+  }
+
+  .sidebar-new.is-collapsed .account-signout {
+    min-height: 38px;
+    color: #8a9990;
+  }
+
+  .sidebar-new.is-collapsed .account-signout:hover {
+    color: #a54842;
+    background: #fff7f6;
+  }
+}
+
+@media (max-width: 900px) and (min-width: 721px) {
+  .sidebar-new.compact-sidebar.is-collapsed {
+    width: 88px;
+    padding-inline: 8px;
+  }
+
+  .sidebar-new.is-collapsed .brand,
+  .sidebar-new.is-collapsed .sidebar-collapse-toggle,
+  .sidebar-new.is-collapsed .nav-item,
+  .sidebar-new.is-collapsed .account-identity,
+  .sidebar-new.is-collapsed .account-signout {
+    width: 54px;
+  }
+}
