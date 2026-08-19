@@ -507,3 +507,28 @@ html,body,#root{max-width:100%;overflow-x:hidden}
   .settings-account{align-items:flex-start;flex-wrap:wrap}
   .settings-account .secondary-btn{width:100%;justify-content:center}
 }
+
+
+/* Laptop shell restoration: keep the desktop workspace composed at common 1024–1180px widths. */
+@media (min-width:721px) and (max-width:1180px){
+  .topbar-new{min-height:92px;padding:18px 28px 16px;align-items:center;gap:14px;flex-wrap:nowrap;flex-direction:row!important}
+  .topbar-new>div:first-child{min-width:0;flex:1 1 auto}
+  .topbar-new h1{font-size:22px;line-height:1.08}
+  .topbar-new p{max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .top-actions{width:auto!important;flex:0 0 auto;flex-wrap:nowrap!important;gap:8px}
+  .top-actions .primary-btn{white-space:nowrap;padding-left:12px;padding-right:12px}
+  .top-account{gap:7px}
+  .top-account-copy{max-width:122px;min-width:0}
+  .top-account-copy small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .content-new{padding-top:24px}
+}
+@media (min-width:721px) and (max-width:1040px){
+  .topbar-new{padding-left:22px;padding-right:22px}
+  .topbar-new p{max-width:240px}
+  .top-account-copy{display:none}
+  .top-actions .primary-btn{min-width:38px;width:38px;padding:0;font-size:0;justify-content:center}
+  .top-actions .primary-btn svg{margin:0}
+}
+@media (min-width:721px){
+  .mobile-account-strip{display:none!important}
+}
