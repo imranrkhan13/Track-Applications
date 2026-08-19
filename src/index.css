@@ -820,3 +820,41 @@ html,body,#root{max-width:100%;overflow-x:hidden}
 @media (max-width:720px){
   .sidebar-new.compact-sidebar{width:100%}
 }
+
+
+/* Sidebar interaction polish — clearer green hover and text treatment. */
+@media (min-width:721px){
+  .compact-sidebar .nav-item{
+    border:1px solid transparent;
+    color:#5f7066;
+    font-weight:650;
+    letter-spacing:-.005em;
+  }
+  .compact-sidebar .nav-item .icon-slot{color:#7b9182;transition:color .16s ease,transform .16s ease}
+  .compact-sidebar .nav-item:hover{
+    background:#f5fbf6;
+    border-color:#cce5d3;
+    color:#155c3a;
+  }
+  .compact-sidebar .nav-item:hover .icon-slot{color:#2f9a61;transform:translateX(1px)}
+  .compact-sidebar .nav-item:focus-visible{
+    outline:2px solid #76bd8d;
+    outline-offset:2px;
+  }
+  .compact-sidebar .nav-item.active{
+    background:#eaf6ed;
+    border-color:#c2dfca;
+    color:#114d30;
+    font-weight:700;
+  }
+  .compact-sidebar .nav-item.active .icon-slot{color:#21824e}
+  .compact-sidebar .nav-item.active::before{background:#21824e}
+  .compact-sidebar .nav-group>p{color:#879b8d}
+  .compact-sidebar .account-identity:hover{color:#155c3a}
+  .compact-sidebar .account-identity:hover .avatar{background:#d8efdf;color:#155c3a}
+  .compact-sidebar .account-signout:focus-visible,
+  .compact-sidebar .account-identity:focus-visible{
+    outline:2px solid #76bd8d;
+    outline-offset:2px;
+  }
+}
