@@ -545,3 +545,87 @@ html,body,#root{max-width:100%;overflow-x:hidden}
   .dashboard-card{padding:24px}
   .next-action-card{min-height:312px;padding:25px 25px 23px}
 }
+
+
+/* Desktop product-system pass: a deliberate computer layout, kept isolated from mobile breakpoints. */
+@media (min-width:1181px){
+  .sidebar-new{
+    width:236px;
+    padding:28px 18px 22px;
+    background:#ffffff;
+    border-right:1px solid #e5eee7;
+  }
+  .main-new{margin-left:236px;background:#f6fbf7}
+  .sidebar-top{padding:0 8px 32px}
+  .brand{gap:11px}
+  .brand strong{font-size:14px;letter-spacing:-.02em}
+  .brand small{font-size:8px;letter-spacing:.13em}
+  .brand-mark{width:32px;height:32px;border-radius:10px}
+  .side-nav{padding:0 3px}
+  .nav-group{margin-bottom:28px}
+  .nav-group p{margin:0 10px 10px;font-size:8px;letter-spacing:.14em;color:#8a9a90}
+  .nav-group-account{margin-top:38px}
+  .nav-item{min-height:42px;padding:0 12px;border-radius:11px;gap:11px;font-size:12.5px;font-weight:650}
+  .nav-item .icon-slot{width:18px;height:18px}
+  .nav-item.active{background:#dcebe0!important;box-shadow:inset 3px 0 #2c8a57!important}
+  .sidebar-footer{padding:18px 3px 0}
+  .account-card{padding:11px;background:#f7fbf8;border:1px solid #e1ece4;border-radius:14px}
+  .account-identity{padding:3px 2px 11px}
+  .account-identity b{font-size:11px}
+  .account-identity small{font-size:9px}
+  .account-signout{height:34px;border:1px solid #dce8df;background:#fff;border-radius:9px;font-size:10.5px}
+  .topbar-new{
+    min-height:96px;
+    padding:22px 42px 18px;
+    background:#fff!important;
+    border-bottom:1px solid #e5eee7;
+  }
+  .topbar-new h1{font-size:26px;letter-spacing:-.045em}
+  .topbar-new p{font-size:12px;margin-top:4px}
+  .crumb{font-size:9px;letter-spacing:.08em}
+  .top-actions{gap:12px}
+  .shortcut-btn{height:38px;min-width:54px;border:1px solid #e2ebe4;background:#fbfdfb}
+  .top-account{padding-left:12px;border-left:1px solid #e5eee7;gap:9px}
+  .top-account-copy b{font-size:11px}
+  .top-account-copy small{font-size:9px}
+  .content-new{padding:34px 42px 72px;background:#f6fbf7!important}
+  .content-new>.page-grid{max-width:1540px}
+  .dashboard-v2{max-width:1540px;gap:22px}
+  .dashboard-intro{padding:0 0 3px;align-items:flex-end}
+  .dashboard-intro h2{font-size:36px;margin:8px 0 6px}
+  .dashboard-intro p{font-size:14px}
+  .dashboard-add{padding:12px 17px}
+  .metrics-strip{min-height:138px;border-color:#e1ebe4;border-radius:16px;box-shadow:0 6px 22px rgba(19,57,36,.035)}
+  .metric-card{padding:22px 24px 20px}
+  .metric-label{font-size:12px}
+  .metric-card strong{font-size:42px;margin:14px 0 6px}
+  .metric-detail{font-size:11px}
+  .dashboard-main-grid,.dashboard-secondary-grid{grid-template-columns:minmax(0,1.62fr) minmax(365px,.86fr);gap:22px}
+  .dashboard-card{padding:25px;border-color:#e1ebe4;border-radius:16px;box-shadow:0 7px 26px rgba(19,57,36,.035)}
+  .dashboard-card-head{margin-bottom:24px}
+  .dashboard-card-head h2{font-size:19px}
+  .pipeline-v2{min-height:326px}
+  .pipeline-v2-track{min-height:190px;gap:14px}
+  .pipeline-v2-bar{height:116px;border-radius:8px 8px 4px 4px}
+  .pipeline-v2-stage>span:not(.pipeline-v2-index){font-size:12px}
+  .pipeline-v2-footer{padding-top:15px}
+  .next-action-card{min-height:326px;padding:27px 27px 25px;border-radius:16px}
+  .next-action-card h2{font-size:27px;max-width:310px;margin:21px 0 22px}
+  .next-action-role strong{font-size:13px}
+  .next-action-role span{font-size:11px}
+  .recent-v2,.upcoming-v2{min-height:280px}
+  .recent-row-v2{padding:13px 4px}
+  .recent-role strong,.timeline-copy strong{font-size:12.5px}
+  .recent-role small,.timeline-copy small{font-size:11px}
+  .dashboard-footnote{font-size:11px}
+  .section-toolbar{padding:2px 0 12px;align-items:center}
+  .filter-tabs{padding:4px;border:1px solid #e1ebe4;background:#fff;border-radius:12px;box-shadow:0 4px 14px rgba(19,57,36,.025)}
+  .filter-tabs button{min-height:34px;padding:0 12px;font-size:11px}
+  .toolbar-actions{gap:10px}
+  .applications-table{padding:8px 22px 18px;border-color:#e1ebe4;border-radius:16px;box-shadow:0 7px 26px rgba(19,57,36,.035)}
+  .applications-table table th{padding:15px 12px;font-size:10px}
+  .applications-table table td{padding:15px 12px}
+  .board-grid{gap:14px}
+  .board-column{padding:14px;border:1px solid #e1ebe4;border-radius:16px;background:#fff;box-shadow:0 7px 22px rgba(19,57,36,.03)}
+  .helper-banner{margin-top:18px;border-radius:14px}
+}
