@@ -879,3 +879,37 @@ html,body,#root{max-width:100%;overflow-x:hidden}
     color:#fff;
   }
 }
+
+
+/* Sidebar count refinement: compact status pills, not oversized bubbles. */
+@media (min-width:721px){
+  .compact-sidebar .nav-item em{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:19px;
+    height:17px;
+    margin-left:auto;
+    padding:0 5px;
+    border:1px solid #cfe4d4;
+    border-radius:999px;
+    background:#f2f8f3;
+    color:#397253;
+    font-size:9px;
+    font-weight:750;
+    line-height:1;
+    letter-spacing:-.02em;
+  }
+  .compact-sidebar .nav-item:hover em{
+    border-color:#9fcfab;
+    background:#e8f5eb;
+    color:#155c3a;
+  }
+  .compact-sidebar .nav-item.active em{
+    min-width:19px;
+    height:17px;
+    border-color:rgba(255,255,255,.18);
+    background:rgba(255,255,255,.16);
+    color:#fff;
+  }
+}
