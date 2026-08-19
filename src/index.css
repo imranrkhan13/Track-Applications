@@ -858,3 +858,24 @@ html,body,#root{max-width:100%;overflow-x:hidden}
     outline-offset:2px;
   }
 }
+
+
+/* Final selected-tab treatment: make the current destination unmistakable. */
+@media (min-width:721px){
+  .compact-sidebar .nav-item.active{
+    background:#155c3a;
+    border-color:#155c3a;
+    color:#fff;
+    box-shadow:0 5px 14px rgba(21,92,58,.14);
+  }
+  .compact-sidebar .nav-item.active .icon-slot{color:#fff;transform:none}
+  .compact-sidebar .nav-item.active::before{
+    top:8px;
+    bottom:8px;
+    background:#a6e2b4;
+  }
+  .compact-sidebar .nav-item.active em{
+    background:rgba(255,255,255,.18);
+    color:#fff;
+  }
+}
