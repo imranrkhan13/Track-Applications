@@ -39,13 +39,20 @@ function Sidebar({ page, setPage, jobs, user, onSignOut }) {
     </aside>;
 }
 
-function Topbar({ page, search, setSearch, onAdd, onSignOut }) {
+function Topbar({ page, search, setSearch, onAdd, onSignOut, onCommand }) {
     const titles = { overview: ["Overview", "A clear view of what is moving in your search."], applications: ["Applications", "Grow and manage every opportunity in one focused pipeline."], prep: ["Interview prep", "Prepare for the conversation with role-specific context."], mock: ["Practice", "Build confidence out loud, one answer at a time."], analytics: ["Statistics", "Understand where your effort is taking root."], activity: ["Activity", "A clear history of the progress in your search."], settings: ["Settings", "Keep your workspace and integrations ready for the next move."] };
     const [title, subtitle] = titles[page] || titles.overview;
-    return <header className="topbar-new compact-topbar"><div><div className="crumb"><span>Workspace</span><ArrowRight size={12} /><b>{title.replace("Good morning, Alex", "Overview")}</b></div><h1>{title}</h1><p>{subtitle}</p></div><div className="top-actions"><button type="button" className="primary-btn" onClick={onAdd}><Plus size={17} />Add application</button><button type="button" className="avatar top-avatar" onClick={onSignOut} title="Sign out">AM</button></div></header>;
+    return <header className="topbar-new compact-topbar"><div><div className="crumb"><span>Workspace</span><ArrowRight size={12} /><b>{title.replace("Good morning, Alex", "Overview")}</b></div><h1>{title}</h1><p>{subtitle}</p></div><div className="top-actions"><button type="button" className="shortcut-btn" onClick={onCommand} aria-label="Open quick actions"><span>⌘</span>K</button><button type="button" className="primary-btn" onClick={onAdd}><Plus size={17} />Add application</button><button type="button" className="avatar top-avatar" onClick={onSignOut} title="Sign out">AM</button></div></header>;
 }
 
-function MobileNav({ page, setPage, onAdd }) { const items = [["overview", "My Garden", LayoutDashboard], ["applications", "Applications", BriefcaseBusiness], ["prep", "Prep", Sparkles], ["mock", "Practice", Mic]]; return <nav className="mobile-nav"><div className="mobile-nav-items">{items.map(([id, label, NavIcon]) => <button type="button" key={id} className={page === id ? "active" : ""} onClick={() => setPage(id)}><NavIcon size={17} /><span>{label}</span></button>)}<button type="button" className="mobile-add" onClick={onAdd}><Plus size={19} /></button></div></nav>; }
+function MobileNav({ page, setPage, onAdd }) { const items = [["overview", "My Garden", LayoutDashboard], ["applications", "Applications", BriefcaseBusiness], ["prep", "Prep", Sparkles], ["mock", "Practice", Mic]]; return <nav className="mobile-nav" aria-label="Primary navigation"><div className="mobile-nav-items">{items.map(([id, label, NavIcon]) => <button type="button" key={id} className={page === id ? "active" : ""} onClick={() => setPage(id)}><NavIcon size={17} /><span>{label}</span></button>)}<button type="button" className="mobile-add" onClick={onAdd} aria-label="Add application"><Plus size={19} /></button></div></nav>; }
+
+function CommandPalette({ open, onClose, onAdd, setPage }) {
+    if (!open) return null;
+    const actions = [["overview", "Open My Garden", "See your search at a glance", LayoutDashboard, "G"], ["applications", "View applications", "Manage your live pipeline", BriefcaseBusiness, "A"], ["prep", "Open interview prep", "Build a role-specific plan", Sparkles, "P"], ["mock", "Start practice", "Practice an answer out loud", Mic, "M"], ["analytics", "View statistics", "Find patterns in your search", BarChart3, "S"]];
+    const go = id => { setPage(id); onClose(); };
+    return <div className="command-backdrop" role="presentation" onMouseDown={event => event.target === event.currentTarget && onClose()}><section className="command-palette" role="dialog" aria-modal="true" aria-label="Quick actions"><div className="command-head"><div><span className="eyebrow">Quick actions</span><h2>Jump back in</h2></div><button type="button" className="icon-btn" onClick={onClose} aria-label="Close quick actions"><X size={17} /></button></div><div className="command-list"><button type="button" className="command-item command-primary" onClick={() => { onAdd(); onClose(); }}><span className="command-icon"><Plus size={17} /></span><span><b>Add application</b><small>Capture a new opportunity</small></span><kbd>N</kbd></button>{actions.map(([id, title, detail, ActionIcon, key]) => <button type="button" className="command-item" key={id} onClick={() => go(id)}><span className="command-icon"><ActionIcon size={17} /></span><span><b>{title}</b><small>{detail}</small></span><kbd>{key}</kbd></button>)}</div><p className="command-tip"><span>⌘ K</span> to open anytime <i>Esc</i> to close</p></section></div>;
+}
 
 function StatCard({ label, value, detail, trend, icon, tone = "green" }) { return <div className={`stat-card ${tone}`}><div className="stat-top"><span>{label}</span><Icon>{icon}</Icon></div><strong>{value}</strong><div className="stat-detail"><span className="trend"><TrendingUp size={13} />{trend}</span>{detail}</div></div>; }
 
@@ -115,6 +122,20 @@ export default function Workspace({ user = DEMO_USER, onSignOut }) {
     const openJob = job => { if (typeof job === "string") { setPage(job === "applications" ? "applications" : job); return; } setDrawer(job); };
     const openPrep = job => { setDrawer(null); setPrepJob(job); setPage("prep"); };
     const openMock = job => { setDrawer(null); setMockJob(job); setPage("mock"); };
+    const [commandOpen, setCommandOpen] = useState(false);
+    useEffect(() => {
+        const onKeyDown = event => {
+            const target = event.target;
+            const typing = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement || target?.isContentEditable;
+            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") { event.preventDefault(); setCommandOpen(current => !current); return; }
+            if (event.key === "Escape") { setCommandOpen(false); if (drawer) setDrawer(null); return; }
+            if (!typing && event.key.toLowerCase() === "n") { event.preventDefault(); addJob(); return; }
+            if (!typing && event.key.toLowerCase() === "g") { event.preventDefault(); setPage("overview"); return; }
+            if (!typing && event.key.toLowerCase() === "a") { event.preventDefault(); setPage("applications"); return; }
+        };
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+    }, [drawer]);
     const content = loading ? <div className="loading-state"><div className="spinner" /><b>Loading your workspace</b><span>Getting your pipeline ready…</span></div> : page === "overview" ? <DashboardOverview jobs={filteredJobs} setPage={setPage} openJob={openJob} onPrep={openPrep} addJob={addJob} /> : page === "applications" ? <Applications jobs={filteredJobs} openJob={openJob} editJob={editJob} addJob={addJob} removeJob={remove} setPage={setPage} /> : page === "prep" ? <InterviewPrep jobs={filteredJobs} selectedJob={prepJob} setSelectedJob={setPrepJob} onMock={openMock} onSaveBrief={saveRoleBrief} /> : page === "mock" ? <MockInterview jobs={filteredJobs} selectedJob={mockJob} setSelectedJob={setMockJob} /> : page === "analytics" ? <Analytics jobs={filteredJobs} /> : page === "activity" ? <ActivityPage jobs={filteredJobs} /> : <SettingsPage />;
-    return <div className="app-shell"><Sidebar page={page} setPage={setPage} jobs={jobs} user={user} onSignOut={onSignOut} /><MobileNav page={page} setPage={setPage} onAdd={addJob} /><main className="main-new"><Topbar page={page} search={search} setSearch={setSearch} onAdd={addJob} onSignOut={onSignOut} /><div className="content-new">{content}</div></main>{drawer && <JobDrawer job={drawer} onClose={() => setDrawer(null)} onSave={save} onDelete={remove} onPrep={() => openPrep(drawer)} onMock={() => openMock(drawer)} />}</div>;
+    return <div className="app-shell"><Sidebar page={page} setPage={setPage} jobs={jobs} user={user} onSignOut={onSignOut} /><MobileNav page={page} setPage={setPage} onAdd={addJob} /><main className="main-new"><Topbar page={page} search={search} setSearch={setSearch} onAdd={addJob} onSignOut={onSignOut} onCommand={() => setCommandOpen(true)} /><div className="content-new">{content}</div></main>{drawer && <JobDrawer job={drawer} onClose={() => setDrawer(null)} onSave={save} onDelete={remove} onPrep={() => openPrep(drawer)} onMock={() => openMock(drawer)} />}<CommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} onAdd={addJob} setPage={setPage} /></div>;
 }
