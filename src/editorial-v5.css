@@ -496,3 +496,70 @@ button, input, select, textarea { font-family: inherit; }
   .editorial-float-card-top { top: 9%; right: 3%; }
   .editorial-float-card-bottom { right: 3%; bottom: 42%; transform-origin: bottom right; }
 }
+
+/* Public page v7: widen the paper and make the whole landing page one contained object. */
+.editorial-landing {
+  padding-bottom: 12px;
+  background: #19221b;
+}
+
+.editorial-landing::before {
+  opacity: .22;
+}
+
+.editorial-nav,
+.editorial-page {
+  width: min(1480px, calc(100% - 48px));
+}
+
+.editorial-nav {
+  min-height: 86px;
+  margin-top: 20px;
+  padding-inline: 32px;
+  border: 1px solid rgba(238, 242, 220, .56);
+  border-bottom: 0;
+  border-radius: 28px 28px 0 0;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, .16);
+}
+
+.editorial-page {
+  margin-bottom: 20px;
+  padding: 0 30px 30px;
+  overflow: hidden;
+  border: 1px solid rgba(238, 242, 220, .56);
+  border-top: 0;
+  border-radius: 0 0 28px 28px;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, .24);
+}
+
+.editorial-feature {
+  border: 1px solid rgba(245, 247, 224, .4);
+}
+
+.editorial-story,
+.editorial-cycle,
+.editorial-photo-story,
+.editorial-values {
+  max-width: 1320px;
+  margin-inline: auto;
+}
+
+@media (max-width: 720px) {
+  .editorial-nav,
+  .editorial-page {
+    width: calc(100% - 20px);
+  }
+
+  .editorial-nav {
+    min-height: 68px;
+    margin-top: 10px;
+    padding-inline: 12px;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .editorial-page {
+    margin-bottom: 10px;
+    padding: 0 10px 10px;
+    border-radius: 0 0 20px 20px;
+  }
+}

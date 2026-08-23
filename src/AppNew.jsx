@@ -57,11 +57,11 @@ function Landing() {
             <button className="editorial-nav-cta" onClick={() => navigate("/login")}>Enter the garden <ArrowRight size={14} /></button>
         </header>
         <main id="top" className="editorial-page">
-            <section className="editorial-masthead">
+            {/* <section className="editorial-masthead">
                 <div><span className="editorial-index">Career Garden / 2026</span><span className="editorial-rule" /></div>
                 <h1>About <em>your search.</em></h1>
                 <div className="editorial-masthead-foot"><p>A small, living system for the work between “apply” and “offer”.</p><span>01 — 06</span></div>
-            </section>
+            </section> */}
 
             <section className="editorial-feature" id="method">
                 <div className="editorial-feature-copy">
