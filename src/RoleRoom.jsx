@@ -14,7 +14,7 @@ function EmptyRoleRoom() {
 function SproutFallback() { return <span aria-hidden="true">🌱</span>; }
 
 function RoleSelector({ jobs, jobId, onChange }) {
-    return <div className="role-room-selector"><div><span className="section-kicker">Candidate room</span><h2>Everything you need for the next step.</h2><p>Research the company, complete the right tasks, then practice the conversation.</p></div><label><span>Role in focus</span><select value={jobId} onChange={event => onChange(event.target.value)}>{jobs.map(item => <option key={item.id} value={item.id}>{item.company} · {item.role}</option>)}</select></label></div>;
+    return <div className="role-room-selector"><div><span className="section-kicker">Prepare</span><h2>Research the company and build your interview plan.</h2><p>Start with the role in focus, then move from evidence to practice.</p></div><label><span>Role in focus</span><select value={jobId} onChange={event => onChange(event.target.value)}>{jobs.map(item => <option key={item.id} value={item.id}>{item.role || "Role not specified"} · {item.company || "Company not specified"} · {item.status}</option>)}</select></label></div>;
 }
 
 function RoomHero({ job, stage, taskCount, completedCount, onMock }) {
@@ -22,7 +22,7 @@ function RoomHero({ job, stage, taskCount, completedCount, onMock }) {
 }
 
 function RoomTabs({ tab, setTab }) {
-    return <div className="role-room-tabs" role="tablist" aria-label="Candidate room sections"><button type="button" role="tab" aria-selected={tab === "research"} className={tab === "research" ? "active" : ""} onClick={() => setTab("research")}><Search size={15} />Company research</button><button type="button" role="tab" aria-selected={tab === "plan"} className={tab === "plan" ? "active" : ""} onClick={() => setTab("plan")}><PanelTop size={15} />Six-stage plan</button><button type="button" role="tab" aria-selected={tab === "questions"} className={tab === "questions" ? "active" : ""} onClick={() => setTab("questions")}><Lightbulb size={15} />Question lab</button></div>;
+    return <div className="role-room-tabs" role="tablist" aria-label="Candidate room sections"><button type="button" role="tab" aria-selected={tab === "research"} className={tab === "research" ? "active" : ""} onClick={() => setTab("research")}><Search size={15} />Company research</button><button type="button" role="tab" aria-selected={tab === "plan"} className={tab === "plan" ? "active" : ""} onClick={() => setTab("plan")}><PanelTop size={15} />Interview plan</button><button type="button" role="tab" aria-selected={tab === "questions"} className={tab === "questions" ? "active" : ""} onClick={() => setTab("questions")}><Lightbulb size={15} />Question lab</button><button type="button" role="tab" aria-selected={tab === "notes"} className={tab === "notes" ? "active" : ""} onClick={() => setTab("notes")}><BookOpen size={15} />Notes</button></div>;
 }
 
 function ResearchTab({ job, notes, setNotes }) {
@@ -41,6 +41,12 @@ function PlanTab({ job, completed, onToggle }) {
 function QuestionsTab({ job, onMock }) {
     const questions = getRoleQuestions(job);
     return <div className="role-room-questions"><div className="role-room-section-intro"><div><span className="section-kicker">03 · Rehearse the proof</span><h2>Questions to answer before they ask.</h2><p>Use the public signals you found to make your answer specific, then practice it out loud until the structure feels natural.</p></div><button type="button" className="primary-btn" onClick={() => onMock(job)}><Mic size={15} />Open mock interview</button></div><div className="question-lab-grid">{questions.map((question, index) => <article className="question-lab-card" key={question}><span>0{index + 1}</span><div><strong>{question}</strong><small>{index === 0 ? "Role signal" : index === 1 ? "Behavioral" : index === 2 ? "Company motivation" : "Collaboration"}</small></div><button type="button" onClick={() => onMock(job)} aria-label={`Practice question ${index + 1}`}><ArrowRight size={15} /></button></article>)}</div></div>;
+}
+
+function NotesTab({ job, notes, setNotes, onSave }) {
+    const [saved, setSaved] = useState(false);
+    const save = () => { onSave(); setSaved(true); window.setTimeout(() => setSaved(false), 1800); };
+    return <div className="role-room-notes"><div className="role-room-section-intro"><div><span className="section-kicker">04 · Keep the signal</span><h2>Write down what you want to remember.</h2><p>Capture hiring steps, product details, technology signals, and questions while they are still fresh.</p></div><button type="button" className="secondary-btn" onClick={save}><ClipboardCheck size={15} />{saved ? "Saved" : "Save notes"}</button></div><section className="panel research-notes"><div className="panel-heading"><div><p className="eyebrow">Evidence log</p><h2>{job.company} · {job.role}</h2></div><span className="notes-status">Private to this role</span></div><textarea value={notes} onChange={event => setNotes(event.target.value)} placeholder={`Paste hiring steps, tech stack notes, product signals, or questions you found about ${job.company}…`} rows="12" /><small>Saved in this browser for this role. Your application continues to save through the connected data source.</small></section></div>;
 }
 
 export default function RoleRoom({ jobs, selectedJob, setSelectedJob, onMock, userId = "demo-user" }) {
@@ -64,8 +70,9 @@ export default function RoleRoom({ jobs, selectedJob, setSelectedJob, onMock, us
     }, [job, userId]);
 
     const update = value => { setCompleted(value); saveRoleRoom(userId, job.id, { researchNotes: notes, completed: value }); };
+    const saveNotes = () => saveRoleRoom(userId, job.id, { researchNotes: notes, completed });
     const onNotesChange = value => { setNotes(value); saveRoleRoom(userId, job.id, { researchNotes: value, completed }); };
     if (!jobs.length || !job) return <EmptyRoleRoom />;
     const stage = stageInfo(job.status);
-    return <div className="page-grid role-room-page"><RoleSelector jobs={jobs} jobId={jobId} onChange={value => { setJobId(value); setSelectedJob(jobs.find(item => item.id === value)); }} /><RoomHero job={job} stage={stage} taskCount={taskCount} completedCount={completedCount} onMock={onMock} /><RoomTabs tab={tab} setTab={setTab} />{tab === "research" && <ResearchTab job={job} notes={notes} setNotes={onNotesChange} />}{tab === "plan" && <PlanTab job={job} completed={completed} onToggle={id => update({ ...completed, [id]: !completed[id] })} />}{tab === "questions" && <QuestionsTab job={job} onMock={onMock} />}</div>;
+    return <div className="page-grid role-room-page"><RoleSelector jobs={jobs} jobId={jobId} onChange={value => { setJobId(value); setSelectedJob(jobs.find(item => item.id === value)); }} /><RoomHero job={job} stage={stage} taskCount={taskCount} completedCount={completedCount} onMock={onMock} /><RoomTabs tab={tab} setTab={setTab} />{tab === "research" && <ResearchTab job={job} notes={notes} setNotes={onNotesChange} />}{tab === "plan" && <PlanTab job={job} completed={completed} onToggle={id => update({ ...completed, [id]: !completed[id] })} />}{tab === "questions" && <QuestionsTab job={job} onMock={onMock} />}{tab === "notes" && <NotesTab job={job} notes={notes} setNotes={onNotesChange} onSave={saveNotes} />}</div>;
 }

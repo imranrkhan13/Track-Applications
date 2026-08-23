@@ -16,6 +16,10 @@ function dateLabel(value, withTime = false) {
 
 function initials(company) { return String(company || "?").trim().slice(0, 1).toUpperCase(); }
 
+function DashboardMetric({ label, value, detail }) {
+    return <div className="dashboard-metric"><span>{label}</span><strong>{value}</strong><small>{detail}</small></div>;
+}
+
 function PlantCycle({ jobs, onApplications }) {
     const stages = PLANT_STAGES.map(stage => ({ ...stage, count: jobs.filter(job => job.status === stage.id).length }));
     const current = stages.find(stage => stage.count > 0 && stage.id !== "Rejected") || stages[0];
@@ -31,7 +35,7 @@ function NextAction({ job, onOpen, onPrep, onMock, onAdd }) {
     if (!job) return <section className="next-action-card empty-next"><div className="next-action-eyebrow"><span className="pulse-dot" />Next action</div><h2>Plant your first role.</h2><p>Add one opportunity and we will show you the next useful thing to do.</p><button type="button" className="next-action-button" onClick={onAdd}><Plus size={15} />Add role</button></section>;
     const due = daysAway(job.next_date);
     const isInterview = job.status === "Interview";
-    return <section className="next-action-card"><div className="next-action-eyebrow"><span className="pulse-dot" />Next action</div><h2>{isInterview ? "Prepare for your interview." : "Give this role a next move."}</h2><div className="next-action-role"><div className="company-avatar">{initials(job.company)}</div><div><strong>{job.role}</strong><span>{job.company} · {job.location || "Location not set"}</span></div></div><div className="next-action-meta"><CalendarClock size={15} /><span>{job.next_date ? `${due === 0 ? "Today" : due === 1 ? "Tomorrow" : dateLabel(job.next_date)} · ${dateLabel(job.next_date, true).split(", ").pop()}` : "No date set yet"}</span></div><p className="next-action-copy">{isInterview ? "Open the practice room and turn your experience into clear, confident proof." : "Open the role room to research the company and work through the plant cycle."}</p><button type="button" className="next-action-button" onClick={() => isInterview ? onMock(job) : onPrep(job)}>{isInterview ? "Practice interview" : "Open role plan"}<ArrowRight size={15} /></button><button type="button" className="next-action-secondary" onClick={() => onOpen(job)}>Edit role details</button></section>;
+    return <section className="next-action-card"><div className="next-action-eyebrow"><span className="pulse-dot" />Next action</div><h2>{isInterview ? "Prepare for your upcoming interview" : "Give this role a next move"}</h2><div className="next-action-role"><div className="company-avatar">{initials(job.company)}</div><div><strong>{job.role}</strong><span>{job.company} · {job.location || "Location not set"}</span></div></div><div className="next-action-meta"><CalendarClock size={15} /><span>{job.next_date ? `${isInterview ? "Interview · " : "Next step · "}${due === 0 ? "Today" : due === 1 ? "Tomorrow" : dateLabel(job.next_date)} · ${dateLabel(job.next_date, true).split(", ").pop()}` : isInterview ? "Interview date not scheduled" : "No next step date added"}</span></div><p className="next-action-copy">{isInterview ? "Rehearse the role-specific story, then get a clear coaching note before the conversation." : "Open the role room to research the company and define the next useful step."}</p><button type="button" className="next-action-button" onClick={() => isInterview ? onMock(job) : onPrep(job)}>{isInterview ? "Prepare now" : "Open role plan"}<ArrowRight size={15} /></button><button type="button" className="next-action-secondary" onClick={() => onOpen(job)}>View role</button></section>;
 }
 
 function RecentRoles({ jobs, onOpen }) {
@@ -48,8 +52,13 @@ export default function DashboardOverview({ jobs, setPage, openJob, onPrep, onMo
     const nextAction = useMemo(() => jobs.filter(job => job.next_date && job.status !== "Rejected").sort((a, b) => new Date(a.next_date) - new Date(b.next_date))[0] || jobs.find(job => job.status === "Interview") || jobs.find(job => job.status !== "Rejected") || null, [jobs]);
     const displayName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.user_metadata?.preferred_username || user?.email?.split("@")[0] || "there";
     const firstName = displayName.trim().split(/\s+/)[0] || "there";
+    const active = jobs.filter(job => !["Rejected", "Offer"].includes(job.status)).length;
+    const interviews = jobs.filter(job => job.status === "Interview").length;
+    const offers = jobs.filter(job => job.status === "Offer").length;
+    const upcoming = jobs.filter(job => job.next_date && job.status !== "Rejected").length;
     return <div className="dashboard-v2 account-aware-dashboard simple-dashboard">
         <div className="dashboard-intro"><div><span className="section-kicker">Your garden</span><h2>Welcome back, {firstName}.</h2><p>Add one role, see where it is growing, then prepare with intent.</p></div><div className="dashboard-intro-status"><span className="status-orb" />{jobs.length ? `${jobs.filter(job => job.status !== "Rejected").length} roles in motion` : "Ready for your first role"}</div></div>
+        <div className="dashboard-metrics" aria-label="Application overview"><DashboardMetric label="Active roles" value={active} detail="still in motion" /><DashboardMetric label="Applications" value={jobs.length} detail="tracked in your garden" /><DashboardMetric label="Interviews" value={interviews} detail={upcoming ? `${upcoming} next dates set` : "none scheduled"} /><DashboardMetric label="Offers" value={offers} detail="fully bloomed" /></div>
         <div className="dashboard-main-grid"><PlantCycle jobs={jobs} onApplications={() => setPage("applications")} /><NextAction job={nextAction} onOpen={openJob} onPrep={onPrep} onMock={onMock} onAdd={addJob} /></div>
         <div className="dashboard-secondary-grid"><RecentRoles jobs={jobs} onOpen={openJob} /><PreparationPath job={nextAction} onPrep={onPrep} onMock={onMock} /></div>
         <div className="dashboard-footnote"><CheckCircle2 size={15} /><span>Career Garden keeps the workflow small: add a role, grow it through the stages, and practice when the conversation is close.</span></div>

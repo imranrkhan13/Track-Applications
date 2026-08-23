@@ -143,9 +143,9 @@ export default function MockInterview({ jobs, selectedJob, setSelectedJob, userI
                 <div className="practice-intro">
                     <div className="practice-mark"><span>04</span><i /></div>
                     <div>
-                        <p className="eyebrow">Interview studio</p>
-                        <h2>Make the next answer easier to say.</h2>
-                        <p className="practice-subtitle">A quiet room to rehearse the moments that matter.</p>
+                        <p className="eyebrow">Practice interview</p>
+                        <h2>Rehearse the conversation before it happens.</h2>
+                        <p className="practice-subtitle">Answer once, review the signal, then make the next version sharper.</p>
                     </div>
                 </div>
                 <div className="practice-role-picker">
@@ -159,7 +159,7 @@ export default function MockInterview({ jobs, selectedJob, setSelectedJob, userI
                             reset();
                         }}
                     >
-                        {jobs.map(item => <option key={item.id} value={item.id}>{item.company} · {item.role}</option>)}
+                        {jobs.map(item => <option key={item.id} value={item.id}>{item.role || "Role not specified"} · {item.company || "Company not specified"} · {item.status}</option>)}
                     </select>
                 </div>
             </section>
