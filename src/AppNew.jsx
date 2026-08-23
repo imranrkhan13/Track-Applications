@@ -53,8 +53,8 @@ function Landing() {
         <div className="editorial-field editorial-field-right" aria-hidden="true" />
         <header className="editorial-nav">
             <a className="editorial-brand" href="#top" aria-label="Career Garden home"><span className="editorial-brand-mark"><Sprout size={18} /></span><span><b>Career Garden</b><small>your search, with roots</small></span></a>
-            <nav aria-label="Landing page"><a href="#method">The method</a><a href="#cycle">Six stages</a><a href="#practice">Practice</a></nav>
-            <button className="editorial-nav-cta" onClick={() => navigate("/login")}>Open the garden <ArrowRight size={14} /></button>
+            <nav aria-label="Landing page"><a href="#method">About</a><a href="#cycle">The cycle</a><a href="#practice">Practice</a></nav>
+            <button className="editorial-nav-cta" onClick={() => navigate("/login")}>Enter the garden <ArrowRight size={14} /></button>
         </header>
         <main id="top" className="editorial-page">
             <section className="editorial-masthead">
@@ -65,7 +65,7 @@ function Landing() {
 
             <section className="editorial-feature" id="method">
                 <div className="editorial-feature-copy">
-                    <div className="editorial-feature-meta"><span>01 / 06</span><span>Candidate operating system</span></div>
+                    <div className="editorial-feature-meta"><span>01 / 06</span><span>A calmer way to look for work</span></div>
                     <h2>Plant the work.<br /><em>Grow into the room.</em></h2>
                     <p>Career Garden turns a scattered job search into a place you can return to: every role, every signal, every next action, and the practice that makes the conversation easier.</p>
                     <button className="editorial-black-button" onClick={() => navigate("/login")}>Start with one role <ArrowRight size={15} /></button>
