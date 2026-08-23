@@ -2,11 +2,26 @@
  * PrepPageAI.jsx — Career Garden · AI Interview Prep + Supabase
  *
  * Features:
- *  - List of all saved preps for this user (with delete)
+ *  - List of all saved preps for this user (with two-step confirm delete)
  *  - Generate new plan → auto-saved to interview_preps table
  *  - Load any saved prep and continue where you left off
  *  - q_answers + done_projects auto-saved to DB on every change (debounced)
  *  - Gemini 1.5 Flash · VITE_GEMINI_KEY · 2 parallel calls
+ *
+ * Changes in this pass (colors/theme untouched — same --g/--gl/--gb/--gd/--gm vars):
+ *  - Fixed unmount leaks: debounce timer + progress ticker are now cleared on unmount
+ *    and async setState calls are guarded so they no-op after unmount
+ *  - generate() now checks for an authenticated user before insert instead of
+ *    crashing on user.id when auth.getUser() returns null
+ *  - Delete is now a two-step "click again to confirm" instead of instant/irreversible
+ *  - fetchPreps() and openPrep() now surface errors instead of silently swallowing them
+ *  - Expandable rows (phase headers, question headers, prep rows) are keyboard
+ *    accessible: role="button", tabIndex, Enter/Space handling
+ *  - Icon-only buttons (back, view, delete, refresh) have aria-labels
+ *  - NOTE: VITE_GEMINI_KEY is a client-exposed env var — it ships in the public JS
+ *    bundle and anyone can read it from devtools/network tab. Flagging again since
+ *    this has come up before in your other projects. Worth proxying through a
+ *    server/edge function before this goes anywhere near production traffic.
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -58,6 +73,7 @@ const CSS = `
 
 .pp-back{display:inline-flex;align-items:center;gap:7px;color:var(--g);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:20px;background:#fff;border:1px solid var(--border);padding:7px 14px;border-radius:99px;transition:all .15s;box-shadow:0 1px 4px rgba(0,0,0,.05)}
 .pp-back:hover{background:var(--gl);border-color:var(--gb);transform:translateX(-2px)}
+.pp-back:focus-visible{outline:2px solid var(--g);outline-offset:2px}
 
 .pp-hero{background:linear-gradient(135deg,#0a2e14 0%,#14532d 55%,#16a34a 100%);border-radius:22px;padding:30px 32px 26px;margin-bottom:22px;color:#fff;position:relative;overflow:hidden}
 .pp-hero::before{content:'';position:absolute;top:-70px;right:-70px;width:260px;height:260px;border-radius:50%;background:rgba(74,222,128,.08);pointer-events:none}
@@ -74,6 +90,7 @@ const CSS = `
 .preps-list{display:flex;flex-direction:column;gap:10px}
 .prep-row{display:flex;align-items:center;gap:12px;padding:14px 16px;border:1.5px solid var(--border);border-radius:14px;background:#fff;transition:all .16s;cursor:pointer}
 .prep-row:hover{border-color:var(--gb);background:var(--gl);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,.06)}
+.prep-row:focus-visible{outline:2px solid var(--g);outline-offset:2px}
 .prep-row-ic{width:40px;height:40px;border-radius:11px;background:var(--gl);border:1.5px solid var(--gb);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
 .prep-row-company{font-size:13.5px;font-weight:800;color:var(--t)}
 .prep-row-role{font-size:12px;color:var(--t3);margin-top:1px}
@@ -85,8 +102,10 @@ const CSS = `
 .prep-row-date{font-size:11px;color:var(--t3);display:flex;align-items:center;gap:4px}
 .prep-row-actions{display:flex;gap:6px;margin-left:auto;flex-shrink:0}
 .prep-row-btn{width:32px;height:32px;border-radius:8px;border:1.5px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .14s;color:var(--t3)}
+.prep-row-btn:focus-visible{outline:2px solid var(--g);outline-offset:2px}
 .prep-row-btn:hover.view{border-color:var(--gb);color:var(--g);background:var(--gl)}
 .prep-row-btn:hover.del{border-color:#fca5a5;color:#dc2626;background:#fff5f5}
+.prep-row-btn.del.confirm{border-color:#dc2626;background:#fee2e2;color:#dc2626;width:auto;padding:0 10px;font-size:11px;font-weight:700;font-family:'Poppins',sans-serif;gap:5px}
 .prep-empty{text-align:center;padding:40px 20px;color:var(--t3)}
 .prep-empty-icon{font-size:40px;margin-bottom:12px}
 .prep-empty-t{font-size:14px;font-weight:700;color:var(--t2);margin-bottom:6px}
@@ -104,10 +123,12 @@ const CSS = `
 .lvl-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
 .lvl-btn{padding:7px 16px;border-radius:10px;border:2px solid var(--border);background:#fff;font-family:'Poppins',sans-serif;font-size:12.5px;font-weight:600;color:var(--t2);cursor:pointer;transition:all .16s}
 .lvl-btn:hover{border-color:var(--gb);background:var(--gl)}
+.lvl-btn:focus-visible{outline:2px solid var(--g);outline-offset:2px}
 .lvl-btn.on{border-color:var(--g);background:var(--gl);color:var(--gd)}
 .gen-btn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:15px;border-radius:14px;border:none;background:linear-gradient(135deg,#0a2e14,#16a34a);color:#fff;font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(20,83,45,.3);transition:all .2s;margin-top:6px}
 .gen-btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(20,83,45,.4)}
 .gen-btn:disabled{opacity:.5;pointer-events:none}
+.gen-btn:focus-visible{outline:2px solid #fff;outline-offset:2px}
 
 /* ── LOADER ── */
 .loader-wrap{text-align:center;padding:56px 24px}
@@ -125,6 +146,7 @@ const CSS = `
 /* ── SAVE BADGE ── */
 .save-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--g);background:var(--gl);border:1px solid var(--gb);padding:4px 10px;border-radius:99px}
 .save-badge.saving{color:var(--t3);border-color:var(--border);background:#f8fafc}
+.save-badge.err{color:#dc2626;border-color:#fca5a5;background:#fff5f5}
 
 /* ── PLAN SECTIONS ── */
 .sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:16px}
@@ -153,6 +175,7 @@ const CSS = `
 .phase-list{display:flex;flex-direction:column;gap:10px}
 .phase{border:1.5px solid var(--border);border-radius:14px;overflow:hidden}
 .phase-hd{display:flex;align-items:center;gap:10px;padding:15px 17px;background:var(--gl);cursor:pointer;user-select:none}
+.phase-hd:focus-visible{outline:2px solid var(--g);outline-offset:-2px}
 .phase-num{width:28px;height:28px;border-radius:8px;background:var(--gd);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
 .phase-ttl{font-size:13.5px;font-weight:700;color:var(--t);flex:1}
 .phase-goal{font-size:11px;color:var(--t3);margin-top:2px}
@@ -175,12 +198,14 @@ const CSS = `
 .iq-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
 .iq-tab{padding:7px 14px;border-radius:10px;border:2px solid var(--border);background:#fff;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;color:var(--t2);cursor:pointer;transition:all .15s}
 .iq-tab:hover{border-color:var(--gb);background:var(--gl)}
+.iq-tab:focus-visible{outline:2px solid var(--g);outline-offset:2px}
 .iq-tab.on{border-color:var(--g);background:var(--gl);color:var(--gd)}
 .iq-list{display:flex;flex-direction:column;gap:8px}
 .iq-item{border:1.5px solid var(--border);border-radius:13px;overflow:hidden;transition:border-color .18s}
 .iq-item:hover{border-color:var(--gb)}
 .iq-item.open{border-color:var(--g)}
 .iq-hd{display:flex;align-items:flex-start;gap:10px;padding:14px 16px;cursor:pointer;background:var(--gl);user-select:none}
+.iq-hd:focus-visible{outline:2px solid var(--g);outline-offset:-2px}
 .iq-n{width:26px;height:26px;border-radius:7px;background:var(--gd);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;margin-top:1px}
 .iq-q{flex:1;font-size:13px;font-weight:600;color:var(--t);line-height:1.5}
 .iq-diff{font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:99px;flex-shrink:0;margin-top:1px}
@@ -252,6 +277,7 @@ const CSS = `
 .tip-txt{font-size:12.5px;color:var(--t2);line-height:1.6}
 .sec-btn{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:12px;border:2px solid var(--gb);background:#fff;color:var(--gd);font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
 .sec-btn:hover{background:var(--gl)}
+.sec-btn:focus-visible{outline:2px solid var(--g);outline-offset:2px}
 .err-box{display:flex;align-items:flex-start;gap:8px;color:#dc2626;font-size:12.5px;margin:8px 0;padding:10px 13px;background:#fff5f5;border:1.5px solid #fca5a5;border-radius:10px;line-height:1.5}
 
 @media(max-width:620px){
@@ -288,6 +314,16 @@ function companyEmoji(company = "") {
     return "🏢";
 }
 
+// Fires onActivate on Enter/Space — lets a non-button element behave like one.
+function onKeyActivate(fn) {
+    return (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            fn(e);
+        }
+    };
+}
+
 // ─── GEMINI API ───────────────────────────────────────────────────────────────
 async function callGemini(prompt) {
     const key = import.meta.env.VITE_GEMINI_KEY;
@@ -314,7 +350,9 @@ async function callGemini(prompt) {
 }
 
 function parseJSON(str) {
-    try { return JSON.parse(str); } catch { }
+    let parsed;
+    try { parsed = JSON.parse(str); } catch { parsed = undefined; }
+    if (parsed !== undefined) return parsed;
     try {
         const s = str.replace(/```json/gi, "").replace(/```/g, "").trim();
         const a = s.indexOf("{"), b = s.lastIndexOf("}");
@@ -409,7 +447,9 @@ export default function PrepPage({ job, onBack }) {
     const [view, setView] = useState("list");
     const [preps, setPreps] = useState([]);        // saved preps from DB
     const [loading, setLoading] = useState(true);      // initial DB fetch
+    const [listError, setListError] = useState("");    // error loading the list
     const [deleting, setDeleting] = useState(null);      // id being deleted
+    const [confirmDeleteId, setConfirmDeleteId] = useState(null); // two-step delete
 
     // form fields
     const [role, setRole] = useState((job && job.role) || "");
@@ -423,6 +463,7 @@ export default function PrepPage({ job, onBack }) {
     const [plan, setPlan] = useState(null);
     const [currentId, setCurrentId] = useState(null); // supabase row id
     const [saving, setSaving] = useState(false);
+    const [saveError, setSaveError] = useState(false);
 
     // progress
     const [progStep, setProgStep] = useState(0);
@@ -443,6 +484,20 @@ export default function PrepPage({ job, onBack }) {
     const [openPhases, setOpenPhases] = useState({ 0: true });
 
     const saveTimer = useRef(null);
+    const tickerRef = useRef(null);
+    const isMounted = useRef(true);
+    const confirmTimer = useRef(null);
+
+    // ── Lifecycle: guard against setState-after-unmount + clean up timers ──
+    useEffect(() => {
+        isMounted.current = true;
+        return () => {
+            isMounted.current = false;
+            clearTimeout(saveTimer.current);
+            clearInterval(tickerRef.current);
+            clearTimeout(confirmTimer.current);
+        };
+    }, []);
 
     // ── Load saved preps ────────────────────────────────────────────────────
     useEffect(() => {
@@ -451,25 +506,37 @@ export default function PrepPage({ job, onBack }) {
 
     async function fetchPreps() {
         setLoading(true);
+        setListError("");
         try {
             const { data, error } = await supabase
                 .from("interview_preps")
                 .select("id, role, company, level, created_at, plan")
                 .order("created_at", { ascending: false });
-            if (!error && data) setPreps(data);
-        } catch { }
-        setLoading(false);
+            if (!isMounted.current) return;
+            if (error) {
+                setListError("Couldn't load your saved preps. Please refresh.");
+            } else {
+                setPreps(data || []);
+            }
+        } catch {
+            if (isMounted.current) setListError("Couldn't load your saved preps. Please refresh.");
+        }
+        if (isMounted.current) setLoading(false);
     }
 
     // ── Open a saved prep ───────────────────────────────────────────────────
     async function openPrep(prep) {
-        // Fetch full row including q_answers and done_projects
+        setError("");
         const { data, error } = await supabase
             .from("interview_preps")
             .select("*")
             .eq("id", prep.id)
             .single();
-        if (error || !data) return;
+        if (!isMounted.current) return;
+        if (error || !data) {
+            setListError("Couldn't open that prep guide. Please try again.");
+            return;
+        }
 
         setRole(data.role);
         setCompany(data.company);
@@ -483,12 +550,31 @@ export default function PrepPage({ job, onBack }) {
         setView("plan");
     }
 
-    // ── Delete a prep ───────────────────────────────────────────────────────
-    async function deletePrep(id, e) {
+    // ── Delete a prep (two-step confirm) ────────────────────────────────────
+    function handleDeleteClick(id, e) {
         e.stopPropagation();
+        if (confirmDeleteId !== id) {
+            setConfirmDeleteId(id);
+            clearTimeout(confirmTimer.current);
+            confirmTimer.current = setTimeout(() => {
+                if (isMounted.current) setConfirmDeleteId(null);
+            }, 3000);
+            return;
+        }
+        clearTimeout(confirmTimer.current);
+        setConfirmDeleteId(null);
+        deletePrep(id);
+    }
+
+    async function deletePrep(id) {
         setDeleting(id);
-        await supabase.from("interview_preps").delete().eq("id", id);
-        setPreps(prev => prev.filter(p => p.id !== id));
+        const { error } = await supabase.from("interview_preps").delete().eq("id", id);
+        if (!isMounted.current) return;
+        if (error) {
+            setListError("Couldn't delete that prep guide. Please try again.");
+        } else {
+            setPreps(prev => prev.filter(p => p.id !== id));
+        }
         setDeleting(null);
     }
 
@@ -500,7 +586,8 @@ export default function PrepPage({ job, onBack }) {
         setProgStep(0);
         setView("loading");
 
-        const ticker = setInterval(() => {
+        tickerRef.current = setInterval(() => {
+            if (!isMounted.current) return;
             setProgStep(p => Math.min(p + 1, STEPS.length - 1));
         }, 2800);
 
@@ -509,7 +596,7 @@ export default function PrepPage({ job, onBack }) {
                 callGemini(prompt1(role, company, level, jd, notes)),
                 callGemini(prompt2(role, company, level, jd)),
             ]);
-            clearInterval(ticker);
+            clearInterval(tickerRef.current);
 
             const p1 = parseJSON(raw1);
             const p2 = parseJSON(raw2);
@@ -517,9 +604,14 @@ export default function PrepPage({ job, onBack }) {
 
             const merged = { ...(p1 || {}), ...(p2 || {}) };
 
-            // Save to Supabase
+            // Auth check — don't crash on user being null
+            const { data: userData, error: userErr } = await supabase.auth.getUser();
+            const user = userData?.user;
+            if (userErr || !user) {
+                throw new Error("You're signed out — please sign in again to save this guide.");
+            }
+
             setSaving(true);
-            const { data: { user } } = await supabase.auth.getUser();
             const { data: row, error: insertErr } = await supabase
                 .from("interview_preps")
                 .insert({
@@ -534,12 +626,15 @@ export default function PrepPage({ job, onBack }) {
                 })
                 .select("id")
                 .single();
+            if (!isMounted.current) return;
             setSaving(false);
 
             if (!insertErr && row) {
                 setCurrentId(row.id);
-                // Add to local list
                 setPreps(prev => [{ id: row.id, role, company, level, created_at: new Date().toISOString(), plan: merged }, ...prev]);
+            } else {
+                // Plan still renders — it just isn't saved. Surface that clearly.
+                setSaveError(true);
             }
 
             setPlan(merged);
@@ -549,10 +644,11 @@ export default function PrepPage({ job, onBack }) {
             setActiveQTab("technical");
             setView("plan");
         } catch (e) {
-            clearInterval(ticker);
+            clearInterval(tickerRef.current);
+            if (!isMounted.current) return;
             setSaving(false);
             console.error(e);
-            setError(`${e.message}`);
+            setError(e.message);
             setView("form");
         }
     }
@@ -561,11 +657,13 @@ export default function PrepPage({ job, onBack }) {
     const autosave = useCallback(async (answers, done) => {
         if (!currentId) return;
         setSaving(true);
-        await supabase
+        const { error } = await supabase
             .from("interview_preps")
             .update({ q_answers: answers, done_projects: done })
             .eq("id", currentId);
+        if (!isMounted.current) return;
         setSaving(false);
+        setSaveError(!!error);
     }, [currentId]);
 
     function updateAnswers(newAnswers) {
@@ -640,6 +738,12 @@ export default function PrepPage({ job, onBack }) {
                             </button>
                         </div>
 
+                        {listError && (
+                            <div className="err-box">
+                                <Pi n="info" size={14} color="#dc2626" style={{ flexShrink: 0, marginTop: 1 }} />{listError}
+                            </div>
+                        )}
+
                         {loading ? (
                             <div style={{ textAlign: "center", padding: "32px 0" }}>
                                 <div style={{ width: 32, height: 32, border: "3px solid var(--gm)", borderTopColor: "var(--g)", borderRadius: "50%", animation: "spin .7s linear infinite", margin: "0 auto 12px" }} />
@@ -654,7 +758,10 @@ export default function PrepPage({ job, onBack }) {
                         ) : (
                             <div className="preps-list">
                                 {preps.map(prep => (
-                                    <div key={prep.id} className="prep-row" onClick={() => openPrep(prep)}>
+                                    <div key={prep.id} className="prep-row" role="button" tabIndex={0}
+                                        onClick={() => openPrep(prep)}
+                                        onKeyDown={onKeyActivate(() => openPrep(prep))}
+                                        aria-label={`Open prep guide for ${prep.role} at ${prep.company}`}>
                                         <div className="prep-row-ic">{companyEmoji(prep.company)}</div>
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <div className="prep-row-company">{prep.company}</div>
@@ -667,14 +774,19 @@ export default function PrepPage({ job, onBack }) {
                                             </div>
                                         </div>
                                         <div className="prep-row-actions" onClick={e => e.stopPropagation()}>
-                                            <button className="prep-row-btn view" onClick={() => openPrep(prep)} title="Open">
+                                            <button className="prep-row-btn view" onClick={() => openPrep(prep)} title="Open" aria-label="Open prep guide">
                                                 <Pi n="eye" size={14} color="var(--t3)" />
                                             </button>
-                                            <button className="prep-row-btn del" title="Delete"
-                                                onClick={e => deletePrep(prep.id, e)}
+                                            <button
+                                                className={`prep-row-btn del${confirmDeleteId === prep.id ? " confirm" : ""}`}
+                                                title={confirmDeleteId === prep.id ? "Click again to confirm" : "Delete"}
+                                                aria-label={confirmDeleteId === prep.id ? "Confirm delete" : "Delete prep guide"}
+                                                onClick={e => handleDeleteClick(prep.id, e)}
                                                 disabled={deleting === prep.id}
                                                 style={{ opacity: deleting === prep.id ? .5 : 1 }}>
-                                                <Pi n="trash" size={14} color="var(--t3)" />
+                                                {confirmDeleteId === prep.id
+                                                    ? "Confirm?"
+                                                    : <Pi n="trash" size={14} color="var(--t3)" />}
                                             </button>
                                         </div>
                                     </div>
@@ -696,27 +808,27 @@ export default function PrepPage({ job, onBack }) {
 
                         <div className="inp-row">
                             <div>
-                                <label className="lbl">Role *</label>
-                                <input className="inp" placeholder="e.g. Frontend Engineer" value={role} onChange={e => setRole(e.target.value)} />
+                                <label className="lbl" htmlFor="pp-role">Role *</label>
+                                <input id="pp-role" className="inp" placeholder="e.g. Frontend Engineer" value={role} onChange={e => setRole(e.target.value)} />
                             </div>
                             <div>
-                                <label className="lbl">Company *</label>
-                                <input className="inp" placeholder="e.g. Anthropic" value={company} onChange={e => setCompany(e.target.value)} />
+                                <label className="lbl" htmlFor="pp-company">Company *</label>
+                                <input id="pp-company" className="inp" placeholder="e.g. Anthropic" value={company} onChange={e => setCompany(e.target.value)} />
                             </div>
                         </div>
 
-                        <label className="lbl">Your level</label>
-                        <div className="lvl-row">
+                        <label className="lbl" id="pp-level-lbl">Your level</label>
+                        <div className="lvl-row" role="radiogroup" aria-labelledby="pp-level-lbl">
                             {[{ v: "beginner", l: "🌱 Beginner" }, { v: "intermediate", l: "🌿 Intermediate" }, { v: "advanced", l: "🌳 Advanced" }].map(o => (
-                                <button key={o.v} className={`lvl-btn${level === o.v ? " on" : ""}`} onClick={() => setLevel(o.v)}>{o.l}</button>
+                                <button key={o.v} className={`lvl-btn${level === o.v ? " on" : ""}`} role="radio" aria-checked={level === o.v} onClick={() => setLevel(o.v)}>{o.l}</button>
                             ))}
                         </div>
 
-                        <label className="lbl">Job description <span style={{ color: "var(--t3)", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optional)</span></label>
-                        <textarea className="ta" placeholder="Paste the job description for a more targeted plan, or leave blank." value={jd} onChange={e => setJd(e.target.value)} />
+                        <label className="lbl" htmlFor="pp-jd">Job description <span style={{ color: "var(--t3)", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optional)</span></label>
+                        <textarea id="pp-jd" className="ta" placeholder="Paste the job description for a more targeted plan, or leave blank." value={jd} onChange={e => setJd(e.target.value)} />
 
-                        <label className="lbl">Anything else? <span style={{ color: "var(--t3)", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optional)</span></label>
-                        <input className="inp" style={{ marginBottom: 6 }} placeholder="e.g. 2 weeks to prep, weakest in system design, 2 yrs React…" value={notes} onChange={e => setNotes(e.target.value)} />
+                        <label className="lbl" htmlFor="pp-notes">Anything else? <span style={{ color: "var(--t3)", fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(optional)</span></label>
+                        <input id="pp-notes" className="inp" style={{ marginBottom: 6 }} placeholder="e.g. 2 weeks to prep, weakest in system design, 2 yrs React…" value={notes} onChange={e => setNotes(e.target.value)} />
 
                         {error && (
                             <div className="err-box">
@@ -731,7 +843,7 @@ export default function PrepPage({ job, onBack }) {
 
                 {/* ── VIEW: LOADING ── */}
                 {view === "loading" && (
-                    <div className="pp-card loader-wrap">
+                    <div className="pp-card loader-wrap" role="status" aria-live="polite">
                         <div className="loader-spin" />
                         <div className="loader-ttl">Building your expert prep guide…</div>
                         <div className="loader-sub">Two AI calls running in parallel — about 15–20 seconds.</div>
@@ -759,10 +871,12 @@ export default function PrepPage({ job, onBack }) {
                     <>
                         {/* Save status badge */}
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", marginBottom: 10, gap: 8 }}>
-                            <span className={`save-badge${saving ? " saving" : ""}`}>
+                            <span className={`save-badge${saving ? " saving" : ""}${!saving && saveError ? " err" : ""}`}>
                                 {saving
                                     ? <><Pi n="refresh" size={11} color="var(--t3)" style={{ animation: "spin .8s linear infinite" }} />Saving…</>
-                                    : <><Pi n="checkCircle" size={11} color="var(--g)" />Saved to your account</>
+                                    : saveError
+                                        ? <><Pi n="info" size={11} color="#dc2626" />Couldn't save — check your connection</>
+                                        : <><Pi n="checkCircle" size={11} color="var(--g)" />Saved to your account</>
                                 }
                             </span>
                         </div>
@@ -830,7 +944,9 @@ export default function PrepPage({ job, onBack }) {
                                 <div className="phase-list">
                                     {plan.roadmap.map((ph, i) => (
                                         <div key={i} className={`phase${openPhases[i] ? " open" : ""}`}>
-                                            <div className="phase-hd" onClick={() => setOpenPhases(p => ({ ...p, [i]: !p[i] }))}>
+                                            <div className="phase-hd" role="button" tabIndex={0} aria-expanded={!!openPhases[i]}
+                                                onClick={() => setOpenPhases(p => ({ ...p, [i]: !p[i] }))}
+                                                onKeyDown={onKeyActivate(() => setOpenPhases(p => ({ ...p, [i]: !p[i] })))}>
                                                 <div className="phase-num">{i + 1}</div>
                                                 <div style={{ flex: 1 }}>
                                                     <div className="phase-ttl">{ph.phase}</div>
@@ -881,14 +997,14 @@ export default function PrepPage({ job, onBack }) {
                                     </div>
                                 </div>
                             </div>
-                            <div className="iq-tabs">
+                            <div className="iq-tabs" role="tablist">
                                 {[
                                     { id: "technical", label: "Technical", n: plan.interviewQuestions?.technical?.length || 0 },
                                     { id: "behavioural", label: "Behavioural", n: plan.interviewQuestions?.behavioural?.length || 0 },
                                     { id: "system", label: "System Design", n: plan.interviewQuestions?.system?.length || 0 },
                                     { id: "company", label: "Company", n: plan.interviewQuestions?.company?.length || 0 },
                                 ].map(tab => (
-                                    <button key={tab.id} className={`iq-tab${activeQTab === tab.id ? " on" : ""}`} onClick={() => setActiveQTab(tab.id)}>
+                                    <button key={tab.id} className={`iq-tab${activeQTab === tab.id ? " on" : ""}`} role="tab" aria-selected={activeQTab === tab.id} onClick={() => setActiveQTab(tab.id)}>
                                         {tab.label}{tab.n > 0 && <span style={{ opacity: .6 }}> ({tab.n})</span>}
                                     </button>
                                 ))}
@@ -899,7 +1015,9 @@ export default function PrepPage({ job, onBack }) {
                                     const isOpen = !!openQs[qid];
                                     return (
                                         <div key={qid} className={`iq-item${isOpen ? " open" : ""}`}>
-                                            <div className="iq-hd" onClick={() => setOpenQs(p => ({ ...p, [qid]: !p[qid] }))}>
+                                            <div className="iq-hd" role="button" tabIndex={0} aria-expanded={isOpen}
+                                                onClick={() => setOpenQs(p => ({ ...p, [qid]: !p[qid] }))}
+                                                onKeyDown={onKeyActivate(() => setOpenQs(p => ({ ...p, [qid]: !p[qid] })))}>
                                                 <div className="iq-n">{i + 1}</div>
                                                 <div className="iq-q">{q.q}</div>
                                                 <span className={`iq-diff ${q.diff || "medium"}`}>{q.diff || "medium"}</span>
@@ -918,6 +1036,7 @@ export default function PrepPage({ job, onBack }) {
                                                     )}
                                                     <textarea
                                                         className="iq-ta"
+                                                        aria-label={`Your answer to: ${q.q}`}
                                                         placeholder={activeQTab === "behavioural" ? "STAR: Situation → Task → Action → Result" : "Write your answer here…"}
                                                         value={qAnswers[qid] || ""}
                                                         onChange={e => updateAnswers({ ...qAnswers, [qid]: e.target.value })}
