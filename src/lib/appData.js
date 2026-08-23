@@ -53,6 +53,7 @@ function saveRoleMeta(userId, jobId, job) {
         source: job.source || "",
         next_step: job.next_step || "",
         next_date: job.next_date || job.date || "",
+        deadline: job.deadline || "",
         updated_at: now(),
     };
     writeRoleMeta({ ...allMeta, [userId]: userMeta });

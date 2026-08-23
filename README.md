@@ -6,7 +6,7 @@ A calmer career workspace for managing job applications, preparing for a specifi
 
 The redesigned workspace brings the complete search loop into one product. Users can maintain a pipeline with statuses, next steps, dates, compensation, links, and notes; see all six plant stages on the dashboard; switch between table and board views; open analytics for response-rate and source-mix signals; and keep a lightweight activity timeline.
 
-The **Candidate Room** is the role-first preparation loop. For each saved application it provides source trails for the official role, hiring process, tech-stack signals, and company context; an evidence log; a six-stage task plan; targeted questions; and a direct handoff into mock interview practice. The source trails open verifiable web searches rather than presenting unverified company claims as facts. Task progress and research notes are stored locally per user and role until a server-side research provider/table is connected.
+The **Candidate Room** is the role-first preparation loop. For each saved application it provides source trails for the official role, hiring process, tech-stack signals, and company context; an evidence log; a six-stage task plan; targeted questions; and a direct handoff into mock interview practice. The **Research & build plan** action uses the Netlify server function to fetch a public job page, Google Docs/Drive export, or other readable URL without browser CORS issues, search the main company signals, and work backwards from the saved deadline or interview date. If a server Gemini key is configured, it also creates a grounded role brief; otherwise it still returns a source-backed dated template. Research results, task progress, and notes are stored locally per user and role until a server-side research table is connected.
 
 The **Role Prep** area creates a private preparation room for a selected application. It accepts a job description or interview notes, builds a role-specific positioning brief, suggests focused questions, and maintains a story bank for behavioral answers. The **Mock Interview** room provides three practice prompts, browser voice capture where supported, an editable transcript, a provider-routing selector, a structured rating rubric, and saved answer history.
 
@@ -42,6 +42,7 @@ Copy `.env.example` to `.env.local` when configuring the application. Client-sid
 | `DEEPGRAM_API_KEY` | Server-side Deepgram credential. Never expose it through `VITE_*`. |
 | `OPENAI_API_KEY` | Server-side OpenAI credential for Whisper fallback. Never expose it through `VITE_*`. |
 | `GRADIUM_API_KEY` | Server-side Gradium credential. Never expose it through `VITE_*`. |
+| `GEMINI_API_KEY` | Optional server-side Gemini credential for grounded role-plan synthesis. Never expose it through `VITE_*`. |
 
 ### Google login setup
 
