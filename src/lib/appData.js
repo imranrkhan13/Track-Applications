@@ -38,15 +38,22 @@ export async function getJobs(userId = "demo-user") {
 }
 
 export async function saveJob(job, userId = "demo-user") {
-    const id = job.id || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `job-${Date.now()}`);
-    const payload = { ...job, id, user_id: userId, updated_at: now(), created_at: job.created_at || now() };
+    const localId = job.id || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `job-${Date.now()}`);
+    const { id: _id, ...jobFields } = job;
+    const payload = { ...jobFields, user_id: userId, updated_at: now(), created_at: job.created_at || now() };
     if (isRealUser(userId)) {
-        const result = await supabase.from("jobs").upsert(payload).select().single();
+        // New rows must let Postgres/Supabase generate the identity id. Only
+        // send an id when this is an edit of a row that already exists remotely.
+        const remotePayload = job.id ? { ...payload, id: job.id } : payload;
+        const query = job.id
+            ? supabase.from("jobs").upsert(remotePayload).select().single()
+            : supabase.from("jobs").insert(remotePayload).select().single();
+        const result = await query;
         return requireRemote(result, "application");
     }
     const store = readStore();
-    const saved = { ...payload, id };
-    writeStore({ ...store, jobs: [saved, ...store.jobs.filter(item => item.id !== id)] });
+    const saved = { ...payload, id: localId };
+    writeStore({ ...store, jobs: [saved, ...store.jobs.filter(item => item.id !== localId)] });
     return saved;
 }
 
@@ -69,15 +76,22 @@ export async function getRoleBriefs(jobId, userId = "demo-user") {
 }
 
 export async function saveRoleBrief(brief, userId = "demo-user") {
-    const payload = { ...brief, id: brief.id || `brief-${Date.now()}`, user_id: userId, created_at: brief.created_at || now() };
+    const { id: _id, ...briefFields } = brief;
+    const localId = brief.id || `brief-${Date.now()}`;
+    const payload = { ...briefFields, user_id: userId, created_at: brief.created_at || now() };
     if (isRealUser(userId)) {
         const { jobId, ...rest } = payload;
-        const result = await supabase.from("role_briefs").upsert({ ...rest, job_id: jobId }).select().single();
+        const remotePayload = { ...rest, job_id: jobId, ...(brief.id ? { id: brief.id } : {}) };
+        const query = brief.id
+            ? supabase.from("role_briefs").upsert(remotePayload).select().single()
+            : supabase.from("role_briefs").insert(remotePayload).select().single();
+        const result = await query;
         return requireRemote(result, "role preparation");
     }
     const store = readStore();
-    writeStore({ ...store, roleBriefs: [payload, ...store.roleBriefs.filter(item => item.id !== payload.id)] });
-    return payload;
+    const saved = { ...payload, id: localId };
+    writeStore({ ...store, roleBriefs: [saved, ...store.roleBriefs.filter(item => item.id !== saved.id)] });
+    return saved;
 }
 
 function normalizeSession(row) { return { ...row, jobId: row.jobId || row.job_id }; }
@@ -91,15 +105,22 @@ export async function getSessions(jobId, userId = "demo-user") {
 }
 
 export async function saveSession(session, userId = "demo-user") {
-    const payload = { ...session, id: session.id || `session-${Date.now()}`, created_at: session.created_at || now() };
+    const { id: _id, ...sessionFields } = session;
+    const localId = session.id || `session-${Date.now()}`;
+    const payload = { ...sessionFields, created_at: session.created_at || now() };
     if (isRealUser(userId)) {
         const { jobId, ...rest } = payload;
-        const result = await supabase.from("interview_sessions").insert({ ...rest, user_id: userId, job_id: jobId }).select().single();
+        const remotePayload = { ...rest, user_id: userId, job_id: jobId, ...(session.id ? { id: session.id } : {}) };
+        const query = session.id
+            ? supabase.from("interview_sessions").upsert(remotePayload).select().single()
+            : supabase.from("interview_sessions").insert(remotePayload).select().single();
+        const result = await query;
         return normalizeSession(requireRemote(result, "interview session"));
     }
     const store = readStore();
-    writeStore({ ...store, sessions: [payload, ...store.sessions.filter(item => item.id !== payload.id)] });
-    return payload;
+    const saved = { ...payload, id: localId };
+    writeStore({ ...store, sessions: [saved, ...store.sessions.filter(item => item.id !== saved.id)] });
+    return saved;
 }
 
 export function resetDemoData() { localStorage.removeItem(STORAGE_KEY); }
