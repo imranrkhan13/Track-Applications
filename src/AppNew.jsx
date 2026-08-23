@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ArrowDown, ArrowRight, Check, Leaf, LockKeyhole, Mic, MoveUpRight, Sprout } from "lucide-react";
+import { ArrowRight, ArrowUp, Check, Leaf, LockKeyhole, Mic, MoveUpRight, Sprout } from "lucide-react";
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import Workspace from "./Workspace";
 import AuthCallback from "./AuthCallback";
@@ -100,7 +100,11 @@ function Landing() {
 
             <section className="editorial-final"><div><span className="editorial-section-kicker">06 · A place to begin</span><h2>Make space for<br /><em>the right work.</em></h2><p>Start with one role. Give it a next step. Let the system do the remembering.</p></div><button className="editorial-light-button" onClick={() => navigate("/login")}>Enter the garden <ArrowRight size={15} /></button></section>
         </main>
-        <footer className="editorial-footer"><a className="editorial-brand" href="#top"><span className="editorial-brand-mark"><Sprout size={18} /></span><span><b>Career Garden</b><small>your search, with roots</small></span></a><span>For the next thoughtful move.</span><a href="#top">Back to the top <ArrowDown size={14} /></a></footer>
+        <footer className="editorial-footer">
+            <div className="editorial-footer-head"><a className="editorial-brand" href="#top" aria-label="Career Garden home"><span className="editorial-brand-mark"><Sprout size={18} /></span><span><b>Career Garden</b><small>your search, with roots</small></span></a><p>One calm home for every role, every signal, and the next useful move.</p><a className="editorial-footer-cta" href="#method">Start with one role <MoveUpRight size={15} /></a></div>
+            <div className="editorial-footer-links"><div><span>Explore</span><a href="#method">Why it works</a><a href="#cycle">The growth cycle</a><a href="#practice">Practice</a></div><div><span>Six stages</span><a href="#cycle">Saved</a><a href="#cycle">Applied</a><a href="#cycle">Interview</a></div><div><span>Keep in mind</span><p>Progress is easier to trust when you can see the next small action.</p></div></div>
+            <div className="editorial-footer-base"><span>Career Garden / 2026</span><span>Made for thoughtful candidates</span><a href="#top">Back to top <ArrowUp size={14} /></a></div>
+        </footer>
     </div>;
 }
 

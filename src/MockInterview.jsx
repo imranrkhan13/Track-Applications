@@ -29,7 +29,7 @@ const questionLabels = {
 
 export default function MockInterview({ jobs, selectedJob, setSelectedJob, userId = "demo-user" }) {
     const [jobId, setJobId] = useState(selectedJob?.id || jobs.find(job => job.status === "Interview")?.id || jobs[0]?.id || "");
-    const job = jobs.find(item => item.id === jobId) || selectedJob || jobs[0];
+    const job = selectedJob || jobs.find(item => item.id === jobId) || jobs[0];
     const [questionIndex, setQuestionIndex] = useState(0);
     const [transcript, setTranscript] = useState("");
     const [live, setLive] = useState(false);
@@ -48,11 +48,11 @@ export default function MockInterview({ jobs, selectedJob, setSelectedJob, userI
     const wordCount = transcript.trim() ? transcript.trim().split(/\s+/).length : 0;
     const providerLabel = providers.find(item => item.id === provider)?.label || "Deepgram";
 
+    const activeJobId = job?.id;
     useEffect(() => {
-        if (!job) return;
-        setJobId(job.id);
-        getSessions(job.id, userId).then(setHistory);
-    }, [job?.id, userId]);
+        if (!activeJobId) return;
+        getSessions(activeJobId, userId).then(setHistory);
+    }, [activeJobId, userId]);
 
     useEffect(() => () => {
         recognitionRef.current?.stop?.();

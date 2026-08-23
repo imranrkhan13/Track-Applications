@@ -18,9 +18,10 @@ const focusFor = role => {
 
 export default function InterviewPrep({ jobs, selectedJob, setSelectedJob, onMock, onSaveBrief, userId = "demo-user" }) {
     const [jobId, setJobId] = useState(selectedJob?.id || jobs.find(job => job.status === "Interview")?.id || jobs[0]?.id || "");
-    const job = jobs.find(item => item.id === jobId) || selectedJob || jobs[0];
+    const job = selectedJob || jobs.find(item => item.id === jobId) || jobs[0];
     const [brief, setBrief] = useState(null); const [loading, setLoading] = useState(false); const [jd, setJd] = useState(""); const [stories, setStories] = useState(["A difficult trade-off", "A measurable outcome", "A collaboration moment"]); const [activeTab, setActiveTab] = useState("brief");
-    useEffect(() => { if (!job) return; setJobId(job.id); setLoading(true); getRoleBriefs(job.id, userId).then(items => { const saved = items[0]; setBrief(saved || null); setJd(saved?.jd || ""); setStories(saved?.stories || ["A difficult trade-off", "A measurable outcome", "A collaboration moment"]); setLoading(false); }); }, [job?.id, userId]);
+    const activeJobId = job?.id;
+    useEffect(() => { if (!activeJobId) return; getRoleBriefs(activeJobId, userId).then(items => { const saved = items[0]; setBrief(saved || null); setJd(saved?.jd || ""); setStories(saved?.stories || ["A difficult trade-off", "A measurable outcome", "A collaboration moment"]); setLoading(false); }); }, [activeJobId, userId]);
     const focus = useMemo(() => focusFor(job?.role || ""), [job?.role]);
     const questions = brief?.questions?.length ? brief.questions : defaultQuestions;
     const generate = async () => { if (!job) return; setLoading(true); const generated = { id: brief?.id, jobId: job.id, company: job.company, role: job.role, focus: focus.join(", "), jd, questions: defaultQuestions.map((question, index) => index === 1 ? `Why is your experience a strong match for ${job.role} at ${job.company}?` : question), stories, created_at: new Date().toISOString() }; const saved = await onSaveBrief(generated); setBrief(saved); setLoading(false); };
