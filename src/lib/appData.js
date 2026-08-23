@@ -38,13 +38,13 @@ export async function getJobs(userId = "demo-user") {
 }
 
 export async function saveJob(job, userId = "demo-user") {
-    const payload = { ...job, user_id: userId, updated_at: now(), created_at: job.created_at || now() };
+    const id = job.id || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `job-${Date.now()}`);
+    const payload = { ...job, id, user_id: userId, updated_at: now(), created_at: job.created_at || now() };
     if (isRealUser(userId)) {
         const result = await supabase.from("jobs").upsert(payload).select().single();
         return requireRemote(result, "application");
     }
     const store = readStore();
-    const id = payload.id || `job-${Date.now()}`;
     const saved = { ...payload, id };
     writeStore({ ...store, jobs: [saved, ...store.jobs.filter(item => item.id !== id)] });
     return saved;

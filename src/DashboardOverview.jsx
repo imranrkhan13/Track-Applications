@@ -51,12 +51,12 @@ function GrowthHealth({ jobs, active, interviews, offers }) {
 }
 
 function Pipeline({ jobs, onApplications }) {
-    const stages = PLANT_STAGES.slice(0, 5).map(stage => ({ ...stage, count: jobs.filter(job => job.status === stage.id).length }));
+    const stages = PLANT_STAGES.map(stage => ({ ...stage, count: jobs.filter(job => job.status === stage.id).length }));
     const maxCount = Math.max(...stages.map(stage => stage.count), 1);
     const current = stages.find(stage => stage.count > 0) || stages[0];
     return <section className="dashboard-card pipeline-v2 growth-journey-card">
         <div className="dashboard-card-head"><div><span className="section-kicker">Growth journey</span><h2>Where your search stands</h2></div><button type="button" className="inline-action" onClick={onApplications}>View applications <ArrowRight size={14} /></button></div>
-        <div className="growth-journey-subtitle"><Leaf size={14} /> Each opportunity moves from seed to bloom.</div>
+        <div className="growth-journey-subtitle"><Leaf size={14} /> Every opportunity has six visible stages—from first seed to what you learned.</div>
         <div className="pipeline-v2-track" role="list" aria-label="Application pipeline">
             {stages.map((stage, index) => <button type="button" role="listitem" className={`pipeline-v2-stage ${stage.id === current.id ? "is-growing" : ""}`} key={stage.id} onClick={onApplications} title={`View ${stage.count} ${stage.label} applications`}>
                 <div className="pipeline-v2-top"><span className="pipeline-v2-index">0{index + 1}</span><strong>{stage.count}</strong></div>
@@ -68,6 +68,16 @@ function Pipeline({ jobs, onApplications }) {
         <div className="pipeline-v2-footer"><span><i className="stage-dot" />{current.title}</span><span>{jobs.filter(job => job.status !== "Rejected").length} roles in motion</span></div>
     </section>;
 }
+
+function CandidateFlow({ job, onRoleRoom, onMock }) {
+    const company = job?.company || "your next company";
+    const role = job?.role || "your next role";
+    return <section className="dashboard-card candidate-flow-card"><div className="dashboard-card-head"><div><span className="section-kicker">Candidate workflow</span><h2>Turn one application into a full preparation loop.</h2></div><span className="candidate-flow-badge"><SparkleIcon /> role-first</span></div><p className="candidate-flow-intro">For <strong>{role}</strong> at <strong>{company}</strong>, move from evidence to confidence without losing the thread.</p><div className="candidate-flow-steps"><button type="button" onClick={() => onRoleRoom(job)}><span className="candidate-flow-number">01</span><span className="candidate-flow-icon"><SearchIcon /></span><strong>Research</strong><small>Hiring process, stack, product, and values.</small><ArrowRight size={14} /></button><button type="button" onClick={() => onRoleRoom(job)}><span className="candidate-flow-number">02</span><span className="candidate-flow-icon"><ClipboardIcon /></span><strong>Plan</strong><small>Six stages of small, finishable tasks.</small><ArrowRight size={14} /></button><button type="button" onClick={() => onMock(job)}><span className="candidate-flow-number">03</span><span className="candidate-flow-icon"><Mic size={16} /></span><strong>Practice</strong><small>Say the proof out loud and get coach notes.</small><ArrowRight size={14} /></button></div></section>;
+}
+
+function SearchIcon() { return <span aria-hidden="true">⌕</span>; }
+function ClipboardIcon() { return <span aria-hidden="true">✓</span>; }
+function SparkleIcon() { return <span aria-hidden="true">✦</span>; }
 
 function NextAction({ job, onOpen, onPrep, onAdd }) {
     if (!job) return <section className="next-action-card empty-next"><div className="next-action-eyebrow"><span className="pulse-dot" />Next action</div><h2>Plant your first opportunity.</h2><p>Once you add an application, Career Garden will surface the next useful move here.</p><button type="button" className="next-action-button" onClick={onAdd}><Plus size={15} />Add application</button></section>;
@@ -107,12 +117,12 @@ function GardenActivity({ jobs, onOpen }) {
     </section>;
 }
 
-export default function DashboardOverview({ jobs, setPage, openJob, addJob, user }) {
+export default function DashboardOverview({ jobs, setPage, openJob, onPrep, onMock, addJob, user }) {
     const active = jobs.filter(job => !["Rejected", "Offer"].includes(job.status)).length;
     const interviews = jobs.filter(job => job.status === "Interview").length;
     const offers = jobs.filter(job => job.status === "Offer").length;
     const followUps = jobs.filter(job => job.next_date && job.status !== "Rejected" && daysAway(job.next_date) <= 3).length;
-    const nextAction = useMemo(() => jobs.filter(job => job.next_date && job.status !== "Rejected").sort((a, b) => new Date(a.next_date) - new Date(b.next_date))[0] || jobs.find(job => job.status === "Interview") || null, [jobs]);
+    const nextAction = useMemo(() => jobs.filter(job => job.next_date && job.status !== "Rejected").sort((a, b) => new Date(a.next_date) - new Date(b.next_date))[0] || jobs.find(job => job.status === "Interview") || jobs.find(job => job.status !== "Rejected") || null, [jobs]);
     const recent = jobs.filter(job => job.status !== "Rejected").slice(0, 5);
     const displayName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.user_metadata?.preferred_username || user?.email?.split("@")[0] || "there";
     const firstName = displayName.trim().split(/\s+/)[0] || "there";
@@ -121,6 +131,7 @@ export default function DashboardOverview({ jobs, setPage, openJob, addJob, user
         <GrowthHealth jobs={jobs} active={active} interviews={interviews} offers={offers} />
         <div className="metrics-strip"><Metric label="Active applications" value={active} detail={`${active ? active : "No"} opportunities growing`} icon={BriefcaseBusiness} stage="Saved" tone="active" /><Metric label="Interviews" value={interviews} detail={interviews ? `${interviews} conversation${interviews === 1 ? "" : "s"} ahead` : "Nothing budding yet"} icon={Mic} stage="Interview" tone="interview" /><Metric label="Offers" value={offers} detail={offers ? "Roles fully bloomed" : "Your next bloom is ahead"} icon={Target} stage="Offer" tone="offer" /><Metric label="Follow-ups" value={followUps} detail={followUps ? `${followUps} due in the next 3 days` : "Everything is cared for"} icon={TrendingUp} stage="Applied" tone="follow" /></div>
         <div className="dashboard-main-grid"><Pipeline jobs={jobs} onApplications={() => setPage("applications")} /><NextAction job={nextAction} onOpen={openJob} onPrep={job => { openJob(job); setPage("prep"); }} onAdd={addJob} /></div>
+        <CandidateFlow job={nextAction} onRoleRoom={onPrep} onMock={onMock} />
         <div className="dashboard-secondary-grid"><RecentApplications jobs={recent} onOpen={openJob} /><GardenActivity jobs={jobs} onOpen={openJob} /></div>
         <div className="dashboard-footnote"><CheckCircle2 size={15} /><span>Career Garden only shows actions and numbers from the applications you have actually saved.</span></div>
     </div>;

@@ -7,6 +7,10 @@ import { PLANT_STAGES } from "./lib/plantStages";
 import StageIcon from "./StageIcon";
 import heroDesk from "./assets/hero-desk.png";
 
+function isDemoSession() { try { return window.sessionStorage.getItem("career-garden-demo-session") === "true"; } catch { return false; } }
+function startDemoSession() { try { window.sessionStorage.setItem("career-garden-demo-session", "true"); return true; } catch { return false; } }
+function clearDemoSession() { try { window.sessionStorage.removeItem("career-garden-demo-session"); return true; } catch { return false; } }
+
 const benefits = [
     { icon: Sprout, title: "Capture the signal", body: "Save the role, context, and reason it matters before the tab disappears." },
     { icon: Leaf, title: "Know the next move", body: "Every application gets a clear status, owner, date, and small action." },
@@ -69,14 +73,16 @@ function Login() {
             setError(authError?.message || "Google sign-in could not be started. Please try again or use the demo garden.");
         } finally { setLoading(false); }
     };
-    return <div className="new-auth"><div className="auth-story"><button type="button" className="auth-back" onClick={() => navigate("/")}><ArrowRight size={14} style={{ transform: "rotate(180deg)" }} />Back to the garden</button><div className="auth-story-copy"><span className="section-kicker light-kicker">Your next move starts here</span><h1>Keep the good<br /><em>work growing.</em></h1><p>Every role has a story. Career Garden helps you keep hold of it from first click to final conversation.</p></div><div className="auth-story-footer"><span><LockKeyhole size={13} />Your demo stays in this browser.</span><span><Leaf size={13} />Your progress gets easier to see.</span></div></div><div className="auth-panel"><div className="auth-panel-inner"><Brand /><div className="auth-heading"><span className="auth-overline">Welcome back</span><h2>Come tend to<br />your garden.</h2><p>Choose how you want to continue.</p></div>{error && <div className="auth-error" role="alert">{error}</div>}<button type="button" className="google-login" onClick={signIn} disabled={loading}><span className="google-mark">G</span><span>{loading ? "Opening Google…" : "Continue with Google"}</span><ArrowRight size={15} /></button><div className="auth-separator"><span>or</span></div><button type="button" className="demo-login" onClick={() => navigate("/dashboard")}><Sprout size={16} /><span>Open the demo garden</span><ArrowRight size={15} /></button><p className="auth-footnote">Demo mode is ready now. Production Google login requires a configured Supabase project.</p><div className={`auth-status ${isSupabaseConfigured ? "ready" : "demo"}`}><i />{isSupabaseConfigured ? "Google auth is configured" : "Demo mode is active"}</div></div></div></div>;
+    return <div className="new-auth"><div className="auth-story"><button type="button" className="auth-back" onClick={() => navigate("/")}><ArrowRight size={14} style={{ transform: "rotate(180deg)" }} />Back to the garden</button><div className="auth-story-copy"><span className="section-kicker light-kicker">Your next move starts here</span><h1>Keep the good<br /><em>work growing.</em></h1><p>Every role has a story. Career Garden helps you keep hold of it from first click to final conversation.</p></div><div className="auth-story-footer"><span><LockKeyhole size={13} />Your demo stays in this browser.</span><span><Leaf size={13} />Your progress gets easier to see.</span></div></div><div className="auth-panel"><div className="auth-panel-inner"><Brand /><div className="auth-heading"><span className="auth-overline">Welcome back</span><h2>Come tend to<br />your garden.</h2><p>Choose how you want to continue.</p></div>{error && <div className="auth-error" role="alert">{error}</div>}<button type="button" className="google-login" onClick={signIn} disabled={loading}><span className="google-mark">G</span><span>{loading ? "Opening Google…" : "Continue with Google"}</span><ArrowRight size={15} /></button><div className="auth-separator"><span>or</span></div><button type="button" className="demo-login" onClick={() => { startDemoSession(); navigate("/dashboard"); }}><Sprout size={16} /><span>Open the demo garden</span><ArrowRight size={15} /></button><p className="auth-footnote">Demo mode is ready now. Production Google login requires a configured Supabase project.</p><div className={`auth-status ${isSupabaseConfigured ? "ready" : "demo"}`}><i />{isSupabaseConfigured ? "Google auth is configured" : "Demo mode is active"}</div></div></div></div>;
 }
 
 function Authenticated() {
     const navigate = useNavigate();
-    const [user, setUser] = useState(isSupabaseConfigured ? null : DEMO_USER);
-    const [authChecked, setAuthChecked] = useState(!isSupabaseConfigured);
+    const demoSession = isDemoSession();
+    const [user, setUser] = useState(demoSession || !isSupabaseConfigured ? DEMO_USER : null);
+    const [authChecked, setAuthChecked] = useState(demoSession || !isSupabaseConfigured);
     useEffect(() => {
+        if (demoSession) return undefined;
         if (!supabase) return undefined;
         let active = true;
         supabase.auth.getSession().then(({ data }) => {
@@ -91,8 +97,8 @@ function Authenticated() {
             else { setUser(null); navigate("/login", { replace: true }); }
         });
         return () => { active = false; listener.subscription.unsubscribe(); };
-    }, [navigate]);
-    const signOut = async () => { if (supabase) await supabase.auth.signOut(); setUser(isSupabaseConfigured ? null : DEMO_USER); navigate("/"); };
+    }, [demoSession, navigate]);
+    const signOut = async () => { clearDemoSession(); if (supabase && !demoSession) await supabase.auth.signOut(); setUser(isSupabaseConfigured ? null : DEMO_USER); navigate("/"); };
     if (!authChecked || (isSupabaseConfigured && !user)) return <div className="loading-state"><div className="spinner" /><b>Checking your garden</b><span>Restoring your Supabase session…</span></div>;
     return <Workspace user={user} onSignOut={signOut} />;
 }

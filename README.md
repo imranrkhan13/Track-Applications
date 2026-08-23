@@ -4,7 +4,9 @@ A calmer career workspace for managing job applications, preparing for a specifi
 
 ## What is included
 
-The redesigned workspace brings the complete search loop into one product. Users can maintain a pipeline with statuses, next steps, dates, compensation, links, and notes; switch between table and board views; open analytics for response-rate and source-mix signals; and keep a lightweight activity timeline.
+The redesigned workspace brings the complete search loop into one product. Users can maintain a pipeline with statuses, next steps, dates, compensation, links, and notes; see all six plant stages on the dashboard; switch between table and board views; open analytics for response-rate and source-mix signals; and keep a lightweight activity timeline.
+
+The **Candidate Room** is the role-first preparation loop. For each saved application it provides source trails for the official role, hiring process, tech-stack signals, and company context; an evidence log; a six-stage task plan; targeted questions; and a direct handoff into mock interview practice. The source trails open verifiable web searches rather than presenting unverified company claims as facts. Task progress and research notes are stored locally per user and role until a server-side research provider/table is connected.
 
 The **Role Prep** area creates a private preparation room for a selected application. It accepts a job description or interview notes, builds a role-specific positioning brief, suggests focused questions, and maintains a story bank for behavioral answers. The **Mock Interview** room provides three practice prompts, browser voice capture where supported, an editable transcript, a provider-routing selector, a structured rating rubric, and saved answer history.
 
@@ -61,7 +63,8 @@ Do not commit provider keys to this repository or place them in browser-exposed 
 | --- | --- |
 | `src/AppNew.jsx` | Landing page, login/demo entrypoint, and authenticated workspace routing. |
 | `src/Workspace.jsx` | Application shell, navigation, dashboard, pipeline, analytics, settings, and job drawer. |
-| `src/InterviewPrep.jsx` | Role-specific brief, question set, and story-bank workflow. |
+| `src/RoleRoom.jsx` | Company research trails, six-stage candidate task plan, evidence log, and targeted questions. |
+| `src/InterviewPrep.jsx` | Legacy role-specific brief, question set, and story-bank workflow retained for compatibility. |
 | `src/MockInterview.jsx` | Voice practice room, provider selector, transcript, rating, and session history. |
 | `src/lib/appData.js` | Local persistence and Supabase-aware data helpers. |
 | `src/lib/voiceInterview.js` | Voice provider status, browser recognition, server hooks, and local scoring fallback. |
