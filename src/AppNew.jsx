@@ -5,6 +5,7 @@ import Workspace from "./Workspace";
 import { DEMO_USER, isSupabaseConfigured, supabase } from "./lib/supabase";
 import { PLANT_STAGES } from "./lib/plantStages";
 import StageIcon from "./StageIcon";
+import heroDesk from "./assets/hero-desk.png";
 
 const benefits = [
     { icon: Sprout, title: "Capture the signal", body: "Save the role, context, and reason it matters before the tab disappears." },
@@ -32,15 +33,13 @@ function Landing() {
                     <div className="hero-actions"><button className="primary-cta" onClick={() => navigate("/login")}>Start growing <ArrowRight size={16} /></button><a className="text-cta" href="#cycle">See how it works <ArrowDown size={15} /></a></div>
                     <div className="hero-trust"><span><Check size={13} />Private by default</span><span><Check size={13} />Demo ready in seconds</span><span><Check size={13} />No spreadsheet required</span></div>
                 </div>
-                <div className="hero-scene reveal-scene" aria-label="An animated plant growing from a career search garden">
-                    <div className="scene-glow glow-one" /><div className="scene-glow glow-two" /><div className="scene-grid" />
+                <div className="hero-scene hero-photo-scene reveal-scene" aria-label="Person working at a computer between a thriving and a dried plant">
+                    <img className="hero-photo" src={heroDesk} alt="Person working at a desk with a thriving plant and a dried plant" />
+                    <div className="hero-photo-overlay" />
                     <div className="scene-caption"><span>THE SEARCH, IN MOTION</span><b>01 — 06</b></div>
                     <div className="scene-card scene-card-top"><small>GARDEN HEALTH</small><strong>74%</strong><i><em /></i></div>
                     <div className="scene-card scene-card-bottom"><small>NEXT CARE</small><strong>Practice an answer</strong><span>20 minutes · Role prep</span></div>
-                    <div className="scene-orbit orbit-one" /><div className="scene-orbit orbit-two" />
-                    <div className="scene-ground" /><div className="scene-pot"><span /><i /></div>
-                    <div className="scene-plant"><div className="plant-stem stem-one" /><div className="plant-stem stem-two" /><span className="plant-leaf leaf-one" /><span className="plant-leaf leaf-two" /><span className="plant-leaf leaf-three" /><b className="plant-bloom"><Leaf size={18} strokeWidth={1.6} /></b></div>
-                    <div className="scene-label">A small system<br /><b>for the next right move.</b></div>
+                    <div className="hero-photo-label">A small system<br /><b>for the next right move.</b></div>
                 </div>
             </section>
             <section className="signal-bar"><div><strong>01</strong><span>Capture the opportunity</span></div><div><strong>06</strong><span>Stages with a purpose</span></div><div><strong>∞</strong><span>Progress you can feel</span></div><p>Less scramble.<br /><b>More signal.</b></p></section>
