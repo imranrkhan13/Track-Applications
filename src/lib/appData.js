@@ -1,7 +1,15 @@
 import { supabase } from "./supabase";
 
 const STORAGE_KEY = "track-applications-v2";
+const REMOTE_ROLE_META_KEY = "track-applications-role-meta-v1";
 const now = () => new Date().toISOString();
+
+// The deployed jobs table predates the richer role-workspace fields. Keep the
+// Supabase payload intentionally small and translate the UI's next_date to the
+// existing date column. Extra workspace context is hydrated from local meta
+// data below, so adding a role remains reliable without throwing away the
+// preparation experience.
+const REMOTE_JOB_FIELDS = ["company", "role", "location", "status", "salary", "date", "url", "notes", "user_id", "created_at"];
 
 const seed = {
     jobs: [
@@ -24,23 +32,86 @@ function readStore() {
 
 function writeStore(next) { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
 function isRealUser(userId) { return Boolean(supabase && userId && userId !== "demo-user"); }
+
+function readRoleMeta() {
+    try { return JSON.parse(localStorage.getItem(REMOTE_ROLE_META_KEY)) || {}; } catch { return {}; }
+}
+
+function writeRoleMeta(next) {
+    try { localStorage.setItem(REMOTE_ROLE_META_KEY, JSON.stringify(next)); } catch { /* local metadata is a best-effort enhancement */ }
+}
+
+function roleMetaFor(userId, jobId) {
+    return readRoleMeta()[userId]?.[jobId] || {};
+}
+
+function saveRoleMeta(userId, jobId, job) {
+    if (!userId || !jobId) return;
+    const allMeta = readRoleMeta();
+    const userMeta = allMeta[userId] || {};
+    userMeta[jobId] = {
+        source: job.source || "",
+        next_step: job.next_step || "",
+        next_date: job.next_date || job.date || "",
+        updated_at: now(),
+    };
+    writeRoleMeta({ ...allMeta, [userId]: userMeta });
+}
+
+function removeRoleMeta(userId, jobId) {
+    const allMeta = readRoleMeta();
+    if (!allMeta[userId]?.[jobId]) return;
+    const userMeta = { ...allMeta[userId] };
+    delete userMeta[jobId];
+    writeRoleMeta({ ...allMeta, [userId]: userMeta });
+}
+
+function hydrateRemoteJob(job, userId) {
+    return {
+        ...job,
+        next_date: job.next_date || job.date || "",
+        ...roleMetaFor(userId, job.id),
+    };
+}
+
+function toRemoteJob(job, userId) {
+    const payload = {
+        company: job.company?.trim() || "",
+        role: job.role?.trim() || "",
+        location: job.location?.trim() || "",
+        status: job.status || "Saved",
+        salary: job.salary?.trim() || "",
+        date: job.next_date || job.date || null,
+        url: job.url?.trim() || "",
+        notes: job.notes?.trim() || "",
+        user_id: userId,
+        created_at: job.created_at || now(),
+    };
+    return Object.fromEntries(REMOTE_JOB_FIELDS.filter(field => Object.prototype.hasOwnProperty.call(payload, field)).map(field => [field, payload[field]]));
+}
+
 function requireRemote(result, resource) {
-    if (result.error) throw new Error(`Could not load ${resource} from Supabase: ${result.error.message}`);
+    if (result.error) {
+        const error = new Error(`Could not load ${resource} from Supabase: ${result.error.message}`);
+        error.code = result.error.code;
+        error.details = result.error.details;
+        error.hint = result.error.hint;
+        throw error;
+    }
     return result.data;
 }
 
 export async function getJobs(userId = "demo-user") {
     if (isRealUser(userId)) {
         const result = await supabase.from("jobs").select("*").eq("user_id", userId).order("created_at", { ascending: false });
-        return requireRemote(result, "applications") || [];
+        return (requireRemote(result, "applications") || []).map(job => hydrateRemoteJob(job, userId));
     }
     return readStore().jobs;
 }
 
 export async function saveJob(job, userId = "demo-user") {
     const localId = job.id || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `job-${Date.now()}`);
-    const { id: _id, ...jobFields } = job;
-    const payload = { ...jobFields, user_id: userId, updated_at: now(), created_at: job.created_at || now() };
+    const payload = toRemoteJob(job, userId);
     if (isRealUser(userId)) {
         // New rows must let Postgres/Supabase generate the identity id. Only
         // send an id when this is an edit of a row that already exists remotely.
@@ -49,10 +120,12 @@ export async function saveJob(job, userId = "demo-user") {
             ? supabase.from("jobs").upsert(remotePayload).select().single()
             : supabase.from("jobs").insert(remotePayload).select().single();
         const result = await query;
-        return requireRemote(result, "application");
+        const saved = requireRemote(result, "application");
+        saveRoleMeta(userId, saved.id, job);
+        return hydrateRemoteJob({ ...job, ...saved }, userId);
     }
     const store = readStore();
-    const saved = { ...payload, id: localId };
+    const saved = { ...job, ...payload, id: localId, next_date: job.next_date || job.date || "", updated_at: now() };
     writeStore({ ...store, jobs: [saved, ...store.jobs.filter(item => item.id !== localId)] });
     return saved;
 }
@@ -61,6 +134,7 @@ export async function deleteJob(id, userId = "demo-user") {
     if (isRealUser(userId)) {
         const result = await supabase.from("jobs").delete().eq("id", id).eq("user_id", userId);
         requireRemote(result, "application");
+        removeRoleMeta(userId, id);
         return;
     }
     const store = readStore();
