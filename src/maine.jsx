@@ -657,8 +657,12 @@ function getLearnResources(jobs) {
 // ─── DONUT CHART ─────────────────────────────────────────────────────────────
 function DonutChart({ counts, total }) {
     const size = 118, r = 40, cx = 59, cy = 59, circ = 2 * Math.PI * r;
-    let off = 0;
-    const arcs = ALL_STAGES.filter(s => counts[s] > 0).map(s => { const d = counts[s] / total * circ; const a = { stage: s, d, off, color: STAGES[s].color }; off += d; return a; });
+    const visibleStages = ALL_STAGES.filter(s => counts[s] > 0);
+    const arcs = visibleStages.map((s, index) => {
+        const d = counts[s] / total * circ;
+        const off = visibleStages.slice(0, index).reduce((sum, stage) => sum + (counts[stage] / total * circ), 0);
+        return { stage: s, d, off, color: STAGES[s].color };
+    });
     return (
         <div className="donut-wrap">
             <svg width={size} height={size} style={{ flexShrink: 0 }}>
@@ -708,7 +712,7 @@ function AddModal({ editing, initialStage = "Applied", onClose, onSave }) {
         const fn = e => { if (e.key === "Escape") onClose(); };
         document.addEventListener("keydown", fn);
         return () => document.removeEventListener("keydown", fn);
-    }, []);
+    }, [onClose]);
 
     async function save() {
         if (!co.trim() || !role.trim()) return;
@@ -954,12 +958,11 @@ function Palette({ jobs, onClose, onAdd, navigate }) {
     const hits = q.length >= 1 ? jobs.filter(j => j.company.toLowerCase().includes(q.toLowerCase()) || j.role.toLowerCase().includes(q.toLowerCase())).slice(0, 6).map(j => ({ ic: STAGES[j.status]?.icon || "briefcase", main: j.company, sub: `${j.role} · ${j.status}`, tag: j.status, action: () => { onClose(); navigate(`/job/${j.id}`) } })) : [];
     const acts = q.length < 1 ? ACTIONS : ACTIONS.filter(a => a.main.toLowerCase().includes(q.toLowerCase()) || a.sub.toLowerCase().includes(q.toLowerCase()));
     const all = [...hits, ...acts];
-    useEffect(() => setHi(0), [q]);
     function onKey(e) { if (e.key === "ArrowDown") { e.preventDefault(); setHi(h => Math.min(h + 1, all.length - 1)) } if (e.key === "ArrowUp") { e.preventDefault(); setHi(h => Math.max(h - 1, 0)) } if (e.key === "Enter" && all[hi]) all[hi].action(); if (e.key === "Escape") onClose(); }
     return (
         <div className="cp-bg" onClick={e => e.target === e.currentTarget && onClose()}>
             <div className="cp-box">
-                <div className="cp-row"><Ic n="search" size={17} color="var(--gb)" /><input ref={ref} className="cp-inp" placeholder="Search your jobs or go to a page…" value={q} onChange={e => setQ(e.target.value)} onKeyDown={onKey} /><button className="cp-esc" onClick={onClose}>Esc</button></div>
+            <div className="cp-row"><Ic n="search" size={17} color="var(--gb)" /><input ref={ref} className="cp-inp" placeholder="Search your jobs or go to a page…" value={q} onChange={e => { setQ(e.target.value); setHi(0); }} onKeyDown={onKey} /><button className="cp-esc" onClick={onClose}>Esc</button></div>
                 <div className="cp-list">
                     {all.length === 0 ? <div className="cp-empty">No results for "{q}"</div> : <>
                         {hits.length > 0 && <div className="cp-sec">Your jobs</div>}
@@ -1051,8 +1054,9 @@ function StatsPage({ jobs }) {
     const offerRate = (cnt.Interview + cnt.Screening) > 0 ? Math.round((cnt.Offer / (cnt.Interview + cnt.Screening)) * 100) : 0;
     const active = total - cnt.Rejected;
     const oldest = jobs.length ? jobs.reduce((a, b) => new Date(a.created_at || 0) < new Date(b.created_at || 0) ? a : b, jobs[0]) : null;
-    const daysSince = oldest ? Math.floor((Date.now() - new Date(oldest.created_at)) / 86400000) : 0;
-    const weeks = useMemo(() => { const w = Array(8).fill(0); const now = Date.now(); jobs.forEach(j => { if (!j.created_at) return; const i = Math.floor((now - new Date(j.created_at)) / 86400000 / 7); if (i < 8) w[7 - i]++; }); return w; }, [jobs]);
+    const [now] = useState(() => Date.now());
+    const daysSince = oldest ? Math.floor((now - new Date(oldest.created_at)) / 86400000) : 0;
+    const weeks = useMemo(() => { const w = Array(8).fill(0); jobs.forEach(j => { if (!j.created_at) return; const i = Math.floor((now - new Date(j.created_at)) / 86400000 / 7); if (i < 8) w[7 - i]++; }); return w; }, [jobs, now]);
     const wMax = Math.max(...weeks, 1);
     const barMax = Math.max(...ALL_STAGES.map(s => cnt[s]), 1);
     const recent = [...jobs].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)).slice(0, 7);
@@ -1302,7 +1306,6 @@ export default function Main({ user }) {
     const qp = new URLSearchParams(loc.search);
     const showStats = qp.get("view") === "stats";
     const showLearn = qp.get("view") === "learn";
-    const showPrep = !!prepJob;
 
     const meta = user?.user_metadata || {};
     const name = meta.full_name || meta.name || user?.email?.split("@")[0] || "there";
@@ -1313,7 +1316,17 @@ export default function Main({ user }) {
     const hr = new Date().getHours();
     const greeting = hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening";
 
-    useEffect(() => { load(); }, [user.id]);
+    const load = useCallback(async () => {
+        setLoading(true);
+        const { data, error } = await supabase.from("jobs").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
+        if (error) toast("Could not load jobs", "err");
+        else setJobs(data || []);
+        setLoading(false);
+    }, [toast, user.id]);
+
+    // Initial data hydration is intentionally triggered after mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    useEffect(() => { load(); }, [load]);
     useEffect(() => {
         const fn = e => {
             if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); setPalette(p => !p); }
@@ -1327,14 +1340,6 @@ export default function Main({ user }) {
         document.addEventListener("mousedown", fn);
         return () => document.removeEventListener("mousedown", fn);
     }, []);
-
-    async function load() {
-        setLoading(true);
-        const { data, error } = await supabase.from("jobs").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
-        if (error) toast("Could not load jobs", "err");
-        else setJobs(data || []);
-        setLoading(false);
-    }
 
     async function save(d) {
         const p = { company: d.company, role: d.role, status: d.status, date: d.date, salary: d.salary, location: d.location, url: d.url, notes: d.notes, deadline: d.deadline || null, user_id: user.id };

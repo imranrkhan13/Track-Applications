@@ -350,7 +350,9 @@ async function callGemini(prompt) {
 }
 
 function parseJSON(str) {
-    try { return JSON.parse(str); } catch { }
+    let parsed;
+    try { parsed = JSON.parse(str); } catch { parsed = undefined; }
+    if (parsed !== undefined) return parsed;
     try {
         const s = str.replace(/```json/gi, "").replace(/```/g, "").trim();
         const a = s.indexOf("{"), b = s.lastIndexOf("}");
@@ -500,7 +502,6 @@ export default function PrepPage({ job, onBack }) {
     // ── Load saved preps ────────────────────────────────────────────────────
     useEffect(() => {
         fetchPreps();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     async function fetchPreps() {

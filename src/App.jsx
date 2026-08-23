@@ -9,12 +9,12 @@ import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import React from "react";
 import {
     BrowserRouter, Routes, Route, Navigate,
-    useNavigate, useLocation
+    useNavigate
 } from "react-router-dom";
-import { motion } from 'framer-motion';
-import { Sprout, MousePointerClick, LayoutDashboard, BarChart3, Brain, Bell, Search, GitBranch } from 'lucide-react';
+import { Sprout, LayoutDashboard, BarChart3, Brain, Bell, Search, GitBranch, ArrowRight, Check, Timer, Sparkles } from 'lucide-react';
 
 import { supabase } from "./lib/supabase";
+import heroDesk from "./assets/hero-desk.png";
 /* ─────────────────────────── Supabase ──────────────────────────── */
 
 /* ─────────────────────────── Lazy imports ───────────────────────── */
@@ -22,251 +22,80 @@ const MainApp = lazy(() => import("./maine"));
 
 /* ─────────────────────────── Global CSS ─────────────────────────── */
 const GLOBAL_CSS = `
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap');
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
-    body{font-family:'Poppins',sans-serif;background:#f4fbf4;color:#0d1f0d;overflow-x:hidden}
-    ::-webkit-scrollbar{width:5px}
-    ::-webkit-scrollbar-track{background:transparent}
-    ::-webkit-scrollbar-thumb{background:#86efac;border-radius:99px}
-
-    :root{
-      --g950:#052e16;--g900:#14532d;--g800:#166534;--g700:#15803d;
-      --g600:#16a34a;--g500:#22c55e;--g400:#4ade80;--g300:#86efac;
-      --g200:#bbf7d0;--g100:#dcfce7;--g50:#f0fdf4;
-      --ease-spring:cubic-bezier(.34,1.56,.64,1);
-      --ease-out:cubic-bezier(.22,1,.36,1);
-    }
-
-    /* ── HERO ── */
-    .hero{
-      position:relative;min-height:120vh;width:100%;
-      display:flex;align-items:center;justify-content:center;
-      overflow:hidden;background:#052e16;
-    }
-    .hero-bg-layer{position:absolute;inset:0;z-index:1}
-    .hero-full-img{width:100%;height:100%;object-fit:cover;opacity:.85}
-    .hero-overlay{
-      position:absolute;inset:0;
-      background:radial-gradient(circle at center,rgba(5,46,22,.2) 0%,rgba(5,46,22,.7) 100%);
-    }
-    .hero-content-overlay{
-      position:relative;z-index:10;
-      display:flex;flex-direction:column;align-items:center;text-align:center;
-      width:100%;max-width:1100px;padding:140px 24px 80px;
-    }
-    .hero-h1{
-      font-size:clamp(48px,8vw,92px);color:#ffffff!important;
-      text-shadow:0 4px 30px rgba(0,0,0,.5);line-height:1;
-      font-weight:800;letter-spacing:-.052em;margin-bottom:24px;
-      animation:fadeUp .8s .08s ease both;
-    }
-    .hero-h1 em{color:#86efac!important;font-style:italic;text-shadow:0 0 20px rgba(134,239,172,.4)}
-    .hero-sub{
-      font-size:clamp(16px,1.8vw,20px);color:rgba(255,255,255,.9)!important;
-      text-shadow:0 2px 10px rgba(0,0,0,.3);font-weight:500;
-      max-width:580px;margin:0 auto 46px;line-height:1.7;
-      animation:fadeUp .8s .16s ease both;
-    }
-    .hero-btns{
-      display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
-      margin-bottom:72px;animation:fadeUp .8s .24s ease both;
-    }
-    .preview-wrap{
-      position:relative;width:100%;max-width:960px;margin:0 auto;
-      animation:fadeUp .9s .38s ease both;
-      filter:drop-shadow(0 30px 60px rgba(0,0,0,.4));
-    }
-    .preview-glow{
-      position:absolute;inset:-50px;pointer-events:none;
-      background:radial-gradient(ellipse at 50% 80%,rgba(34,197,94,.18) 0%,transparent 65%);
-    }
-    .preview-win{
-      position:relative;z-index:1;border-radius:22px;overflow:hidden;
-      background:rgba(255,255,255,.1)!important;
-      backdrop-filter:blur(25px) saturate(160%);
-      -webkit-backdrop-filter:blur(25px) saturate(160%);
-      border:1px solid rgba(255,255,255,.2)!important;
-      box-shadow:inset 0 0 20px rgba(255,255,255,.1);
-    }
-    .preview-bar{
-      background:linear-gradient(to right,rgba(240,253,244,.9),rgba(231,250,234,.9));
-      padding:14px 20px;border-bottom:1px solid rgba(209,250,229,.6);
-      display:flex;align-items:center;gap:8px;
-    }
-    .pdot{width:12px;height:12px;border-radius:50%}
-    .purl{
-      flex:1;margin:0 14px;background:rgba(255,255,255,.75);
-      border:1px solid rgba(209,250,229,.8);border-radius:9px;
-      padding:6px 14px;font-size:11.5px;color:#6b7280;font-weight:500;
-    }
-    .preview-body{
-      padding:20px;display:grid;
-      grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;
-    }
-    .pcard{
-      border-radius:14px;padding:16px 12px;text-align:center;
-      border:1px solid;transition:transform .3s var(--ease-spring);cursor:default;
-      background:rgba(255,255,255,.92)!important;
-      box-shadow:0 4px 12px rgba(0,0,0,.08);
-    }
-    .pcard:hover{transform:translateY(-4px) scale(1.02)}
-    .pcard-emoji{font-size:22px;margin-bottom:6px}
-    .pcard-co{font-size:12.5px;font-weight:800;color:#0d1f0d;margin-bottom:2px}
-    .pcard-role{font-size:10px;color:#4b7a5c;font-weight:500;margin-bottom:8px}
-    .pcard-tag{display:inline-block;padding:3px 9px;border-radius:99px;font-size:9px;font-weight:700;letter-spacing:.06em}
-
-    /* ── NAV ── */
-    .lnav{
-      position:fixed;top:0;width:100%;z-index:1000;
-      display:flex;justify-content:space-between;align-items:center;
-      padding:24px 60px;transition:all .4s var(--ease-out);
-    }
-    .lnav-logo{font-weight:800;font-size:22px;color:#fff;display:flex;align-items:center;gap:8px}
-    .lnav-links{display:flex;gap:32px;list-style:none}
-    .lnav-links a{color:#fff;text-decoration:none;font-weight:500;opacity:.8;transition:.3s}
+    body{font-family:'DM Sans',sans-serif;background:#f5f4ef;color:#17221b;overflow-x:hidden}
+    ::-webkit-scrollbar{width:7px}
+    ::-webkit-scrollbar-track{background:#f5f4ef}
+    ::-webkit-scrollbar-thumb{background:#b7c6b1;border-radius:99px}
+    :root{--ink:#17221b;--muted:#667269;--moss:#46624c;--deep:#263b2e;--leaf:#bfdc82;--sage:#e8ede4;--paper:#f5f4ef;--white:#fff;--line:#dbe2d9;--coral:#cf7d5e;--ease:cubic-bezier(.22,1,.36,1)}
+    button,a{font:inherit}
+    button{cursor:pointer}
+    .landing-page{background:var(--paper);overflow:hidden}
+    .lnav{position:fixed;top:0;left:0;width:100%;z-index:1000;display:flex;justify-content:space-between;align-items:center;padding:22px clamp(22px,5vw,72px);color:#fff;transition:all .35s var(--ease)}
+    .lnav.stuck{background:rgba(245,244,239,.9);color:var(--ink);padding-top:14px;padding-bottom:14px;backdrop-filter:blur(18px);border-bottom:1px solid rgba(219,226,217,.8)}
+    .lnav-logo{display:flex;align-items:center;gap:10px;color:inherit;font-weight:700;letter-spacing:-.04em;font-size:17px}
+    .lnav-mark{display:grid;place-items:center;width:31px;height:31px;border-radius:10px;background:var(--leaf);color:var(--deep)}
+    .lnav-links{display:flex;align-items:center;gap:34px;list-style:none}
+    .lnav-links a{color:inherit;text-decoration:none;font-size:13px;font-weight:600;opacity:.76;transition:opacity .2s}
     .lnav-links a:hover{opacity:1}
-    .lnav-cta{
-      background:#fff;color:#052e16;border:none;padding:12px 24px;
-      border-radius:99px;font-weight:700;cursor:pointer;
-      font-family:'Poppins',sans-serif;transition:all .2s;
-    }
-    .lnav-cta:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(255,255,255,.3)}
-    .lnav.stuck{
-      background:rgba(255,255,255,.85);backdrop-filter:blur(20px);
-      padding:16px 60px;border-bottom:1px solid rgba(0,0,0,.05);
-    }
-    .lnav.stuck .lnav-logo,.lnav.stuck .lnav-links a{color:#052e16}
-    .lnav.stuck .lnav-cta{background:#052e16;color:#fff}
-
-    /* ── BUTTONS ── */
-    .btn-hero-primary{
-      background:var(--g950);color:#fff;border:none;border-radius:99px;
-      padding:16px 38px;font-family:'Poppins',sans-serif;font-size:15.5px;font-weight:700;
-      cursor:pointer;transition:all .3s var(--ease-spring);
-      box-shadow:0 8px 30px rgba(5,46,22,.32),inset 0 1px 0 rgba(255,255,255,.12);
-    }
-    .btn-hero-primary:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 14px 44px rgba(5,46,22,.44)}
-    .btn-hero-secondary{
-      background:rgba(255,255,255,.82);color:var(--g900);
-      border:1.5px solid var(--g200);border-radius:99px;
-      padding:15px 32px;font-family:'Poppins',sans-serif;font-size:15px;font-weight:600;
-      cursor:pointer;transition:all .3s var(--ease-spring);backdrop-filter:blur(8px);
-    }
-    .btn-hero-secondary:hover{background:#fff;border-color:var(--g400);transform:translateY(-2px)}
-
-    /* ── BADGE ── */
-    .hero-badge{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:7px 18px;border-radius:99px;
-      background:rgba(220,252,231,.82);border:1px solid var(--g200);
-      font-size:11.5px;font-weight:700;color:var(--g700);
-      letter-spacing:.08em;text-transform:uppercase;
-      margin-bottom:32px;backdrop-filter:blur(8px);
-      animation:fadeUp .8s ease both;
-    }
-    .hero-badge-dot{width:7px;height:7px;border-radius:50%;background:var(--g500);animation:pulse 2s ease infinite}
-
-    /* ── LOGOS ── */
-    .logos-strip{position:relative;z-index:1;padding:60px 24px;text-align:center;background:#052e16}
-    .logos-label{font-size:11.5px;font-weight:600;color:rgba(255,255,255,.3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:28px}
-    .logos-row{display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap}
-    .logo-name{font-size:17px;font-weight:700;color:rgba(255,255,255,.25);letter-spacing:-.02em;transition:color .25s;cursor:default}
-    .logo-name:hover{color:rgba(255,255,255,.5)}
-
-    /* ── KEYFRAMES ── */
-    @keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-    @keyframes scaleIn{from{opacity:0;transform:scale(.92) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}50%{box-shadow:0 0 0 8px rgba(34,197,94,0)}}
-    @keyframes treeBob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-14px) rotate(2deg)}}
-    @keyframes ctaFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-18px) rotate(2.5deg)}}
-
-    /* ── REVEAL ── */
-    .reveal{opacity:0;transform:translateY(36px);transition:opacity .7s var(--ease-out),transform .7s var(--ease-out)}
-    .reveal.visible{opacity:1;transform:translateY(0)}
-    .d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}
-
-    /* ── FEAT CARDS ── */
-    .feat-card .front{opacity:1;transform:scale(1) translateY(0);transition:all .5s cubic-bezier(.22,1,.36,1)}
-    .feat-card:hover .front{opacity:0;transform:scale(.88) translateY(-12px)}
-    .feat-card .back{opacity:0;transform:translateY(24px);transition:all .5s cubic-bezier(.22,1,.36,1);background:#059669}
-    .feat-card:hover .back{opacity:1;transform:translateY(0)}
-    .feat-card .accent{width:32px;background:#e2e8f0;transition:all .5s}
-    .feat-card:hover .accent{width:48px;background:#34d399}
-    .feat-card:hover{border-color:#10b981!important;box-shadow:0 8px 40px rgba(16,185,129,.18)!important}
-
-    /* ── CTA ── */
-    .cta-section{position:relative;z-index:1;padding:128px 24px;text-align:center;overflow:hidden}
-    .cta-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(34,197,94,.1) 0%,transparent 65%);pointer-events:none}
-    .cta-tree{font-size:74px;display:inline-block;margin-bottom:20px;animation:ctaFloat 6s ease-in-out infinite}
-    .cta-h{font-size:clamp(34px,5.5vw,64px);font-weight:800;color:var(--g950);letter-spacing:-.048em;line-height:1.08;margin-bottom:16px}
-    .cta-sub{font-size:18px;color:#4b5563;margin-bottom:42px}
-
-    /* ── FOOTER ── */
-    .site-footer{
-      position:relative;z-index:1;border-top:1px solid var(--g100);
-      padding:34px 48px;display:flex;align-items:center;
-      justify-content:space-between;flex-wrap:wrap;gap:12px;background:#f4fbf4;
-    }
-    .footer-logo{font-size:15.5px;font-weight:800;color:var(--g900);letter-spacing:-.04em}
-    .footer-copy{font-size:12.5px;color:#9ca3af}
-
-    /* ── AUTH ── */
-    .auth-wrap{
-      min-height:100vh;display:flex;align-items:center;justify-content:center;
-      padding:24px;position:relative;z-index:1;
-      background:radial-gradient(ellipse 70% 55% at 50% -5%,#d1fae5,#f4fbf4 60%);
-    }
-    .auth-card{
-      background:#fff;border:1px solid var(--g100);border-radius:28px;
-      padding:44px 36px;width:100%;max-width:420px;
-      box-shadow:0 28px 80px rgba(5,46,22,.11);
-      animation:scaleIn .48s var(--ease-spring) both;
-    }
-    .auth-tree{text-align:center;font-size:56px;display:block;margin-bottom:16px;animation:treeBob 5s ease-in-out infinite}
-    .auth-h{text-align:center;font-size:27px;font-weight:800;color:var(--g950);letter-spacing:-.045em;margin-bottom:8px}
-    .auth-p{text-align:center;font-size:14.5px;color:#9ca3af;margin-bottom:30px;line-height:1.6}
-    .auth-err{background:#fef2f2;border:1.5px solid #fecaca;border-radius:12px;padding:11px 15px;font-size:13px;color:#dc2626;margin-bottom:18px;text-align:center;font-weight:500}
-    .google-btn{
-      width:100%;padding:14px;border:1.5px solid #e5e7eb;border-radius:14px;
-      background:#fff;display:flex;align-items:center;justify-content:center;
-      gap:11px;font-family:'Poppins',sans-serif;font-size:14.5px;font-weight:600;
-      color:#374151;cursor:pointer;transition:all .25s var(--ease-spring);
-    }
-    .google-btn:hover{border-color:#d1d5db;box-shadow:0 6px 20px rgba(0,0,0,.09);transform:translateY(-2px)}
-    .google-btn:disabled{opacity:.55;pointer-events:none}
-    .google-btn svg{width:20px;height:20px;flex-shrink:0}
-    .auth-back{
-      width:100%;margin-top:12px;padding:12px;background:none;
-      border:1.5px solid var(--g100);border-radius:13px;
-      font-family:'Poppins',sans-serif;font-size:13.5px;font-weight:600;
-      color:var(--g700);cursor:pointer;transition:all .2s;
-    }
-    .auth-back:hover{background:var(--g50);border-color:var(--g200)}
-    .auth-note{text-align:center;font-size:11.5px;color:#9ca3af;margin-top:18px;line-height:1.65}
-
-    /* ── LOADING ── */
-    .loading-full{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;background:#f4fbf4}
-    .loading-ring{width:44px;height:44px;border-radius:50%;border:3.5px solid var(--g100);border-top-color:var(--g500);animation:spin .75s linear infinite}
-    .loading-label{font-size:13.5px;color:#9ca3af;font-family:'Poppins',sans-serif;font-weight:500}
-
-    /* ── RESPONSIVE ── */
-    @media(max-width:820px){
-      .lnav,.lnav.stuck{padding:14px 20px}
-      .lnav-links{display:none}
-      .preview-body{grid-template-columns:1fr 1fr 1fr}
-    }
-    @media(max-width:520px){
-      .preview-body{grid-template-columns:1fr 1fr}
-    }
-
-    /* ── SCROLL ANIMATIONS ── */
-    @keyframes scroll-v{from{transform:translateY(0)}to{transform:translateY(-50%)}}
-    @keyframes scroll-v-reverse{from{transform:translateY(-50%)}to{transform:translateY(0)}}
-    .animate-scroll-v{animation:scroll-v 35s linear infinite}
-    .animate-scroll-v-reverse{animation:scroll-v-reverse 50s linear infinite}
+    .lnav-cta{border:1px solid rgba(255,255,255,.45);border-radius:999px;background:rgba(255,255,255,.13);color:inherit;padding:10px 16px;font-size:12px;font-weight:700;transition:all .2s}
+    .lnav-cta:hover{background:var(--leaf);border-color:var(--leaf);color:var(--deep);transform:translateY(-1px)}
+    .lnav.stuck .lnav-cta{background:var(--deep);border-color:var(--deep);color:#fff}
+    .hero{position:relative;min-height:790px;display:flex;align-items:center;isolation:isolate;color:#fff;background:#1b2921}
+    .hero-bg-layer{position:absolute;inset:0;z-index:-2}
+    .hero-full-img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+    .hero-overlay{position:absolute;inset:0;background:linear-gradient(90deg,rgba(12,23,17,.96) 0%,rgba(12,23,17,.84) 34%,rgba(12,23,17,.2) 71%,rgba(12,23,17,.3) 100%),linear-gradient(0deg,rgba(12,23,17,.42),transparent 45%)}
+    .hero-inner{width:min(1240px,100%);margin:0 auto;padding:150px clamp(22px,5vw,72px) 104px;display:grid;grid-template-columns:minmax(0,1fr) minmax(270px,380px);gap:44px;align-items:end}
+    .hero-copy{max-width:680px}
+    .hero-badge{display:inline-flex;align-items:center;gap:9px;color:#dbe9cc;background:rgba(191,220,130,.12);border:1px solid rgba(191,220,130,.35);border-radius:999px;padding:8px 13px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;animation:fadeUp .7s both}
+    .hero-badge-dot{width:7px;height:7px;border-radius:50%;background:var(--leaf);box-shadow:0 0 0 5px rgba(191,220,130,.13)}
+    .hero-h1{font-size:clamp(48px,7.2vw,92px);line-height:.96;letter-spacing:-.075em;font-weight:600;margin:24px 0 24px;max-width:750px;animation:fadeUp .7s .08s both}
+    .hero-h1 em{font-family:'Fraunces',serif;color:var(--leaf);font-style:italic;font-weight:500;letter-spacing:-.06em}
+    .hero-sub{max-width:550px;color:rgba(255,255,255,.74);font-size:17px;line-height:1.65;margin-bottom:32px;animation:fadeUp .7s .16s both}
+    .hero-btns{display:flex;align-items:center;gap:13px;flex-wrap:wrap;animation:fadeUp .7s .24s both}
+    .btn-hero-primary,.btn-hero-secondary{border-radius:999px;padding:14px 20px;display:inline-flex;align-items:center;justify-content:center;gap:9px;font-size:13px;font-weight:700;transition:all .25s var(--ease)}
+    .btn-hero-primary{background:var(--leaf);color:var(--deep);border:1px solid var(--leaf);box-shadow:0 12px 28px rgba(0,0,0,.16)}
+    .btn-hero-primary:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(0,0,0,.26);background:#cbe79a}
+    .btn-hero-secondary{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.3)}
+    .btn-hero-secondary:hover{background:rgba(255,255,255,.16);transform:translateY(-2px)}
+    .hero-meta{display:flex;align-items:center;gap:14px;margin-top:34px;color:rgba(255,255,255,.58);font-size:12px;animation:fadeUp .7s .32s both}
+    .hero-avatars{display:flex;padding-left:8px}
+    .hero-avatar{width:27px;height:27px;margin-left:-8px;border-radius:50%;border:2px solid #27382c;display:grid;place-items:center;font-size:10px;font-weight:700;color:var(--deep)}
+    .hero-avatar:nth-child(1){background:#e8c5a3}.hero-avatar:nth-child(2){background:#d4a57e}.hero-avatar:nth-child(3){background:#b9d188}.hero-avatar:nth-child(4){background:#d2d7c8}
+    .hero-side{display:flex;justify-content:flex-end;padding-bottom:8px;animation:fadeUp .8s .28s both}
+    .hero-proof{width:100%;max-width:320px;padding:20px;border:1px solid rgba(255,255,255,.22);background:rgba(20,34,25,.56);backdrop-filter:blur(15px);border-radius:22px;box-shadow:0 24px 60px rgba(0,0,0,.22)}
+    .hero-proof-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;color:rgba(255,255,255,.64);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+    .hero-proof-top span:last-child{color:var(--leaf);font-size:10px;letter-spacing:0;text-transform:none}
+    .hero-proof h2{font-size:27px;line-height:1.06;letter-spacing:-.06em;font-weight:600;margin-bottom:8px}
+    .hero-proof p{color:rgba(255,255,255,.58);font-size:12px;line-height:1.5;margin-bottom:19px}
+    .proof-bar{height:7px;background:rgba(255,255,255,.14);border-radius:99px;overflow:hidden;margin-bottom:16px}
+    .proof-bar span{display:block;width:68%;height:100%;background:var(--leaf);border-radius:inherit}
+    .proof-rows{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .proof-row{border-top:1px solid rgba(255,255,255,.14);padding-top:10px}
+    .proof-row strong{display:block;font-size:16px;font-weight:600;color:#fff}.proof-row span{font-size:10px;color:rgba(255,255,255,.52)}
+    .hero-scroll{position:absolute;bottom:25px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:9px;color:rgba(255,255,255,.5);font-size:10px;letter-spacing:.13em;text-transform:uppercase}
+    .hero-scroll::before{content:'';width:1px;height:26px;background:rgba(255,255,255,.38)}
+    .logos-strip{display:flex;align-items:center;justify-content:space-between;gap:28px;padding:20px clamp(22px,5vw,72px);background:var(--deep);color:#fff}
+    .logos-label{color:rgba(255,255,255,.54);font-size:11px;white-space:nowrap}.logos-row{display:flex;gap:clamp(18px,4vw,48px);align-items:center;flex-wrap:wrap;justify-content:flex-end}.logo-name{font-size:14px;font-weight:600;letter-spacing:-.03em;color:rgba(255,255,255,.58)}
+    .section-wrap{width:min(1180px,100%);margin:0 auto;padding:112px clamp(22px,5vw,60px)}
+    .section-kicker{display:flex;align-items:center;gap:9px;color:var(--moss);font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;margin-bottom:16px}.section-kicker::before{content:'';width:22px;height:1px;background:var(--coral)}
+    .section-title{font-size:clamp(40px,5.5vw,70px);line-height:.98;letter-spacing:-.073em;font-weight:600;color:var(--ink);max-width:700px}.section-title em{font-family:'Fraunces',serif;color:var(--moss);font-style:italic;font-weight:500}.section-lead{max-width:530px;color:var(--muted);font-size:16px;line-height:1.65;margin-top:20px}
+    .feature-section{background:var(--paper)}
+    .feature-head{display:flex;align-items:end;justify-content:space-between;gap:35px;margin-bottom:48px}.feature-head .section-lead{margin:0;max-width:360px}
+    .feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.feature-card{min-height:260px;padding:25px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.58);display:flex;flex-direction:column;justify-content:space-between;transition:all .25s var(--ease)}.feature-card:hover{transform:translateY(-5px);background:#fff;border-color:#b9cdb7;box-shadow:0 18px 40px rgba(39,59,46,.08)}.feature-icon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:var(--sage);color:var(--moss)}.feature-card:nth-child(2) .feature-icon{background:#f5e5d6;color:#a15c42}.feature-card:nth-child(3) .feature-icon{background:#e4e1f1;color:#65618d}.feature-card:nth-child(4) .feature-icon{background:#e4eef4;color:#3d7081}.feature-card:nth-child(5) .feature-icon{background:#f3edcf;color:#8e793c}.feature-card:nth-child(6) .feature-icon{background:#e8e5df;color:#635f59}.feature-card h3{font-size:18px;letter-spacing:-.05em;font-weight:700;margin-top:30px}.feature-card p{font-size:13px;line-height:1.6;color:var(--muted);margin-top:9px}.feature-link{display:flex;align-items:center;gap:6px;color:var(--moss);font-size:11px;font-weight:700;margin-top:18px}
+    .workflow-section{background:#e8ede4}.workflow-layout{display:grid;grid-template-columns:.82fr 1.18fr;gap:90px;align-items:start}.workflow-intro{position:sticky;top:110px}.workflow-list{display:flex;flex-direction:column;gap:12px}.workflow-step{display:grid;grid-template-columns:46px 1fr;gap:18px;padding:23px 24px;background:rgba(255,255,255,.68);border:1px solid rgba(70,98,76,.14);border-radius:18px;transition:all .25s}.workflow-step:hover{background:#fff;transform:translateX(5px);box-shadow:0 15px 30px rgba(39,59,46,.08)}.workflow-number{width:35px;height:35px;border-radius:50%;display:grid;place-items:center;background:var(--deep);color:var(--leaf);font-size:11px;font-weight:700}.workflow-step h3{font-size:17px;letter-spacing:-.04em;margin-bottom:6px}.workflow-step p{color:var(--muted);font-size:13px;line-height:1.6}.workflow-detail{display:flex;align-items:center;gap:7px;color:var(--moss);font-size:11px;font-weight:700;margin-top:13px}
+    .dashboard-section{background:var(--paper)}.dashboard-card{display:grid;grid-template-columns:1fr 1.2fr;gap:0;margin-top:55px;overflow:hidden;border:1px solid var(--line);border-radius:24px;background:#fff;box-shadow:0 24px 70px rgba(39,59,46,.08)}.dashboard-copy{padding:45px}.dashboard-copy h3{font-size:28px;line-height:1.05;letter-spacing:-.065em;max-width:290px}.dashboard-copy p{font-size:13px;color:var(--muted);line-height:1.65;max-width:300px;margin:15px 0 26px}.dashboard-check{display:flex;align-items:center;gap:9px;color:var(--moss);font-size:12px;font-weight:600;margin-top:12px}.dashboard-check svg{color:#6f9b48}.dashboard-mock{padding:28px;background:#f1f3ed;min-height:330px}.mock-window{height:100%;border-radius:15px;background:#fff;border:1px solid #dfe5da;box-shadow:0 13px 30px rgba(39,59,46,.1);overflow:hidden}.mock-top{display:flex;align-items:center;gap:6px;padding:12px 15px;border-bottom:1px solid #edf0e9}.mock-dot{width:7px;height:7px;border-radius:50%;background:#d9ded5}.mock-dot:nth-child(2){background:#ead6a1}.mock-dot:nth-child(3){background:#b7d48e}.mock-title{margin-left:7px;color:#8d968b;font-size:10px;font-weight:600}.mock-content{display:grid;grid-template-columns:92px 1fr;min-height:260px}.mock-side{padding:15px 10px;border-right:1px solid #edf0e9}.mock-side-label{font-size:9px;color:#a8b0a5;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}.mock-side-item{height:22px;border-radius:6px;padding:5px 7px;color:#748176;font-size:9px;margin-bottom:4px}.mock-side-item.active{background:#e9f1e2;color:#4d724b;font-weight:700}.mock-main{padding:18px}.mock-main-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.mock-main-head strong{font-size:14px;letter-spacing:-.04em}.mock-add{border:0;background:var(--deep);color:#fff;border-radius:6px;padding:5px 8px;font-size:8px}.mock-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:15px}.mock-stat{border:1px solid #eef1eb;border-radius:8px;padding:9px}.mock-stat span{display:block;font-size:8px;color:#98a198;margin-bottom:4px}.mock-stat strong{font-size:15px;color:var(--deep)}.mock-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.mock-job{border:1px solid #edf0e9;border-radius:8px;padding:9px}.mock-job i{display:block;width:18px;height:18px;border-radius:6px;background:#d9e7cd;margin-bottom:9px}.mock-job:nth-child(2) i{background:#f1ded1}.mock-job:nth-child(3) i{background:#dedced}.mock-job strong{display:block;font-size:9px;margin-bottom:3px}.mock-job span{font-size:8px;color:#a0a9a0}
+    .stats-section{background:var(--deep);color:#fff}.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;border-top:1px solid rgba(255,255,255,.15);border-bottom:1px solid rgba(255,255,255,.15);margin-top:55px}.stat-block{padding:28px 20px 25px;border-right:1px solid rgba(255,255,255,.15)}.stat-block:last-child{border-right:0}.stat-value{font-size:42px;letter-spacing:-.07em;color:var(--leaf);font-weight:600}.stat-block h3{font-size:13px;margin-top:3px}.stat-block p{font-size:11px;color:rgba(255,255,255,.5);margin-top:5px}
+    .story-section{background:#f5eee7}.story-card{display:grid;grid-template-columns:1fr .82fr;gap:50px;align-items:center;margin-top:55px}.story-quote{font-family:'Fraunces',serif;font-size:clamp(28px,4vw,52px);line-height:1.06;letter-spacing:-.06em;color:var(--deep)}.story-byline{display:flex;align-items:center;gap:12px;margin-top:25px}.story-avatar{width:39px;height:39px;border-radius:50%;display:grid;place-items:center;background:#d0b396;color:var(--deep);font-size:12px;font-weight:700}.story-byline strong{display:block;font-size:12px}.story-byline span{display:block;color:var(--muted);font-size:11px;margin-top:3px}.story-aside{padding:25px;border:1px solid rgba(70,98,76,.16);border-radius:20px;background:rgba(255,255,255,.55)}.story-aside p{font-size:13px;line-height:1.65;color:var(--muted)}.story-mini{display:flex;justify-content:space-between;border-top:1px solid #d9ded5;margin-top:22px;padding-top:16px}.story-mini strong{font-size:23px;letter-spacing:-.06em}.story-mini span{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+    .cta-section{padding:125px 22px;text-align:center;position:relative;background:var(--paper);overflow:hidden}.cta-section::before{content:'';position:absolute;width:480px;height:480px;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;background:rgba(191,220,130,.25);filter:blur(65px)}.cta-content{position:relative}.cta-tree{display:inline-grid;place-items:center;width:54px;height:54px;border-radius:17px;background:var(--deep);color:var(--leaf);margin-bottom:20px}.cta-h{font-size:clamp(42px,6vw,76px);font-weight:600;letter-spacing:-.08em;line-height:.95;color:var(--ink)}.cta-h em{font-family:'Fraunces',serif;color:var(--moss);font-style:italic;font-weight:500}.cta-sub{color:var(--muted);font-size:15px;margin:17px auto 28px}.site-footer{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;padding:24px clamp(22px,5vw,72px);border-top:1px solid var(--line);background:var(--paper)}.footer-logo{display:flex;align-items:center;gap:8px;color:var(--deep);font-size:14px;font-weight:700}.footer-copy{color:#8a948a;font-size:11px}
+    .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s var(--ease),transform .7s var(--ease)}.reveal.visible{opacity:1;transform:translateY(0)}.d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}@keyframes spin{to{transform:rotate(360deg)}}@keyframes scaleIn{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:none}}
+    .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(circle at 10% 10%,#e2edd4,#f5f4ef 48%);position:relative}.auth-card{width:min(420px,100%);background:#fff;border:1px solid var(--line);border-radius:24px;padding:42px 36px;box-shadow:0 24px 70px rgba(39,59,46,.12);animation:scaleIn .45s var(--ease)}.auth-tree{text-align:center;color:var(--moss);display:grid;place-items:center;width:58px;height:58px;border-radius:18px;background:var(--sage);font-size:0;margin:0 auto 18px}.auth-tree::after{content:'✦';font-size:24px;color:var(--moss)}.auth-h{text-align:center;font-size:28px;line-height:1.05;letter-spacing:-.07em;color:var(--ink);margin-bottom:10px}.auth-p{text-align:center;color:var(--muted);font-size:13px;line-height:1.6;margin-bottom:26px}.auth-err{background:#fff2ed;border:1px solid #f3cbbb;border-radius:10px;padding:11px 13px;color:#9e4f38;font-size:12px;margin-bottom:16px}.google-btn{width:100%;padding:13px 15px;border:1px solid #d9e0d8;border-radius:12px;background:#fff;display:flex;justify-content:center;align-items:center;gap:10px;color:var(--ink);font-size:13px;font-weight:700;transition:all .2s}.google-btn:hover{border-color:#a9bca7;box-shadow:0 8px 20px rgba(39,59,46,.09);transform:translateY(-2px)}.google-btn:disabled{opacity:.6;pointer-events:none}.google-btn svg{width:19px;height:19px}.auth-back{width:100%;margin-top:10px;padding:12px;border:0;background:transparent;color:var(--moss);font-size:12px;font-weight:700}.auth-note{text-align:center;color:#9aa39b;font-size:10.5px;line-height:1.6;margin-top:18px}.loading-full{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;background:var(--paper)}.loading-ring{width:40px;height:40px;border-radius:50%;border:3px solid var(--sage);border-top-color:var(--moss);animation:spin .75s linear infinite}.loading-label{font-size:12px;color:var(--muted)}
+    @media(max-width:900px){.hero-inner{grid-template-columns:1fr}.hero-side{justify-content:flex-start}.hero-proof{max-width:350px}.feature-grid{grid-template-columns:repeat(2,1fr)}.workflow-layout{grid-template-columns:1fr;gap:45px}.workflow-intro{position:static}.dashboard-card,.story-card{grid-template-columns:1fr}.stats-grid{grid-template-columns:repeat(2,1fr)}.stat-block:nth-child(2){border-right:0}.stat-block:nth-child(-n+2){border-bottom:1px solid rgba(255,255,255,.15)}}
+    @media(max-width:640px){.lnav,.lnav.stuck{padding:15px 18px}.lnav-links{display:none}.lnav-cta{padding:9px 12px}.hero{min-height:800px}.hero-inner{padding:125px 20px 90px}.hero-h1{font-size:clamp(47px,15vw,72px)}.hero-sub{font-size:15px}.hero-overlay{background:linear-gradient(90deg,rgba(12,23,17,.96),rgba(12,23,17,.72)),linear-gradient(0deg,rgba(12,23,17,.5),transparent 55%)}.hero-full-img{object-position:63% center}.logos-strip{align-items:flex-start;flex-direction:column;padding:19px 20px;gap:13px}.logos-row{justify-content:flex-start;gap:13px 22px}.feature-head{display:block}.feature-head .section-lead{margin-top:18px}.feature-grid{grid-template-columns:1fr}.section-wrap{padding-top:82px;padding-bottom:82px}.dashboard-copy{padding:30px}.dashboard-mock{padding:14px;overflow:auto}.mock-content{min-width:410px}.stats-grid{grid-template-columns:1fr}.stat-block,.stat-block:nth-child(2){border-right:0;border-bottom:1px solid rgba(255,255,255,.15)}.stat-block:last-child{border-bottom:0}.story-quote{font-size:36px}.auth-card{padding:34px 24px}.site-footer{align-items:flex-start;flex-direction:column}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reveal{opacity:1;transform:none;transition:none}.hero-badge,.hero-h1,.hero-sub,.hero-btns,.hero-meta,.hero-side{animation:none}.feature-card,.workflow-step,.btn-hero-primary,.btn-hero-secondary{transition:none}}
     `;
 
 function useReveal() {
@@ -295,16 +124,6 @@ function AnimCounter({ to, suffix = "" }) {
     return <span ref={ref}>{val.toLocaleString()}{suffix}</span>;
 }
 
-// All 6 stages shown in the hero preview
-const PCARDS = [
-    { co: "Google", role: "SWE Intern", status: "Offer", emoji: "🎉", bg: "#ecfdf5", bd: "#6ee7b7", tBg: "#dcfce7", tC: "#065f46" },
-    { co: "Stripe", role: "Product Manager", status: "Interview", emoji: "🌳", bg: "#fffbeb", bd: "#fcd34d", tBg: "#fef9c3", tC: "#a16207" },
-    { co: "Notion", role: "UX Designer", status: "Screening", emoji: "🌿", bg: "#faf5ff", bd: "#d8b4fe", tBg: "#f3e8ff", tC: "#6b21a8" },
-    { co: "Figma", role: "Front-end Eng", status: "Applied", emoji: "🪴", bg: "#f0fdf4", bd: "#86efac", tBg: "#dcfce7", tC: "#15803d" },
-    { co: "Linear", role: "DevOps Eng", status: "Saved", emoji: "🌱", bg: "#eff6ff", bd: "#bfdbfe", tBg: "#dbeafe", tC: "#1d4ed8" },
-    { co: "Vercel", role: "Full-stack Dev", status: "Rejected", emoji: "🍂", bg: "#f8fafc", bd: "#e2e8f0", tBg: "#f1f5f9", tC: "#64748b" },
-];
-
 /* ─────────────────────────── Landing Page ──────────────────────── */
 function LandingPage() {
     const navigate = useNavigate();
@@ -315,401 +134,112 @@ function LandingPage() {
         const fn = () => setStuck(window.scrollY > 50);
         window.addEventListener("scroll", fn);
         return () => window.removeEventListener("scroll", fn);
-    }, []);
+    }, [navigate]);
 
     const go = () => navigate("/login");
+    const seeFeatures = () => document.querySelector("#features")?.scrollIntoView({ behavior: "smooth" });
+
+    const features = [
+        { title: "One calm pipeline", desc: "Move every role from saved to offer without losing the context, links, notes, or next step.", icon: <GitBranch size={20} /> },
+        { title: "Follow up on time", desc: "Set a reminder on any application and keep warm leads from quietly slipping away.", icon: <Bell size={20} /> },
+        { title: "See what matters", desc: "Grid, list, or board — switch views when you need a different angle on your search.", icon: <LayoutDashboard size={20} /> },
+        { title: "Walk in ready", desc: "Turn each interview into a focused prep session with tailored questions and talking points.", icon: <Brain size={20} /> },
+        { title: "Know your numbers", desc: "Track reply rate, offers, and momentum so you can make better decisions each week.", icon: <BarChart3 size={20} /> },
+        { title: "Find it instantly", desc: "Use search and the command bar to jump from a recruiter note to the right application in seconds.", icon: <Search size={20} /> },
+    ];
+
+    const workflow = [
+        { number: "01", title: "Capture the opportunity", text: "Save a role while it is fresh. Add the company, link, salary, location, and the detail you will want later.", detail: "No more lost tabs", icon: <Sprout size={15} /> },
+        { number: "02", title: "Keep the momentum", text: "Move the application through six clear stages and let reminders tell you when it is time to follow up.", detail: "A pipeline you can trust", icon: <Timer size={15} /> },
+        { number: "03", title: "Show up prepared", text: "When the interview arrives, open the job record, review your notes, and use focused prep to walk in with a plan.", detail: "Turn activity into progress", icon: <Sparkles size={15} /> },
+    ];
 
     return (
-        <>
-            {/* NAV */}
+        <div className="landing-page">
             <nav className={`lnav${stuck ? " stuck" : ""}`}>
-                <div className="lnav-logo"><span>🌳</span> Career Garden</div>
+                <div className="lnav-logo"><span className="lnav-mark"><Sprout size={17} /></span> Career Garden</div>
                 <ul className="lnav-links">
                     <li><a href="#features">Features</a></li>
                     <li><a href="#how-it-works">How it works</a></li>
                     <li><a href="#testimonials">Stories</a></li>
                 </ul>
-                <button className="lnav-cta" onClick={go}>Get started — free</button>
+                <button className="lnav-cta" onClick={go}>Get started free</button>
             </nav>
 
-            {/* HERO */}
             <section className="hero">
                 <div className="hero-bg-layer">
-                    <img
-                        src="https://i.pinimg.com/1200x/ab/35/e5/ab35e5f7b7cee47090e507ef9c0bf133.jpg"
-                        alt="Forest background"
-                        className="hero-full-img"
-                    />
+                    <img src={heroDesk} alt="Person working at a desk between a thriving and a dried plant" className="hero-full-img" />
                     <div className="hero-overlay" />
                 </div>
-
-                <div className="hero-content-overlay">
-                    <div className="hero-badge"><span className="hero-badge-dot" /> Now in public beta</div>
-                    <h1 className="hero-h1">Your job search,<br /><em>beautifully</em> organised.</h1>
-                    <p className="hero-sub">Track every application from seed to offer — 6 stages, 3 views, smart reminders, live stats, and AI-powered interview prep. All free.</p>
-
-                    <div className="hero-btns">
-                        <button className="btn-hero-primary" onClick={go}>Plant your first seed →</button>
-                        <button className="btn-hero-secondary" onClick={go}>See how it works</button>
+                <div className="hero-inner">
+                    <div className="hero-copy">
+                        <div className="hero-badge"><span className="hero-badge-dot" /> A calmer way to job hunt</div>
+                        <h1 className="hero-h1">Make room for the work that <em>moves you forward.</em></h1>
+                        <p className="hero-sub">Career Garden keeps every application, follow-up, and interview note in one place — so your job search feels like progress, not another full-time job.</p>
+                        <div className="hero-btns">
+                            <button className="btn-hero-primary" onClick={go}>Start growing <ArrowRight size={16} /></button>
+                            <button className="btn-hero-secondary" onClick={seeFeatures}>See how it works <ArrowRight size={15} /></button>
+                        </div>
+                        <div className="hero-meta">
+                            <div className="hero-avatars"><span className="hero-avatar">AR</span><span className="hero-avatar">SC</span><span className="hero-avatar">JM</span><span className="hero-avatar">+</span></div>
+                            <span>Join 5,000+ people growing their next chapter</span>
+                        </div>
                     </div>
-
-                    <div className="preview-wrap">
-                        <div className="preview-glow" />
-                        <div className="preview-win">
-                            <div className="preview-bar">
-                                <div className="pdot" style={{ background: "#f87171" }} />
-                                <div className="pdot" style={{ background: "#fbbf24" }} />
-                                <div className="pdot" style={{ background: "#4ade80" }} />
-                                <div className="purl">careergarden.app / dashboard</div>
-                            </div>
-                            <div className="preview-body">
-                                {PCARDS.map(c => (
-                                    <div key={c.co} className="pcard" style={{ background: c.bg, borderColor: c.bd }}>
-                                        <div className="pcard-emoji">{c.emoji}</div>
-                                        <div className="pcard-co">{c.co}</div>
-                                        <div className="pcard-role">{c.role}</div>
-                                        <div className="pcard-tag" style={{ background: c.tBg, color: c.tC }}>{c.status}</div>
-                                    </div>
-                                ))}
-                            </div>
+                    <div className="hero-side">
+                        <div className="hero-proof">
+                            <div className="hero-proof-top"><span>This week's garden</span><span>On track ↗</span></div>
+                            <h2>6 applications moving</h2>
+                            <p>Small, consistent steps add up. Keep your next action visible.</p>
+                            <div className="proof-bar"><span /></div>
+                            <div className="proof-rows"><div className="proof-row"><strong>12</strong><span>active roles</span></div><div className="proof-row"><strong>68%</strong><span>in motion</span></div><div className="proof-row"><strong>03</strong><span>follow-ups</span></div></div>
                         </div>
                     </div>
                 </div>
+                <div className="hero-scroll">Scroll to explore</div>
             </section>
 
-            {/* LOGOS */}
             <div className="logos-strip">
-                <p className="logos-label">Trusted by job seekers from</p>
-                <div className="logos-row">
-                    {["Google", "Amazon", "Meta", "Microsoft", "Stripe", "Notion", "Figma", "OpenAI"].map(n => (
-                        <div key={n} className="logo-name">{n}</div>
-                    ))}
-                </div>
+                <p className="logos-label">Built for ambitious job seekers</p>
+                <div className="logos-row">{["Product", "Engineering", "Design", "Marketing", "Operations"].map(n => <div key={n} className="logo-name">{n}</div>)}</div>
             </div>
 
-            {/* FEATURES */}
-            <section className="py-24 bg-[#e8f4e8] font-['Poppins']" id="features">
-                <div className="max-w-7xl mx-auto px-6">
-                    <div className="mb-16">
-                        <h2 className="text-5xl md:text-7xl font-[900] text-slate-900 tracking-tighter leading-none lowercase">
-                            The <span className="text-emerald-500 italic">Garden</span> <br />
-                            Essentials.
-                        </h2>
-                        <p className="mt-4 text-slate-500 text-lg max-w-xl font-medium">
-                            Everything you need from "just saved a link" to "accepted the offer" — no spreadsheets required.
-                        </p>
+            <section className="feature-section" id="features">
+                <div className="section-wrap">
+                    <div className="feature-head reveal">
+                        <div><div className="section-kicker">Everything in one place</div><h2 className="section-title">A better system for the <em>in-between.</em></h2></div>
+                        <p className="section-lead">From the first saved link to the final offer, the details stay close and the next step stays obvious.</p>
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {[
-                            {
-                                title: "6 Growth Stages",
-                                desc: "saved → applied → screening → interview → offer → rejected. move any job forward in one click and watch your pipeline come alive.",
-                                tag: "Full pipeline",
-                                icon: <GitBranch size={48} strokeWidth={1.5} />
-                            },
-                            {
-                                title: "Smart Reminders",
-                                desc: "set a follow-up date on any job. get a heads-up when it's due — never ghost a recruiter or miss a deadline again.",
-                                tag: "Never miss a follow-up",
-                                icon: <Bell size={48} strokeWidth={1.5} />
-                            },
-                            {
-                                title: "Grid · List · Board",
-                                desc: "three views built in: card grid, compact list rows, and a full kanban board. switch instantly. your garden, your way.",
-                                tag: "3 powerful views",
-                                icon: <LayoutDashboard size={48} strokeWidth={1.5} />
-                            },
-                            {
-                                title: "AI Interview Prep",
-                                desc: "one click generates tailored interview questions, company insights, and talking points for any job you're tracking. powered by claude.",
-                                tag: "Powered by Claude AI",
-                                icon: <Brain size={48} strokeWidth={1.5} />
-                            },
-                            {
-                                title: "Live Stats",
-                                desc: "reply rate, offer rate, pipeline funnel, weekly sparkline. know exactly how your search is going — updated every time you move a job.",
-                                tag: "Real-time analytics",
-                                icon: <BarChart3 size={48} strokeWidth={1.5} />
-                            },
-                            {
-                                title: "⌘K Command Palette",
-                                desc: "search every job, jump to any stage, add a new application, or navigate anywhere in seconds. your keyboard shortcut for the whole garden.",
-                                tag: "⌘K anywhere",
-                                icon: <Search size={48} strokeWidth={1.5} />
-                            },
-                            {
-                                title: "Learn & Prepare",
-                                desc: "hand-picked free articles, tools, and courses for interview prep, salary negotiation, cv tips, networking, and staying motivated.",
-                                tag: "Free resources library",
-                                icon: <MousePointerClick size={48} strokeWidth={1.5} />
-                            },
-                            {
-                                title: "Track Every Detail",
-                                desc: "log salary, location, job post link, notes, and dates for each role. everything in one place — no more digging through old emails.",
-                                tag: "Full job records",
-                                icon: <Sprout size={48} strokeWidth={1.5} />
-                            }
-                        ].map((f, i) => (
-                            <div key={i} className="feat-card" style={{ position: 'relative', height: 280, background: '#fff', border: '1px solid #f1f5f9', borderRadius: 36, cursor: 'pointer', overflow: 'hidden' }}>
-                                <div className="front" style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '0 20px' }}>
-                                    <div style={{ color: '#10b981' }}>{f.icon}</div>
-                                    <h3 style={{ fontSize: 14, fontWeight: 900, color: '#0f172a', textTransform: 'uppercase', letterSpacing: '-0.02em', textAlign: 'center' }}>{f.title}</h3>
-                                </div>
-                                <div className="back" style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 28px' }}>
-                                    <p style={{ color: '#fff', fontSize: 12.5, fontWeight: 600, lineHeight: 1.55, textAlign: 'center' }}>{f.desc}</p>
-                                    <span style={{ marginTop: 18, background: 'rgba(255,255,255,.2)', color: '#fff', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '5px 14px', borderRadius: 999 }}>{f.tag}</span>
-                                </div>
-                                <div className="accent" style={{ position: 'absolute', bottom: 22, left: '50%', transform: 'translateX(-50%)', height: 3, borderRadius: 999 }} />
-                            </div>
-                        ))}
+                    <div className="feature-grid">
+                        {features.map((feature, index) => <article className={`feature-card reveal d${(index % 3) + 1}`} key={feature.title}><div><div className="feature-icon">{feature.icon}</div><h3>{feature.title}</h3><p>{feature.desc}</p></div><div className="feature-link">Explore feature <ArrowRight size={13} /></div></article>)}
                     </div>
                 </div>
             </section>
 
-            {/* HOW IT WORKS — 6 STAGES */}
-            <section className="py-32 bg-[#fcfdfc] font-['Poppins'] overflow-hidden" id="how-it-works">
-                <div className="max-w-7xl mx-auto px-6 relative">
-                    <div className="absolute top-0 -left-20 w-96 h-96 bg-green-200/30 blur-[100px] rounded-full" />
-                    <div className="absolute bottom-0 -right-20 w-96 h-96 bg-green-100/40 blur-[100px] rounded-full" />
+            <section className="workflow-section" id="how-it-works">
+                <div className="section-wrap workflow-layout">
+                    <div className="workflow-intro reveal"><div className="section-kicker">A simple rhythm</div><h2 className="section-title">Keep the search <em>growing.</em></h2><p className="section-lead">You do the work. Career Garden clears the noise around it, so you always know what happened and what comes next.</p></div>
+                    <div className="workflow-list">{workflow.map((step, index) => <article className={`workflow-step reveal d${index + 1}`} key={step.number}><div className="workflow-number">{step.number}</div><div><h3>{step.title}</h3><p>{step.text}</p><div className="workflow-detail">{step.icon}{step.detail}</div></div></article>)}</div>
+                </div>
+            </section>
 
-                    <div className="mb-24 relative">
-                        <h2 className="text-6xl md:text-8xl font-black text-slate-900 tracking-tighter leading-[0.85]">
-                            How your <br />
-                            <span className="text-green-600 italic">garden grows.</span>
-                        </h2>
-                        <p className="mt-6 text-slate-500 text-lg max-w-md font-medium">
-                            Six stages, each with its own personality. Hover a card to see what each stage is really about.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {[
-                            {
-                                step: "01", label: "Saved", emoji: "🌱",
-                                text: "Spotted something interesting? Drop the link in seconds — add company, role, and any quick notes before that tab disappears forever.",
-                                gradient: "from-blue-400 to-blue-600", sub: "Seed planted"
-                            },
-                            {
-                                step: "02", label: "Applied", emoji: "🪴",
-                                text: "Hit submit. Move it to Applied, log the date, salary expectations, and location. Your first official step into the pipeline.",
-                                gradient: "from-green-400 to-emerald-600", sub: "Growing"
-                            },
-                            {
-                                step: "03", label: "Screening", emoji: "🌿",
-                                text: "Recruiter call or take-home test? Set a reminder date so you follow up at the right time and never let a warm lead go cold.",
-                                gradient: "from-purple-400 to-purple-600", sub: "Taking root"
-                            },
-                            {
-                                step: "04", label: "Interview", emoji: "🌳",
-                                text: "Interviews booked. Hit Interview Prep for AI-generated questions tailored to your role and company — walk in more confident than ever.",
-                                gradient: "from-amber-400 to-orange-500", sub: "Branching out"
-                            },
-                            {
-                                step: "05", label: "Offer", emoji: "🎉",
-                                text: "You did it. Log the offer details, compare packages if you have multiple, and celebrate. The whole garden grew toward this moment.",
-                                gradient: "from-emerald-500 to-green-700", sub: "Fully bloomed"
-                            },
-                            {
-                                step: "06", label: "Rejected", emoji: "🍂",
-                                text: "Not every seed blooms — and that's part of the process. Keep the record, see your response rate in Stats, and carry the momentum forward.",
-                                gradient: "from-slate-500 to-slate-700", sub: "Fallen leaf"
-                            }
-                        ].map((item, idx) => (
-                            <div key={idx} className="group h-[360px] [perspective:1500px]">
-                                <div className="relative h-full w-full transition-all duration-[800ms] [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
-                                    <div className="absolute inset-0 h-full w-full rounded-[40px] bg-white border border-slate-100 shadow-sm p-2 [backface-visibility:hidden]">
-                                        <div className="h-full w-full rounded-[35px] bg-slate-50/50 flex flex-col items-center justify-center relative overflow-hidden">
-                                            <div className="relative z-10 w-24 h-24 bg-white rounded-[30%] shadow-2xl flex items-center justify-center text-5xl group-hover:scale-125 group-hover:rotate-12 transition-all duration-700">
-                                                {item.emoji}
-                                            </div>
-                                            <div className="absolute w-40 h-40 border-2 border-green-500/10 rounded-full animate-[spin_10s_linear_infinite]" />
-                                            <div className="absolute w-56 h-56 border border-green-500/5 rounded-full animate-[spin_15s_linear_infinite_reverse]" />
-                                            <div className="mt-10 text-center">
-                                                <div className="text-[10px] font-black text-green-600 tracking-[0.4em] uppercase mb-1">Stage {item.step}</div>
-                                                <div className="text-xl font-black text-slate-900 tracking-tight">{item.label}</div>
-                                                <div className="h-[2px] w-6 bg-green-500 mx-auto rounded-full mt-2" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className={`absolute inset-0 h-full w-full rounded-[40px] bg-gradient-to-br ${item.gradient} p-10 text-white [backface-visibility:hidden] [transform:rotateY(180deg)] shadow-2xl flex flex-col justify-between`}>
-                                        <div className="space-y-4">
-                                            <span className="text-4xl font-black opacity-20">{item.step}</span>
-                                            <h3 className="text-2xl font-black tracking-tighter">{item.label} {item.emoji}</h3>
-                                            <p className="text-white/85 text-sm leading-relaxed font-medium">{item.text}</p>
-                                        </div>
-                                        <div className="flex items-center gap-2 pt-4 border-t border-white/10">
-                                            <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                                            <span className="text-[10px] font-black tracking-widest uppercase">{item.sub}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+            <section className="dashboard-section">
+                <div className="section-wrap">
+                    <div className="section-kicker reveal">Clarity at a glance</div><h2 className="section-title reveal">Your whole search, without the <em>spreadsheet sprawl.</em></h2>
+                    <div className="dashboard-card reveal d1">
+                        <div className="dashboard-copy"><h3>Know the next right move.</h3><p>Every role has a home, a stage, and a next step. The dashboard makes it easy to pick up where you left off.</p>{["Six clear application stages", "Reminders that stay attached to the role", "Notes, links, and salary in context"].map(item => <div className="dashboard-check" key={item}><Check size={15} strokeWidth={2.5} />{item}</div>)}</div>
+                        <div className="dashboard-mock"><div className="mock-window"><div className="mock-top"><i className="mock-dot" /><i className="mock-dot" /><i className="mock-dot" /><span className="mock-title">career garden / dashboard</span></div><div className="mock-content"><aside className="mock-side"><div className="mock-side-label">Workspace</div><div className="mock-side-item active">Overview</div><div className="mock-side-item">All jobs</div><div className="mock-side-item">Interviews</div><div className="mock-side-item">Stats</div></aside><div className="mock-main"><div className="mock-main-head"><strong>Good morning, Alex</strong><button className="mock-add">+ Add job</button></div><div className="mock-stats"><div className="mock-stat"><span>Active</span><strong>12</strong></div><div className="mock-stat"><span>Interviews</span><strong>03</strong></div><div className="mock-stat"><span>Reply rate</span><strong>24%</strong></div></div><div className="mock-cards"><div className="mock-job"><i /><strong>Notion</strong><span>Interview</span></div><div className="mock-job"><i /><strong>Figma</strong><span>Applied</span></div><div className="mock-job"><i /><strong>Linear</strong><span>Saved</span></div></div></div></div></div></div>
                     </div>
                 </div>
             </section>
 
-            {/* STATS */}
-            <section className="py-24 px-6 bg-[#f2fcf2] font-['Poppins']">
-                <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {[
-                        { to: 12400, suffix: "+", label: "Applications tracked", desc: "Total jobs in the garden" },
-                        { to: 94, suffix: "%", label: "Feel more in control", desc: "User satisfaction" },
-                        { to: 3, suffix: "x", label: "Faster than spreadsheets", desc: "Average time saved per week" },
-                        { to: 0, suffix: "$", label: "Cost to start", desc: "Free forever, no card needed" },
-                    ].map((s, i) => (
-                        <motion.div
-                            key={s.label}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.5, delay: i * 0.1, ease: [0.23, 1, 0.32, 1] }}
-                            viewport={{ once: true }}
-                            className="relative group p-8 bg-white border border-emerald-100 rounded-3xl hover:border-emerald-500 hover:shadow-[0_20px_50px_rgba(16,185,129,0.1)] transition-all duration-500"
-                        >
-                            <div className="relative z-10">
-                                <div className="flex items-baseline mb-2">
-                                    <span className="text-5xl font-bold text-emerald-600 tracking-tight"><AnimCounter to={s.to} /></span>
-                                    <span className="text-2xl font-bold text-emerald-500 ml-1">{s.suffix}</span>
-                                </div>
-                                <h3 className="text-lg font-bold text-slate-800 leading-tight mb-1">{s.label}</h3>
-                                <p className="text-sm font-medium text-slate-400">{s.desc}</p>
-                            </div>
-                            <div className="absolute bottom-0 left-0 h-1.5 bg-emerald-500/10 w-full rounded-b-3xl overflow-hidden">
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    whileInView={{ width: "100%" }}
-                                    transition={{ duration: 1.5, delay: 0.5, ease: "easeInOut" }}
-                                    viewport={{ once: true }}
-                                    className="h-full bg-emerald-500"
-                                />
-                            </div>
-                        </motion.div>
-                    ))}
-                </div>
-            </section>
+            <section className="stats-section"><div className="section-wrap"><div className="section-kicker" style={{ color: "var(--leaf)" }}>A little momentum</div><h2 className="section-title" style={{ color: "#fff" }}>Progress feels different when you can <em style={{ color: "var(--leaf)" }}>see it.</em></h2><div className="stats-grid">{[{ to: 12400, suffix: "+", label: "Applications tracked", desc: "Across growing careers" }, { to: 94, suffix: "%", label: "Feel more in control", desc: "A clearer search starts here" }, { to: 3, suffix: "×", label: "Less tab switching", desc: "More time for the work" }, { to: 0, suffix: "$", label: "Cost to start", desc: "Free forever" }].map(stat => <div className="stat-block" key={stat.label}><div className="stat-value"><AnimCounter to={stat.to} />{stat.suffix}</div><h3>{stat.label}</h3><p>{stat.desc}</p></div>)}</div></div></section>
 
-            {/* TESTIMONIALS */}
-            <section className="py-32 bg-[#f8f9fa] font-['Poppins'] overflow-hidden" id="testimonials">
-                <div className="max-w-7xl mx-auto px-6">
-                    <div className="mb-20">
-                        <span className="text-emerald-600 font-bold text-[10px] uppercase tracking-[0.5em] mb-4 block">Wall of Growth</span>
-                        <h2 className="text-6xl md:text-8xl font-[900] text-slate-900 tracking-tighter leading-[0.8] lowercase">
-                            The <span className="text-emerald-500 italic">harvest</span> <br />
-                            report.
-                        </h2>
-                    </div>
+            <section className="story-section" id="testimonials"><div className="section-wrap"><div className="section-kicker reveal">From the garden</div><div className="story-card"><div className="reveal"><blockquote className="story-quote">“I stopped wondering where everything stood and started spending that energy on the applications themselves.”</blockquote><div className="story-byline"><div className="story-avatar">JM</div><div><strong>Jordan M.</strong><span>Product designer · hired after 8 weeks</span></div></div></div><div className="story-aside reveal d1"><p>Career Garden gives your search a shape. See what is active, what needs attention, and how the small wins are adding up.</p><div className="story-mini"><div><strong>6</strong><span>job stages</span></div><div><strong>3</strong><span>board views</span></div><div><strong>⌘K</strong><span>quick search</span></div></div></div></div></div></section>
 
-                    <div className="bg-white rounded-[64px] border border-slate-200/60 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.04)] overflow-hidden grid grid-cols-1 lg:grid-cols-2 relative">
-                        <div className="p-12 md:p-24 flex flex-col justify-between bg-white z-20 relative">
-                            <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#10b981 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }} />
-                            <div className="relative z-10">
-                                <h3 className="text-4xl md:text-5xl font-[900] text-slate-900 tracking-tighter leading-[0.95] mb-8 uppercase">
-                                    From Seed <br />To Full <br />
-                                    <span className="text-emerald-500 text-[1.1em]">Offer.</span>
-                                </h3>
-                                <p className="text-slate-500 text-lg leading-relaxed max-w-sm font-medium mb-10">
-                                    Real job seekers moving from tab chaos to organised, confident searches. Join 5,000+ growing their future.
-                                </p>
-                                <div className="pt-8 border-t border-slate-100">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Users Hired At</p>
-                                    <div className="flex gap-6 opacity-30 grayscale items-center">
-                                        <span className="font-black text-xl tracking-tighter">Stripe</span>
-                                        <span className="font-black text-xl tracking-tighter">Figma</span>
-                                        <span className="font-black text-xl tracking-tighter">Google</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="mt-20 relative z-10">
-                                <div className="flex gap-12 mb-12">
-                                    <div>
-                                        <div className="text-5xl font-black text-slate-900 tracking-tighter">6</div>
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-2 italic">Job Stages</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-5xl font-black text-slate-900 tracking-tighter">3</div>
-                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-2 italic">Board Views</div>
-                                    </div>
-                                </div>
-                                <button onClick={go} className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all hover:scale-105 active:scale-95 shadow-lg shadow-emerald-200">
-                                    Start free →
-                                </button>
-                            </div>
-                        </div>
+            <section className="cta-section"><div className="cta-content"><div className="cta-tree"><Sprout size={25} /></div><h2 className="cta-h reveal">Ready to grow into<br /><em>what's next?</em></h2><p className="cta-sub reveal d1">Sign in with Google. Free forever. No spreadsheet required.</p><div className="reveal d2"><button className="btn-hero-primary" onClick={go}>Open my garden <ArrowRight size={16} /></button></div></div></section>
 
-                        <div className="relative h-[750px] bg-[#fcfcfc] border-l border-slate-100 overflow-hidden group">
-                            <div className="absolute inset-0 grid grid-cols-2 gap-4 p-6">
-                                <div className="flex flex-col gap-4 animate-scroll-v group-hover:[animation-play-state:paused]">
-                                    {[...Array(2)].map((_, gi) => (
-                                        <div key={gi} className="flex flex-col gap-4">
-                                            {[
-                                                { text: "The garden metaphor actually works. Made the job hunt feel like progress, not a grind.", name: "Alex Rivera", handle: "@arivera_dev", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" },
-                                                { text: "The Kanban board is butter smooth. I can finally see all my interviews at a glance.", name: "Sarah Chen", handle: "@schen_ui", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" },
-                                                { text: "The AI interview prep blew me away — it nailed exactly what Stripe would ask.", name: "Marc Levinson", handle: "@marcl_codes", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop" },
-                                                { text: "Reminders saved me. I followed up on a ghosted application and got the interview.", name: "Jasmine Kaur", handle: "@jas_kaur", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop" }
-                                            ].map((t, i) => (
-                                                <div key={i} className="bg-white p-6 rounded-[28px] border border-slate-100 shadow-sm">
-                                                    <div className="flex items-center gap-3 mb-4">
-                                                        <img src={t.img} alt={t.name} className="w-10 h-10 rounded-2xl object-cover border border-emerald-100" />
-                                                        <div>
-                                                            <div className="text-xs font-black text-slate-900 uppercase tracking-tighter">{t.name}</div>
-                                                            <div className="text-[10px] text-slate-400 font-bold">{t.handle}</div>
-                                                        </div>
-                                                    </div>
-                                                    <p className="text-sm text-slate-600 leading-snug font-medium lowercase">"{t.text}"</p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="flex flex-col gap-4 animate-scroll-v-reverse group-hover:[animation-play-state:paused]">
-                                    {[...Array(2)].map((_, gi) => (
-                                        <div key={gi} className="flex flex-col gap-4">
-                                            {[
-                                                { text: "The stats page is addictive. Watching my reply rate climb from 8% to 24% kept me going.", name: "Kevin V.", handle: "@kev_v", img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=100&h=100&fit=crop" },
-                                                { text: "⌘K command palette is genius. I jump between companies and stages so fast.", name: "Aisha M.", handle: "@aisha_design", img: "https://images.unsplash.com/photo-1531123897727-8f129e16fd3c?w=100&h=100&fit=crop" },
-                                                { text: "The Learn section salary tips helped me negotiate an extra £8k. Worth it alone.", name: "David L.", handle: "@dl_io", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" },
-                                                { text: "I told my whole bootcamp cohort to switch to this. Best job hunt tool I've used.", name: "Elena Rossi", handle: "@erossi_dev", img: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop" }
-                                            ].map((t, i) => (
-                                                <div key={i} className="bg-white p-6 rounded-[28px] border border-slate-100 shadow-sm">
-                                                    <div className="flex items-center gap-3 mb-4">
-                                                        <img src={t.img} alt={t.name} className="w-10 h-10 rounded-2xl object-cover border border-slate-100" />
-                                                        <div>
-                                                            <div className="text-xs font-black text-slate-900 uppercase tracking-tighter">{t.name}</div>
-                                                            <div className="text-[10px] text-slate-400 font-bold">{t.handle}</div>
-                                                        </div>
-                                                    </div>
-                                                    <p className="text-sm text-slate-600 leading-snug font-medium lowercase">"{t.text}"</p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-[#fcfcfc] via-[#fcfcfc]/80 to-transparent z-10" />
-                            <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#fcfcfc] via-[#fcfcfc]/80 to-transparent z-10" />
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* CTA */}
-            <section className="cta-section">
-                <div className="cta-tree">🌳</div>
-                <h2 className="cta-h reveal">Ready to grow?</h2>
-                <p className="cta-sub reveal d1">Sign in with Google. Free forever. No spreadsheets required.</p>
-                <div className="reveal d2">
-                    <button className="btn-hero-primary" style={{ fontSize: 16.5, padding: "18px 50px" }} onClick={go}>
-                        Open my garden →
-                    </button>
-                </div>
-            </section>
-
-            <footer className="site-footer">
-                <div className="footer-logo">🌳 Career Garden</div>
-                <div className="footer-copy">© 2026 Career Garden · Powered by Supabase · Built with care</div>
-            </footer>
-        </>
+            <footer className="site-footer"><div className="footer-logo"><Sprout size={16} /> Career Garden</div><div className="footer-copy">© 2026 Career Garden · Built with care</div></footer>
+        </div>
     );
 }
 
@@ -763,7 +293,7 @@ function AuthCallback() {
             if (session) navigate("/dashboard", { replace: true });
         });
         return () => subscription.unsubscribe();
-    }, []);
+    }, [navigate]);
 
     return <div className="loading-full"><div className="loading-ring" /><div className="loading-label">Signing you in…</div></div>;
 }

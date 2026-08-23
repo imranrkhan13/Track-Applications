@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 /**
  * job.jsx — Job components
  * JobModal is handled inline in maine.jsx (JobModalInline).
