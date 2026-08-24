@@ -132,6 +132,34 @@ function addDays(value, amount) {
     return date.toISOString().slice(0, 10);
 }
 
+function freeResources(topic) {
+    const query = encodeURIComponent(topic);
+    const normalized = topic.toLowerCase();
+    const docs = normalized.includes("react") ? { title: "React Learn", url: "https://react.dev/learn" } : normalized.includes("python") ? { title: "Python tutorial", url: "https://docs.python.org/3/tutorial/" } : normalized.includes("javascript") || normalized.includes("typescript") ? { title: "MDN JavaScript guide", url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide" } : { title: `${topic} concepts and documentation`, url: `https://www.google.com/search?q=${query}+official+documentation` };
+    return [
+        { ...docs, type: "Concepts", free: true },
+        { title: `${topic} free video lessons`, url: `https://www.youtube.com/results?search_query=${query}+free+tutorial`, type: "Video", free: true },
+        { title: `${topic} free project ideas`, url: `https://github.com/search?q=${query}+project&type=repositories`, type: "Practice", free: true },
+    ];
+}
+
+function buildWeeks({ company, role, deadline, keywords = [] }) {
+    const today = TODAY();
+    const requestedEnd = dateOnly(deadline);
+    const end = requestedEnd && requestedEnd >= today ? requestedEnd : addDays(today, 14);
+    const span = Math.max(1, Math.round((new Date(`${end}T12:00:00`) - new Date(`${today}T12:00:00`)) / 86400000));
+    const weekCount = Math.min(8, Math.max(1, Math.ceil((span + 1) / 7)));
+    const topicPool = [`${role} fundamentals`, `${company} product and customers`, ...(keywords.length ? keywords.slice(0, 3).map(keyword => `${keyword} for ${role}`) : [`${role} interview skills`]), "behavioral interview stories"];
+    const focus = ["Understand the brief and learn the core concepts", "Connect the company context to your role", "Build proof with a small project", "Close the gaps and rehearse the hard questions", "Polish your project and practice the conversation"];
+    return Array.from({ length: weekCount }, (_, index) => {
+        const startOffset = index * 7;
+        const endOffset = Math.min(span, startOffset + 6);
+        const topic = topicPool[index % topicPool.length];
+        const project = index === 0 ? `Create a one-page ${role} role map for ${company}: outcomes, skills, customers, and open questions.` : index === weekCount - 1 ? `Present a small ${role} case study or project as if you were in the interview. Include decisions, trade-offs, and measurable impact.` : `Build a small ${role} project around ${topic}. Document the problem, your approach, and what you would improve next.`;
+        return { week: index + 1, label: `Week ${index + 1}`, startDate: addDays(today, startOffset), endDate: addDays(today, endOffset), focus: focus[Math.min(index, focus.length - 1)], learn: freeResources(topic), project: { title: index === 0 ? "Role map" : index === weekCount - 1 ? "Interview-ready case study" : `${topic} mini project`, brief: project, deliverable: index === weekCount - 1 ? "A 5-minute walkthrough plus three proof points" : "A small public or private artifact with a short README" }, practice: ["Write what you learned in your own words", "Explain one concept without looking at notes", index === weekCount - 1 ? "Run a timed mock interview" : "Add one question to your interview bank"] };
+    });
+}
+
 function fallbackPlan({ company, role, deadline }) {
     const today = TODAY();
     const requestedEnd = dateOnly(deadline);
@@ -195,12 +223,12 @@ function parseJson(text) {
     try { return JSON.parse(cleaned.slice(start, end + 1)); } catch { return null; }
 }
 
-async function generateWithGemini(input, research, basePlan, source) {
+async function generateWithGemini(input, research, basePlan, source, weeks) {
     const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     if (!key) return null;
     const prompt = `You are a careful career-preparation planner. Return JSON only, with no markdown.
 
-Create a full preparation plan for this candidate role. Use only source-backed company claims from the supplied research. If something is unknown, say "Not verified" rather than inventing it. Make the plan practical and dated. Every plan item must have a date on or before the target date.
+Create a full preparation plan for this candidate role. Use only source-backed company claims from the supplied research. If something is unknown, say "Not verified" rather than inventing it. Make the plan practical and dated. Every plan item must have a date on or before the target date. Organize the learning into week-by-week curriculum. Each week must tell the candidate what to learn, which free resources to use, what project to build, and how to practice it.
 
 Role: ${input.role}
 Company: ${input.company}
@@ -219,8 +247,11 @@ Hiring process: ${research.hiringProcess}
 Tech stack: ${research.techStack}
 Culture: ${research.culture}
 
+AVAILABLE FREE RESOURCE LINKS (use these URLs only; do not invent resource URLs):
+${JSON.stringify(weeks.flatMap(week => week.learn), null, 2)}
+
 Return this exact shape:
-{"summary":"short candidate-facing summary","whyThisRole":"specific preparation angle","companyResearch":{"overview":"...","hiringProcess":"...","techStack":"...","culture":"..."},"plan":[{"date":"YYYY-MM-DD","title":"...","focus":"...","tasks":["...","..."],"outcome":"...","durationMinutes":45}],"questions":["..."],"risks":["..."],"finalChecklist":["..."]}`;
+{"summary":"short candidate-facing summary","whyThisRole":"specific preparation angle","companyResearch":{"overview":"...","hiringProcess":"...","techStack":"...","culture":"..."},"weeks":[{"week":1,"label":"Week 1","startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD","focus":"...","learn":[{"title":"...","url":"one supplied URL","type":"Concepts|Video|Practice","free":true}],"project":{"title":"...","brief":"...","deliverable":"..."},"practice":["..."]}],"plan":[{"date":"YYYY-MM-DD","title":"...","focus":"...","tasks":["...","..."],"outcome":"...","durationMinutes":45}],"questions":["..."],"risks":["..."],"finalChecklist":["..."]}`;
     try {
         const sourcePart = source?.mimeType && source?.data ? { inline_data: { mime_type: source.mimeType, data: source.data } } : null;
         const response = await fetchWithTimeout(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`, {
@@ -232,8 +263,8 @@ Return this exact shape:
         const data = await response.json();
         const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
         const parsed = parseJson(text);
-        if (!parsed?.plan?.length) return null;
-        return { ...parsed, plan: parsed.plan.map((item, index) => ({ ...item, date: dateOnly(item.date) || basePlan[index]?.date || basePlan[basePlan.length - 1].date, tasks: Array.isArray(item.tasks) ? item.tasks.slice(0, 5) : [] })) };
+        if (!parsed?.plan?.length || !parsed?.weeks?.length) return null;
+        return { ...parsed, weeks: parsed.weeks.map((week, index) => ({ ...weeks[index], ...week, learn: Array.isArray(week.learn) && week.learn.length ? week.learn.slice(0, 4) : weeks[index]?.learn || [], practice: Array.isArray(week.practice) && week.practice.length ? week.practice.slice(0, 4) : weeks[index]?.practice || [] })), plan: parsed.plan.map((item, index) => ({ ...item, date: dateOnly(item.date) || basePlan[index]?.date || basePlan[basePlan.length - 1].date, tasks: Array.isArray(item.tasks) ? item.tasks.slice(0, 5) : [] })) };
     } catch { return null; }
 }
 
@@ -256,8 +287,9 @@ export async function handler(event) {
         const sources = uniqueSources([{ title: source.title, url: source.url }, ...searched]);
         const research = buildResearch({ company, role, source, sources });
         const basePlan = fallbackPlan({ company, role, deadline: input.deadline });
-        const aiPlan = await generateWithGemini({ ...input, company, role }, research, basePlan, source);
-        const plan = aiPlan || { summary: `A focused preparation path for ${role} at ${company}.`, whyThisRole: "Collect evidence from the role brief, connect it to your own work, then practice the highest-risk conversation before the target date.", plan: basePlan, questions: [], risks: [], finalChecklist: ["Review the exact job description", "Prepare three proof stories", "Practice one role-specific answer", "Write down the next step after the conversation"] };
+        const weeks = buildWeeks({ company, role, deadline: input.deadline, keywords: research.jd.keywords });
+        const aiPlan = await generateWithGemini({ ...input, company, role }, research, basePlan, source, weeks);
+        const plan = aiPlan || { summary: `A focused preparation path for ${role} at ${company}.`, whyThisRole: "Collect evidence from the role brief, connect it to your own work, then practice the highest-risk conversation before the target date.", weeks, plan: basePlan, questions: [], risks: [], finalChecklist: ["Review the exact job description", "Prepare three proof stories", "Practice one role-specific answer", "Write down the next step after the conversation"] };
         return json(200, {
             version: 1,
             mode: aiPlan ? "researched-ai" : "researched-template",
@@ -265,6 +297,7 @@ export async function handler(event) {
             targetDate: dateOnly(input.deadline) || basePlan[basePlan.length - 1].date,
             companyResearch: { ...research, ...(aiPlan?.companyResearch || {}) },
             jd: research.jd,
+            resources: [...new Map((plan.weeks || weeks).flatMap(week => week.learn || []).map(resource => [resource.url, resource])).values()],
             ...plan,
             disclaimer: "Public sources can be incomplete or outdated. Verify important hiring and technology details with the official company or recruiter.",
         });

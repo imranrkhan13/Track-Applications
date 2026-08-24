@@ -12,6 +12,39 @@ function addDays(value, amount) {
     return date.toISOString().slice(0, 10);
 }
 
+function freeResources(topic) {
+    const query = encodeURIComponent(topic);
+    const normalized = topic.toLowerCase();
+    const docs = normalized.includes("react") ? { title: "React Learn", url: "https://react.dev/learn" } : normalized.includes("python") ? { title: "Python tutorial", url: "https://docs.python.org/3/tutorial/" } : normalized.includes("javascript") || normalized.includes("typescript") ? { title: "MDN JavaScript guide", url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide" } : { title: `${topic} concepts and documentation`, url: `https://www.google.com/search?q=${query}+official+documentation` };
+    return [
+        { ...docs, type: "Concepts", free: true },
+        { title: `${topic} free video lessons`, url: `https://www.youtube.com/results?search_query=${query}+free+tutorial`, type: "Video", free: true },
+        { title: `${topic} free project ideas`, url: `https://github.com/search?q=${query}+project&type=repositories`, type: "Practice", free: true },
+    ];
+}
+
+function buildWeeks({ company, role, deadline, keywords = [] }) {
+    const today = dateOnly(new Date()) || new Date().toISOString().slice(0, 10);
+    const requestedEnd = dateOnly(deadline);
+    const end = requestedEnd && requestedEnd >= today ? requestedEnd : addDays(today, DEFAULT_PLAN_DAYS);
+    const span = Math.max(1, Math.round((new Date(`${end}T12:00:00`) - new Date(`${today}T12:00:00`)) / 86400000));
+    const weekCount = Math.min(8, Math.max(1, Math.ceil((span + 1) / 7)));
+    const topicPool = [
+        `${role} fundamentals`,
+        `${company} product and customers`,
+        ...(keywords.length ? keywords.slice(0, 3).map(keyword => `${keyword} for ${role}`) : [`${role} interview skills`]),
+        "behavioral interview stories",
+    ];
+    const focus = ["Understand the brief and learn the core concepts", "Connect the company context to your role", "Build proof with a small project", "Close the gaps and rehearse the hard questions", "Polish your project and practice the conversation"];
+    return Array.from({ length: weekCount }, (_, index) => {
+        const startOffset = index * 7;
+        const endOffset = Math.min(span, startOffset + 6);
+        const topic = topicPool[index % topicPool.length];
+        const project = index === 0 ? `Create a one-page ${role} role map for ${company}: outcomes, skills, customers, and open questions.` : index === weekCount - 1 ? `Present a small ${role} case study or project as if you were in the interview. Include decisions, trade-offs, and measurable impact.` : `Build a small ${role} project around ${topic}. Document the problem, your approach, and what you would improve next.`;
+        return { week: index + 1, label: `Week ${index + 1}`, startDate: addDays(today, startOffset), endDate: addDays(today, endOffset), focus: focus[Math.min(index, focus.length - 1)], learn: freeResources(topic), project: { title: index === 0 ? "Role map" : index === weekCount - 1 ? "Interview-ready case study" : `${topic} mini project`, brief: project, deliverable: index === weekCount - 1 ? "A 5-minute walkthrough plus three proof points" : "A small public or private artifact with a short README" }, practice: ["Write what you learned in your own words", "Explain one concept without looking at notes", index === weekCount - 1 ? "Run a timed mock interview" : "Add one question to your interview bank"] };
+    });
+}
+
 function fallbackPlan({ deadline }) {
     const today = dateOnly(new Date()) || new Date().toISOString().slice(0, 10);
     const requestedEnd = dateOnly(deadline);
@@ -54,6 +87,7 @@ export function makeLocalRolePlan(input) {
             responsibilities: [],
             keywords: [role, company].filter(Boolean),
         },
+        weeks: buildWeeks({ company, role, deadline, keywords: [role] }),
         plan: fallbackPlan(input),
         disclaimer: "This local plan is a useful starting point. Verified company and job-description research appears when the server research function is available.",
     };

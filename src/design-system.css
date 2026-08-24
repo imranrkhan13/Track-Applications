@@ -308,6 +308,31 @@
 .generated-plan-copy small { color: var(--cg-text-3); font-size: 9px; }
 .generated-plan-footer { margin-top: 2px; padding: 12px 0 0; border-top: 1px solid #e1eee3; }
 .generated-plan-footer p { margin: 5px 0 0; color: var(--cg-text-2); font-size: 10px; line-height: 1.5; }
+.weekly-curriculum { padding: 20px; border: 1px solid #dce9df; border-radius: var(--cg-radius-lg); background: var(--cg-surface); box-shadow: var(--cg-shadow-sm); }
+.weekly-curriculum-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.weekly-curriculum-head h2 { margin: 6px 0 5px; color: var(--cg-text); font: 700 22px/1.1 var(--cg-font-display); letter-spacing: -.05em; }
+.weekly-curriculum-head p { max-width: 700px; margin: 0; color: var(--cg-text-2); font-size: 11px; line-height: 1.5; }
+.weekly-count { flex: 0 0 auto; padding: 8px 10px; border: 1px solid #dceadf; border-radius: 999px; color: var(--cg-brand); background: var(--cg-brand-soft); font-size: 9px; font-weight: 750; }
+.weekly-curriculum-grid { display: grid; gap: 10px; margin-top: 17px; }
+.weekly-curriculum-card { padding: 16px; border: 1px solid #e1ece2; border-radius: var(--cg-radius-md); background: #fbfefb; }
+.weekly-card-head { display: flex; align-items: center; gap: 10px; }
+.weekly-card-number { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 10px; color: #fff; background: var(--cg-brand); font: 700 9px var(--cg-font-mono); }
+.weekly-card-head h3 { margin: 0; color: var(--cg-text); font: 700 14px/1.2 var(--cg-font-display); letter-spacing: -.025em; }
+.weekly-card-head small { display: block; margin-top: 3px; color: var(--cg-text-3); font-size: 9px; }
+.weekly-focus { margin: 13px 0 0; padding-bottom: 12px; border-bottom: 1px solid #e3eee4; color: var(--cg-text-2); font-size: 11px; font-weight: 650; line-height: 1.45; }
+.weekly-card-columns { display: grid; grid-template-columns: 1.1fr 1fr .9fr; gap: 13px; margin-top: 13px; }
+.weekly-block > span { display: block; margin-bottom: 8px; color: var(--cg-text-3); font-size: 9px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+.weekly-block ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.weekly-block li a { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 7px; padding: 8px 9px; border: 1px solid #e3eee4; border-radius: 8px; color: var(--cg-text); background: #fff; text-decoration: none; transition: border-color .18s ease, transform .18s ease; }
+.weekly-block li a:hover { border-color: #a9d0b1; transform: translateY(-1px); }
+.weekly-block li strong { overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.weekly-block li small { grid-column: 1 / -1; color: var(--cg-text-3); font-size: 8px; }
+.weekly-project { padding: 11px; border: 1px solid #d9e9dc; border-radius: 10px; background: #f2faf3; }
+.weekly-project > strong { display: block; color: var(--cg-text); font: 700 12px/1.2 var(--cg-font-display); }
+.weekly-project p { margin: 6px 0; color: var(--cg-text-2); font-size: 10px; line-height: 1.45; }
+.weekly-project > small { color: var(--cg-text-3); font-size: 9px; line-height: 1.4; }
+.weekly-practice-item { display: flex; align-items: flex-start; gap: 7px; color: var(--cg-text-2); font-size: 10px; line-height: 1.4; }
+.weekly-practice-item i { flex: 0 0 auto; width: 6px; height: 6px; margin-top: 4px; border: 1px solid #7bb58a; border-radius: 50%; background: #e8f6eb; }
 .role-plan-empty { padding: 20px; border: 1px dashed #cfe1d2; border-radius: var(--cg-radius-lg); background: #fbfefb; }
 .role-plan-empty h2 { margin: 6px 0 5px; color: var(--cg-text); font: 700 19px/1.1 var(--cg-font-display); letter-spacing: -.045em; }
 .role-plan-empty p { margin: 0; color: var(--cg-text-2); font-size: 11px; line-height: 1.5; }
@@ -424,6 +449,10 @@
   .role-jd-brief { grid-template-columns: 1fr; }
   .role-research-signal-grid { grid-template-columns: 1fr; }
   .generated-role-plan { padding: 16px; }
+  .weekly-curriculum { padding: 16px; }
+  .weekly-curriculum-head { display: block; }
+  .weekly-count { display: inline-flex; margin-top: 10px; }
+  .weekly-card-columns { grid-template-columns: 1fr; gap: 12px; }
   .generated-plan-item { grid-template-columns: 30px minmax(0, 1fr); gap: 10px; }
   .generated-plan-date { grid-column: 2; grid-row: 1; padding-top: 4px; }
   .generated-plan-copy { grid-column: 2; }

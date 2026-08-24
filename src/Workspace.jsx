@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 import { DEMO_USER, isSupabaseConfigured } from "./lib/supabase";
 import { deleteJob, getJobs, saveJob } from "./lib/appData";
+import { researchRole } from "./lib/roleResearch";
+import { saveRoleRoom } from "./lib/roleRoomData";
 import { PLANT_STAGES, stageInfo } from "./lib/plantStages";
 import RoleRoom from "./RoleRoom";
 import MockInterview from "./MockInterview";
@@ -184,7 +186,7 @@ export default function Workspace({ user = DEMO_USER, onSignOut }) {
     const addJob = () => { setActionError(""); setDrawer({ ...seedForm, id: null, created_at: new Date().toISOString() }); };
     const editJob = job => { setActionError(""); setDrawer(job); };
     const notify = message => { setToast(message); window.setTimeout(() => setToast(""), 2600); };
-    const save = async job => { const isNew = !job.id; if (!job.company?.trim() || !job.role?.trim()) { setActionError("Add the company and role to plant this opportunity."); return; } setActionError(""); try { const saved = await saveJob(job, user.id); setJobs(current => [saved, ...current.filter(item => item.id !== saved.id)]); setDrawer(null); notify(isNew ? "Role added — ready to grow" : "Role updated"); if (isNew) setPage("overview"); } catch (error) { const message = String(error?.message || "").toLowerCase(); setActionError(message.includes("row-level security") ? "Your session cannot write this role yet. Sign out and sign back in, then try again." : "We couldn't save this role right now. Check your connection and try again."); } };
+    const save = async job => { const isNew = !job.id; if (!job.company?.trim() || !job.role?.trim()) { setActionError("Add the company and role to plant this opportunity."); return; } setActionError(""); try { const saved = await saveJob(job, user.id); setJobs(current => [saved, ...current.filter(item => item.id !== saved.id)]); setDrawer(null); notify(isNew ? "Role added — building your plan…" : "Role updated"); if (isNew) { setPage("overview"); researchRole({ company: saved.company, role: saved.role, location: saved.location, url: saved.url, deadline: saved.deadline }).then(result => { saveRoleRoom(user.id, saved.id, { researchNotes: "", completed: {}, analysis: result }); notify("Plan ready — open Prepare"); }).catch(() => notify("Role added — add a public link to improve the plan")); } } catch (error) { const message = String(error?.message || "").toLowerCase(); setActionError(message.includes("row-level security") ? "Your session cannot write this role yet. Sign out and sign back in, then try again." : "We couldn't save this role right now. Check your connection and try again."); } };
     const remove = async id => { if (!id) return; setActionError(""); try { await deleteJob(id, user.id); setJobs(current => current.filter(job => job.id !== id)); setDrawer(null); notify("Role removed"); } catch { setActionError("We couldn't delete this role right now. Try again."); } };
     const openJob = job => { if (typeof job === "string") { setPage(job === "applications" ? "applications" : job); return; } setDrawer(job); };
     const openPrep = job => { setDrawer(null); setPrepJob(job); setPage("prep"); };
