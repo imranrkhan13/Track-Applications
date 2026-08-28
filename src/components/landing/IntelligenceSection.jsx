@@ -1,11 +1,17 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { BrainCircuit, Building2, FileSearch, Route, SearchCheck, Target } from "lucide-react";
 import { fadeUp, stagger, VIEWPORT } from "./Motion";
+import WorkflowIcon from "./WorkflowIcon";
 
 const MotionDiv = motion.div;
-const NODES = [[FileSearch, "JOB URL", "Source captured"], [SearchCheck, "JD ANALYSIS", "23 requirements"], [Building2, "COMPANY RESEARCH", "Public signals"], [BrainCircuit, "HIRING INTELLIGENCE", "Process patterns"], [Target, "SKILL GAP", "Priority areas"], [Route, "INTERVIEW PLAN", "14 days"]];
+const NODES = [["CAPTURE", "Job link", "Source locked"], ["UNDERSTAND", "Role brief", "23 requirements"], ["RESEARCH", "Company map", "Public signals"], ["DECODE", "Hiring path", "Process patterns"], ["FOCUS", "Skill gaps", "Priority areas"], ["PREPARE", "Interview plan", "14 focused days"]];
 
 export default function IntelligenceSection() {
-    return <section className="cg-section cg-intelligence" id="intelligence"><div className="cg-shell"><div className="cg-section-head"><div><span className="cg-kicker"><i />Intelligence</span><h2>From job link<br /><em>to clear direction.</em></h2></div><p>Each step activates in order, using the role and demo data—not invented company claims.</p></div><MotionDiv className="cg-intelligence-flow" variants={stagger} initial="hidden" whileInView="visible" viewport={VIEWPORT}>{NODES.map(([Icon, label, detail], index) => <React.Fragment key={label}><MotionDiv className="cg-intelligence-node" variants={fadeUp}><span>{React.createElement(Icon, { size: 20 })}</span><small>0{index + 1}</small><strong>{label}</strong><em>{detail}</em></MotionDiv>{index < NODES.length - 1 && <MotionDiv className="cg-intelligence-line" variants={fadeUp}><i /></MotionDiv>}</React.Fragment>)}</MotionDiv></div></section>;
+    return <section className="cg-section cg-intelligence" id="intelligence"><div className="cg-shell"><div className="cg-section-head cg-intelligence-head"><div><span className="cg-kicker"><i />From link to plan</span><h2>One job in.<br /><em>Clear direction out.</em></h2></div><p>Career Garden turns a public role into the exact things you need next—without making you manage six different tools.</p></div>
+        <MotionDiv className="cg-intelligence-frame" variants={stagger} initial="hidden" whileInView="visible" viewport={VIEWPORT}>
+            <div className="cg-intelligence-signal"><span>JOB LINK</span><i><b /></i><strong>INTERVIEW-READY</strong></div>
+            <div className="cg-intelligence-flow">{NODES.map(([eyebrow, label, detail], index) => <MotionDiv className="cg-intelligence-node" variants={fadeUp} key={label}><WorkflowIcon stage={index} label={`${label}: ${detail}`} /><small>0{index + 1} · {eyebrow}</small><strong>{label}</strong><em>{detail}</em></MotionDiv>)}</div>
+            <div className="cg-intelligence-result"><span><i />Live transformation</span><strong>A role you understand. A plan you can follow.</strong><small>Demo flow · research is based on available public information</small></div>
+        </MotionDiv>
+    </div></section>;
 }
