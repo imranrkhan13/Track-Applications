@@ -75,9 +75,9 @@ export function makeLocalRolePlan(input) {
             techStack: `Search for the tools and working practices connected to ${role}. Treat public stack lists as signals, not guarantees.`,
             culture: `Collect two specific examples of how ${company} works, communicates, or measures impact.`,
             sources: [
-                { title: "Official role or company page", url: url || `https://www.google.com/search?q=${encodeURIComponent(`${company} ${role} careers`)}` },
-                { title: "Hiring process search", url: `https://www.google.com/search?q=${encodeURIComponent(`${company} ${role} interview process`)}` },
-                { title: "Technology and team search", url: `https://www.google.com/search?q=${encodeURIComponent(`${company} engineering tech stack`)}` },
+                { title: "Official role or company page", sourceType: url ? "Job description source" : "Official search", url: url || `https://www.google.com/search?q=${encodeURIComponent(`${company} ${role} careers`)}` },
+                { title: "Hiring process search", sourceType: "Candidate experience search", url: `https://www.google.com/search?q=${encodeURIComponent(`${company} ${role} interview process`)}` },
+                { title: "Technology and team search", sourceType: "Public source search", url: `https://www.google.com/search?q=${encodeURIComponent(`${company} engineering tech stack`)}` },
             ],
         },
         jd: {
@@ -100,10 +100,8 @@ export async function researchRole(input) {
         body: JSON.stringify(input),
     });
     const contentType = response.headers.get("content-type") || "";
-    if (!response.ok || !contentType.includes("application/json")) {
-        if (response.status === 404 || response.status === 405) return makeLocalRolePlan(input);
-        throw new Error("The research service could not be reached.");
-    }
+    if (!contentType.includes("application/json")) return makeLocalRolePlan(input);
+    if (!response.ok) throw new Error("The research service could not be reached.");
     const result = await response.json();
     if (!response.ok || result.error) throw new Error(result.error || "The role could not be researched.");
     return result;

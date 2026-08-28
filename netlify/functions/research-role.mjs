@@ -77,6 +77,7 @@ async function fetchRoleSource(rawUrl) {
 
 function searchResultLinks(html, query) {
     const results = [];
+    const sourceType = /careers|company|official/i.test(query) ? "Official or public index" : /interview|candidate|reddit|leetcode|blind/i.test(query) ? "Candidate experience" : "Public source";
     const anchors = [...html.matchAll(/<a[^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)];
     for (const [, rawHref, rawTitle] of anchors) {
         const title = cleanText(rawTitle);
@@ -88,7 +89,7 @@ function searchResultLinks(html, query) {
         } catch { /* Ignore malformed result links. */ }
         if (!title || title.length < 8 || !href || href.includes("duckduckgo.com")) continue;
         if (/images|videos|maps|settings/i.test(title)) continue;
-        if (!results.some(item => item.url === href)) results.push({ title, url: href, query });
+        if (!results.some(item => item.url === href)) results.push({ title, url: href, query, sourceType });
         if (results.length >= 4) break;
     }
     return results;
@@ -282,9 +283,12 @@ export async function handler(event) {
             `${company} careers hiring process`,
             `${company} engineering tech stack`,
             `${company} product news values strategy`,
+            `${company} ${role} interview experience candidate report`,
+            `${company} ${role} technical interview questions public`,
+            `${company} ${role} reddit interview discussion`,
         ];
         const searched = (await Promise.all(queries.map(searchWeb))).flat();
-        const sources = uniqueSources([{ title: source.title, url: source.url }, ...searched]);
+        const sources = uniqueSources([{ title: source.title, url: source.url, sourceType: source.status === "missing" ? "No job link" : "Job description source" }, ...searched]);
         const research = buildResearch({ company, role, source, sources });
         const basePlan = fallbackPlan({ company, role, deadline: input.deadline });
         const weeks = buildWeeks({ company, role, deadline: input.deadline, keywords: research.jd.keywords });

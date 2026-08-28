@@ -949,3 +949,39 @@ button, input, select, textarea { font-family: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .sidebar-rail-brand, .sidebar-rail-item, .sidebar-v4 .nav-item, .mobile-nav button { transition: none !important; }
 }
+
+/* The landing page now introduces the actual product surface before the final
+   CTA, so the garden metaphor explains the tracker instead of decorating it. */
+.editorial-product { padding: clamp(82px, 10vw, 138px) clamp(10px, 7vw, 88px); background: #edf0e2; }
+.editorial-product-head { display: grid; grid-template-columns: 1fr .72fr; gap: 44px; align-items: end; }
+.editorial-product-head h2, .editorial-faq h2 { margin: 19px 0 0; color: var(--forest); font: 800 clamp(38px, 5vw, 68px)/.88 "Manrope", sans-serif; letter-spacing: -.095em; }
+.editorial-product-head p { max-width: 315px; margin: 0 0 4px; color: #718078; font-size: 13px; line-height: 1.6; }
+.editorial-product-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; margin-top: 47px; }
+.editorial-product-grid article { min-height: 258px; padding: 22px; border: 1px solid #dce4d7; border-radius: 16px; background: #f9faef; }
+.editorial-product-grid article.editorial-product-dark { color: #ecf0e3; border-color: #384239; background: #2b322d; }
+.editorial-product-icon { display: grid; width: 38px; height: 38px; place-items: center; margin-bottom: 32px; border-radius: 12px; color: #457a50; background: #e0efd9; }
+.editorial-product-dark .editorial-product-icon { color: #d1e58e; background: #455444; }
+.editorial-product-grid article > span { color: #9aaa96; font: 800 9px "DM Mono", monospace; letter-spacing: .12em; }
+.editorial-product-grid h3 { margin: 11px 0 7px; color: inherit; font: 800 19px/1.05 "Manrope", sans-serif; letter-spacing: -.06em; }
+.editorial-product-grid p { margin: 0; color: #718078; font-size: 12px; line-height: 1.55; }
+.editorial-product-dark p { color: #aeb9ae; }
+.editorial-product-line { display: flex; gap: 5px; margin-top: 26px; }
+.editorial-product-line i { display: block; width: 31px; height: 6px; border-radius: 99px; background: #d6e5cb; }
+.editorial-product-line i:nth-child(2) { background: #a9c88b; }.editorial-product-line i:nth-child(3) { background: #7fae73; }.editorial-product-line i:nth-child(4) { background: #e4c786; }.editorial-product-line i:nth-child(5) { background: #aeb8aa; }
+.editorial-channel-pills, .editorial-product-readout { display: flex; align-items: center; gap: 6px; margin-top: 25px; }
+.editorial-channel-pills b { padding: 5px 8px; border: 1px solid #596b58; border-radius: 7px; color: #d7e4cd; font: 700 9px "DM Mono", monospace; }
+.editorial-product-readout { gap: 9px; }.editorial-product-readout strong { color: #4c8757; font: 800 30px/.9 "Manrope", sans-serif; letter-spacing: -.08em; }.editorial-product-readout small { max-width: 85px; color: #849284; font-size: 9px; line-height: 1.35; }
+.editorial-product-stats { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 10px; border-top: 1px solid #ccd9c9; border-bottom: 1px solid #ccd9c9; }
+.editorial-product-stats span { padding: 17px 15px; border-right: 1px solid #ccd9c9; }.editorial-product-stats span:last-child { border-right: 0; }.editorial-product-stats b, .editorial-product-stats small { display: block; }.editorial-product-stats b { color: #4f8656; font: 800 21px/.9 "Manrope", sans-serif; letter-spacing: -.07em; }.editorial-product-stats small { margin-top: 7px; color: #839183; font: 800 8px "DM Mono", monospace; letter-spacing: .09em; text-transform: uppercase; }
+.editorial-faq { display: grid; grid-template-columns: .8fr 1.2fr; gap: clamp(40px, 9vw, 130px); padding: clamp(84px, 10vw, 138px) clamp(10px, 7vw, 88px); background: #f5f4e9; }.editorial-faq > div:first-child p { max-width: 290px; margin: 20px 0 0; color: #718078; font-size: 13px; line-height: 1.6; }.editorial-faq-list { display: grid; align-content: start; gap: 0; border-top: 1px solid #d5ddd0; }.editorial-faq details { border-bottom: 1px solid #d5ddd0; }.editorial-faq summary { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px 0; color: var(--forest); cursor: pointer; font: 800 14px/1.25 "Manrope", sans-serif; list-style: none; }.editorial-faq summary::-webkit-details-marker { display: none; }.editorial-faq summary svg { color: #71966e; transition: transform .2s ease; }.editorial-faq details[open] summary svg { transform: rotate(180deg); }.editorial-faq details p { max-width: 610px; margin: -4px 28px 18px 0; color: #718078; font-size: 12px; line-height: 1.6; }
+
+@media (max-width: 760px) {
+  .editorial-nav nav a:nth-child(2) { display: none; }
+  .editorial-product-head, .editorial-faq { grid-template-columns: 1fr; gap: 22px; }
+  .editorial-product-grid { grid-template-columns: 1fr; margin-top: 32px; }
+  .editorial-product-grid article { min-height: 218px; }
+  .editorial-product-icon { margin-bottom: 22px; }
+  .editorial-product-stats { grid-template-columns: repeat(2, 1fr); }
+  .editorial-product-stats span:nth-child(2) { border-right: 0; }.editorial-product-stats span:nth-child(-n + 2) { border-bottom: 1px solid #ccd9c9; }
+  .editorial-faq { padding-top: 82px; }
+}

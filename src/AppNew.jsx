@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { ArrowRight, ArrowUp, Check, Leaf, LockKeyhole, Mic, MoveUpRight, Sprout } from "lucide-react";
+import { ArrowRight, ArrowUp, BarChart3, BriefcaseBusiness, Check, ChevronDown, Leaf, LockKeyhole, MessageCircle, Mic, MoveUpRight, Sprout } from "lucide-react";
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import Workspace from "./Workspace";
 import AuthCallback from "./AuthCallback";
 import { DEMO_USER, isSupabaseConfigured, supabase } from "./lib/supabase";
 import { PLANT_STAGES } from "./lib/plantStages";
 import StageIcon from "./StageIcon";
-import heroDesk from "./assets/hero-desk.png";
+import careerGardenWorkspace from "./assets/career-garden-workspace.jpeg";
 
 function isDemoSession() { try { return window.sessionStorage.getItem("career-garden-demo-session") === "true"; } catch { return false; } }
 function startDemoSession() { try { window.sessionStorage.setItem("career-garden-demo-session", "true"); return true; } catch { return false; } }
@@ -53,7 +53,7 @@ function Landing() {
         <div className="editorial-field editorial-field-right" aria-hidden="true" />
         <header className="editorial-nav">
             <a className="editorial-brand" href="#top" aria-label="Career Garden home"><span className="editorial-brand-mark"><Sprout size={18} /></span><span><b>Career Garden</b><small>your search, with roots</small></span></a>
-            <nav aria-label="Landing page"><a href="#method">About</a><a href="#cycle">The cycle</a><a href="#practice">Practice</a></nav>
+            <nav aria-label="Landing page"><a href="#method">About</a><a href="#product">The workspace</a><a href="#cycle">The cycle</a><a href="#practice">Practice</a></nav>
             <button className="editorial-nav-cta" onClick={() => navigate("/login")}>Enter the garden <ArrowRight size={14} /></button>
         </header>
         <main id="top" className="editorial-page">
@@ -72,7 +72,7 @@ function Landing() {
                     <div className="editorial-stat-row"><span><b>06</b><small>stages of care</small></span><span><b>01</b><small>place to remember</small></span><span><b>∞</b><small>lessons carried forward</small></span></div>
                 </div>
                 <div className="editorial-feature-media">
-                    <img src={heroDesk} alt="Person working at a computer between thriving and dried plants" />
+                    <img src={careerGardenWorkspace} alt="A warm miniature workspace surrounded by plants" fetchPriority="high" />
                     <div className="editorial-media-tint" />
                     <div className="editorial-media-caption"><span>THE SEARCH, IN MOTION</span><b>Career Garden</b></div>
                     <div className="editorial-float-card editorial-float-card-top"><small>GARDEN HEALTH</small><strong>74%</strong><i><em /></i></div>
@@ -98,7 +98,11 @@ function Landing() {
 
             <section className="editorial-values"><div className="editorial-values-heading"><span className="editorial-section-kicker">05 · The soil</span><h2>Good systems leave<br /><em>room for people.</em></h2><p>The search is practical, but it should still feel human.</p></div><div className="editorial-value-grid"><article><span>01</span><div className="editorial-value-icon"><Sprout size={18} /></div><h3>Plant</h3><p>Capture the opportunity while the signal is fresh.</p></article><article className="editorial-value-dark"><span>02</span><div className="editorial-value-icon"><Leaf size={18} /></div><h3>Water</h3><p>Give every conversation a date, a task, and a little care.</p></article><article><span>03</span><div className="editorial-value-icon"><Mic size={18} /></div><h3>Bloom</h3><p>Walk into the room with evidence you can reach.</p></article></div></section>
 
-            <section className="editorial-final"><div><span className="editorial-section-kicker">06 · A place to begin</span><h2>Make space for<br /><em>the right work.</em></h2><p>Start with one role. Give it a next step. Let the system do the remembering.</p></div><button className="editorial-light-button" onClick={() => navigate("/login")}>Enter the garden <ArrowRight size={15} /></button></section>
+            <section className="editorial-product" id="product"><div className="editorial-product-head"><div><span className="editorial-section-kicker">06 · The workspace</span><h2>One role.<br /><em>A whole room.</em></h2></div><p>Add an application once. Career Garden keeps its brief, research, plan, questions, practice, and next move together.</p></div><div className="editorial-product-grid"><article><div className="editorial-product-icon"><BriefcaseBusiness size={17} /></div><span>01</span><h3>Track the pipeline</h3><p>See every opportunity from saved to applied, interview, offer, or the lesson you carry forward.</p><div className="editorial-product-line"><i /><i /><i /><i /><i /></div></article><article className="editorial-product-dark"><div className="editorial-product-icon"><MessageCircle size={17} /></div><span>02</span><h3>Open the prep room</h3><p>Company research, role requirements, hiring clues, and questions stay scoped to the role in focus.</p><div className="editorial-channel-pills"><b># company</b><b># plan</b><b># mock</b></div></article><article><div className="editorial-product-icon"><BarChart3 size={17} /></div><span>03</span><h3>Know what to do next</h3><p>Use the dated plan, practice feedback, and garden health to spend your time where it matters.</p><div className="editorial-product-readout"><strong>68%</strong><small>readiness from real activity</small></div></article></div><div className="editorial-product-stats"><span><b>06</b><small>growth stages</small></span><span><b>01</b><small>private room per role</small></span><span><b>∞</b><small>lessons carried forward</small></span><span><b>24/7</b><small>next action clarity</small></span></div></section>
+
+            <section className="editorial-faq"><div><span className="editorial-section-kicker">07 · Clear by design</span><h2>Useful before<br /><em>it is urgent.</em></h2><p>Everything is designed to help you make progress without adding another noisy system to your week.</p></div><div className="editorial-faq-list"><details open><summary>What happens when I add a role?<ChevronDown size={16} /></summary><p>The role is saved, then its private prep room starts building a plan from the public job link, company signals, and your deadline.</p></details><details><summary>Can I use a Google Doc or Drive job description?<ChevronDown size={16} /></summary><p>Public Docs, Sheets, Drive files, and job pages can be read when accessible. Private, login-protected, or CAPTCHA-blocked content is never bypassed.</p></details><details><summary>Does the garden replace a normal tracker?<ChevronDown size={16} /></summary><p>No. The pipeline stays practical; the plant stages simply make the state and next move easier to remember.</p></details><details><summary>How does readiness get calculated?<ChevronDown size={16} /></summary><p>It grows from completed tasks, practice sessions, and role-specific preparation—not a random score.</p></details></div></section>
+
+            <section className="editorial-final"><div><span className="editorial-section-kicker">08 · A place to begin</span><h2>Make space for<br /><em>the right work.</em></h2><p>Start with one role. Give it a next step. Let the system do the remembering.</p></div><button className="editorial-light-button" onClick={() => navigate("/login")}>Enter the garden <ArrowRight size={15} /></button></section>
         </main>
         <footer className="editorial-footer">
             <div className="editorial-footer-head"><a className="editorial-brand" href="#top" aria-label="Career Garden home"><span className="editorial-brand-mark"><Sprout size={18} /></span><span><b>Career Garden</b><small>your search, with roots</small></span></a><p>One calm home for every role, every signal, and the next useful move.</p><a className="editorial-footer-cta" href="#method">Start with one role <MoveUpRight size={15} /></a></div>

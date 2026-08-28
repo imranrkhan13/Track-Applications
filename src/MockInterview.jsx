@@ -25,11 +25,27 @@ const questionLabels = {
     behavioral: "Behavioral",
     "role-specific": "Role signal",
     collaboration: "Collaboration",
+    technical: "Technical",
+    coding: "Coding",
+    "system-design": "System design",
+    recruiter: "Recruiter screen",
+    "hiring-manager": "Hiring manager",
 };
+
+const INTERVIEW_MODES = [
+    { id: "behavioral", label: "Behavioral", questions: [{ type: "behavioral", text: "Tell me about a time you had to make a difficult trade-off. What did you choose, and what changed because of it?" }, { type: "behavioral", text: "Tell me about a moment when feedback changed the way you worked." }, { type: "behavioral", text: "Describe a time you had to move forward with incomplete information." }] },
+    { id: "recruiter", label: "Recruiter screen", questions: [{ type: "recruiter", text: "Why are you exploring a new role, and why does this opportunity make sense now?" }, { type: "recruiter", text: "What kind of team and problem would help you do your best work?" }, { type: "recruiter", text: "Walk me through the experience that best matches this role." }] },
+    { id: "technical", label: "Technical interview", questions: [{ type: "technical", text: "Walk me through a technical decision you made for a system similar to this company's product." }, { type: "technical", text: "Describe a production issue you diagnosed. How did you narrow the problem down?" }, { type: "technical", text: "What trade-offs would you make if this system had to support ten times more traffic?" }] },
+    { id: "coding", label: "Coding interview", questions: [{ type: "coding", text: "Talk through how you would solve a problem using a hash map. Start with the constraints before the code." }, { type: "coding", text: "How do you decide which edge cases to test before you submit a solution?" }, { type: "coding", text: "Explain a time you improved code quality without slowing the team down." }] },
+    { id: "system-design", label: "System design", questions: [{ type: "system-design", text: "Design a notification system. Start with requirements, scale, and the first version you would ship." }, { type: "system-design", text: "Design a high-scale API and explain where you would use caching, queues, and database indexes." }, { type: "system-design", text: "What would you monitor in a distributed system, and how would you handle a partial failure?" }] },
+    { id: "hiring-manager", label: "Hiring manager", questions: [{ type: "hiring-manager", text: "What kind of impact would you aim to make in your first 90 days?" }, { type: "hiring-manager", text: "Tell me about a decision you owned from ambiguity through delivery." }, { type: "hiring-manager", text: "What do you need from a manager to do your strongest work?" }] },
+    { id: "full-loop", label: "Full interview loop", questions: [...MOCK_QUESTIONS] },
+];
 
 export default function MockInterview({ jobs, selectedJob, setSelectedJob, userId = "demo-user" }) {
     const [jobId, setJobId] = useState(selectedJob?.id || jobs.find(job => job.status === "Interview")?.id || jobs[0]?.id || "");
     const job = selectedJob || jobs.find(item => item.id === jobId) || jobs[0];
+    const [mode, setMode] = useState("behavioral");
     const [questionIndex, setQuestionIndex] = useState(0);
     const [transcript, setTranscript] = useState("");
     const [live, setLive] = useState(false);
@@ -41,7 +57,7 @@ export default function MockInterview({ jobs, selectedJob, setSelectedJob, userI
     const [error, setError] = useState("");
     const recognitionRef = useRef(null);
     const timerRef = useRef(null);
-    const questions = useMemo(() => MOCK_QUESTIONS, []);
+    const questions = useMemo(() => (INTERVIEW_MODES.find(item => item.id === mode)?.questions || MOCK_QUESTIONS).map((item, index) => ({ ...item, id: `${mode}-${index + 1}` })), [mode]);
     const question = questions[questionIndex];
     const providers = providerStatus();
     const browserVoice = Boolean(getBrowserSpeechRecognition());
@@ -160,6 +176,12 @@ export default function MockInterview({ jobs, selectedJob, setSelectedJob, userI
                         }}
                     >
                         {jobs.map(item => <option key={item.id} value={item.id}>{item.role || "Role not specified"} · {item.company || "Company not specified"} · {item.status}</option>)}
+                    </select>
+                </div>
+                <div className="practice-role-picker practice-mode-picker">
+                    <label htmlFor="practice-mode">Interview mode</label>
+                    <select id="practice-mode" value={mode} onChange={event => { setMode(event.target.value); reset(); }}>
+                        {INTERVIEW_MODES.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}
                     </select>
                 </div>
             </section>

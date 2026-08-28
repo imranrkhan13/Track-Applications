@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
-    ArrowRight, BriefcaseBusiness, CalendarDays, Check, CircleHelp, Clock3,
+    ArrowRight, BarChart3, BriefcaseBusiness, CalendarDays, Check, CircleHelp, Clock3,
     ClipboardList, FileText, Filter, LayoutDashboard, Leaf, LogOut, Mic, MoreHorizontal, PanelLeftClose, PanelLeftOpen, Pencil, Plus, Settings, Sprout, Target, Trash2, TrendingUp,
     Search, Upload, Users, X, Zap,
 } from "lucide-react";
@@ -30,7 +30,7 @@ function daysAway(value) { if (!value) return null; return Math.ceil((new Date(v
 function Icon({ children }) { return <span className="icon-slot">{children}</span>; }
 
 function Sidebar({ page, setPage, jobs, user, onSignOut, collapsed, onToggle }) {
-    const primary = [["overview", "My Garden", LayoutDashboard], ["applications", "Roles", BriefcaseBusiness], ["prep", "Prepare", ClipboardList], ["mock", "Practice", Mic]];
+    const primary = [["overview", "My Garden", LayoutDashboard], ["applications", "Roles", BriefcaseBusiness], ["prep", "Prepare", ClipboardList], ["mock", "Practice", Mic], ["analytics", "Insights", BarChart3]];
     const [sidebarQuery, setSidebarQuery] = useState("");
     const visiblePrimary = primary.filter(([, label]) => !sidebarQuery.trim() || label.toLowerCase().includes(sidebarQuery.trim().toLowerCase()));
     const counts = { applications: jobs.filter(job => job.status !== "Rejected").length, mock: jobs.filter(job => job.status === "Interview").length };
@@ -65,7 +65,7 @@ function Topbar({ page, onAdd, user, setPage }) {
     return <header className="topbar-new compact-topbar"><div><div className="crumb"><span>Garden</span><ArrowRight size={12} /><b>{title}</b></div><h1>{title}</h1><p>{subtitle}</p></div><div className="top-actions"><button type="button" className="primary-btn" onClick={onAdd} aria-label="Add role"><Plus size={17} />Add role</button><button type="button" className="avatar top-avatar" onClick={() => setPage("settings")} aria-label="Account settings" title="Account settings">{initials(user)}</button></div></header>;
 }
 
-function MobileNav({ page, setPage, onAdd }) { const items = [["overview", "Garden", LayoutDashboard], ["applications", "Roles", BriefcaseBusiness], ["prep", "Prepare", ClipboardList], ["mock", "Practice", Mic]]; return <nav className="mobile-nav" aria-label="Primary navigation"><div className="mobile-nav-items">{items.map(([id, label, NavIcon]) => <button type="button" key={id} className={page === id ? "active" : ""} onClick={() => setPage(id)}>{React.createElement(NavIcon, { size: 17 })}<span>{label}</span></button>)}<button type="button" className="mobile-add" onClick={onAdd} aria-label="Add role"><Plus size={19} /></button></div></nav>; }
+function MobileNav({ page, setPage, onAdd }) { const items = [["overview", "Garden", LayoutDashboard], ["applications", "Roles", BriefcaseBusiness], ["prep", "Prepare", ClipboardList], ["mock", "Practice", Mic], ["analytics", "Insights", BarChart3]]; return <nav className="mobile-nav" aria-label="Primary navigation"><div className="mobile-nav-items">{items.map(([id, label, NavIcon]) => <button type="button" key={id} className={page === id ? "active" : ""} onClick={() => setPage(id)}>{React.createElement(NavIcon, { size: 17 })}<span>{label}</span></button>)}<button type="button" className="mobile-add" onClick={onAdd} aria-label="Add role"><Plus size={19} /></button></div></nav>; }
 
 function CommandPalette({ open, onClose, onAdd, setPage }) {
     if (!open) return null;
