@@ -52,19 +52,20 @@ export default function HeroSection({ onStart }) {
         <div className="cg-shell cg-hero-grid">
             <MotionDiv className="cg-hero-copy" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35, delay: 0.2 }}>
                 <MotionDiv className="cg-kicker" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}><i />The career workspace</MotionDiv>
-                <h1><RevealLine delay={0.36}>Track the opportunity.</RevealLine><RevealLine delay={0.47} className="cg-serif">Grow the career.</RevealLine></h1>
-                <MotionP initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.62, duration: 0.6 }}>Career Garden turns every job application into a workspace for tracking, research, interview preparation and growth.</MotionP>
+                <h1><RevealLine delay={0.36}>Plant the role.</RevealLine><RevealLine delay={0.47} className="cg-serif">Grow into it.</RevealLine></h1>
+                <MotionP initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.62, duration: 0.6 }}>Save one job. Get the research, preparation plan and practice to walk into the interview ready.</MotionP>
                 <MotionDiv className="cg-hero-actions" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.72, duration: 0.55 }}>
-                    <button type="button" className="cg-button cg-button-primary" onClick={onStart}>Plant your first role <ArrowRight size={16} /></button>
-                    <a className="cg-button cg-button-ghost" href="#journey"><Play size={14} fill="currentColor" />Watch the journey</a>
+                    <button type="button" className="cg-button cg-button-primary" onClick={onStart}>Add your first role <ArrowRight size={16} /></button>
+                    <a className="cg-button cg-button-ghost" href="#journey"><Play size={14} fill="currentColor" />See it grow</a>
                 </MotionDiv>
-                <MotionDiv className="cg-trust-line" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}>Applications <i /> Interviews <i /> Research <i /> Preparation</MotionDiv>
+                <MotionDiv className="cg-trust-line" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}>Track <i /> Research <i /> Prepare</MotionDiv>
             </MotionDiv>
 
             <MotionDiv className="cg-hero-scene" style={{ x: roomX, y: roomY }} initial={{ opacity: 0, scale: 1.025 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.12, duration: 1 }}>
+                <img className="cg-hero-room-backdrop" src={workspaceImage} width="2560" height="2560" alt="" aria-hidden="true" />
                 <img className="cg-hero-room" src={workspaceImage} width="2560" height="2560" alt="A warm botanical home office for focused career work" fetchPriority="high" />
                 <span className="cg-hero-room-shade" />
-                <MotionArticle className="cg-demo-job" animate={phase === 1 ? { x: 152, y: 170, scale: 0.5, opacity: 0 } : { x: 0, y: 0, scale: 1, opacity: 1 }} transition={{ duration: 0.62, ease: [0.22, 1, 0.36, 1] }}>
+                <MotionArticle className="cg-demo-job" animate={phase === 1 ? { x: "125%", y: 190, scale: 0.5, opacity: 0 } : { x: 0, y: 0, scale: 1, opacity: 1 }} transition={{ duration: 0.62, ease: [0.22, 1, 0.36, 1] }}>
                     <div className="cg-demo-job-head"><span>S</span><div><small>NEW OPPORTUNITY</small><strong>Senior Backend Engineer</strong><em>Stripe</em></div></div>
                     <div className="cg-demo-tags"><span>Django</span><span>PostgreSQL</span><span>AWS</span></div>
                     <div className="cg-demo-match"><span>Match</span><strong>82%</strong><i><b /></i></div>
@@ -73,7 +74,7 @@ export default function HeroSection({ onStart }) {
 
                 <div className={`cg-hero-plot phase-${phase}`}>
                     <span className="cg-hero-plot-label">YOUR GARDEN · 01</span>
-                    <PlantSprite stage={phase >= 2 ? 1 : 0} className="cg-hero-plant" label={phase >= 2 ? "A newly planted job sprouting" : "A career opportunity seed"} />
+                    <PlantSprite stage={phase >= 2 ? 1 : 0} className="cg-hero-plant" label={phase >= 2 ? "A newly planted job sprouting" : "A career opportunity seed"} eager />
                     <MotionDiv className="cg-hero-toast" animate={{ opacity: phase >= 2 ? 1 : 0, y: phase >= 2 ? 0 : 10 }}><Check size={13} />Application added</MotionDiv>
                 </div>
 
