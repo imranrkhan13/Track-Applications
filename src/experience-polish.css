@@ -84,7 +84,9 @@
 .growth-leaf-left { left: 17px; bottom: 75px; transform: rotate(-21deg); }
 .growth-leaf-right { right: 2px; bottom: 51px; transform: scaleX(-1) rotate(-19deg); }
 .growth-leaf-top { left: 42px; bottom: 108px; width: 69px; background: linear-gradient(135deg, #cee785, #64a967); transform: rotate(8deg); }
-.growth-bloom { position: absolute; z-index: 3; top: -2px; left: 58px; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; color: #f0c65f; background: rgba(255, 230, 135, .24); font-size: 20px; animation: cg-bloom 2.9s ease-in-out infinite; transition: opacity .5s ease, color .5s ease; }
+.growth-bloom { position: absolute; z-index: 3; top: -2px; left: 58px; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; color: #f0c65f; background: rgba(255, 230, 135, .24); font-size: 0; animation: cg-bloom 2.9s ease-in-out infinite; transition: opacity .5s ease, color .5s ease; }
+.growth-bloom::before, .growth-bloom::after { content: ""; position: absolute; width: 10px; height: 15px; border-radius: 100% 0 100% 0; background: currentColor; transform: rotate(26deg); }
+.growth-bloom::after { transform: rotate(116deg); opacity: .75; }
 
 .growth-pot { position: absolute; z-index: 5; left: 50%; bottom: 14px; width: 86px; height: 50px; transform: translateX(-50%); border-radius: 7px 7px 20px 20px; background: linear-gradient(90deg, #8e5038, #c2744f 50%, #8b4934); box-shadow: inset 0 7px 9px rgba(255, 220, 171, .16), 0 12px 18px rgba(54, 77, 44, .12); }
 .growth-pot::before { content: ""; position: absolute; top: -7px; left: -4px; right: -4px; height: 14px; border-radius: 50%; background: #6b3d2d; box-shadow: inset 0 4px 5px rgba(15, 22, 10, .32); }
