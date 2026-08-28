@@ -9,7 +9,7 @@ import { getResearchLinks, getRoleFamily, getRoleQuestions, getStackSignals, get
 import { researchRole } from "./lib/roleResearch";
 import StageIcon from "./StageIcon";
 
-function SproutFallback() { return <span aria-hidden="true">🌱</span>; }
+function SproutFallback() { return <Sprout size={28} aria-hidden="true" />; }
 
 function dateLabel(value) {
     if (!value) return "a date you choose";

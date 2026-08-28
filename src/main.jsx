@@ -6,8 +6,8 @@ import "./desktop-remake.css";
 import "./workspace-v3.css";
 import "./experience-polish.css";
 import "./app-redesign.css";
-import "./editorial-v5.css";
 import "./design-system.css";
+import "./landing.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>
