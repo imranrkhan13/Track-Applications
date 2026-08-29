@@ -51,9 +51,9 @@ export default function HeroSection({ onStart }) {
     return <section className="cg-hero" id="hero" onPointerMove={moveRoom} onPointerLeave={() => { xValue.set(0); yValue.set(0); }}>
         <div className="cg-shell cg-hero-grid">
             <MotionDiv className="cg-hero-copy" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35, delay: 0.2 }}>
-                <MotionDiv className="cg-kicker" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}><i />The career workspace</MotionDiv>
+                <MotionDiv className="cg-kicker" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}><i />Applications → interviews</MotionDiv>
                 <h1><RevealLine delay={0.36}>Plant the role.</RevealLine><RevealLine delay={0.47} className="cg-serif">Grow into it.</RevealLine></h1>
-                <MotionP initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.62, duration: 0.6 }}>Save one job. Get the research, preparation plan and practice to walk into the interview ready.</MotionP>
+                <MotionP initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.62, duration: 0.6 }}>Keep every application organized, understand the role and practice for the interview—all in one calm workspace.</MotionP>
                 <MotionDiv className="cg-hero-actions" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.72, duration: 0.55 }}>
                     <button type="button" className="cg-button cg-button-primary" onClick={onStart}>Add your first role <ArrowRight size={16} /></button>
                     <a className="cg-button cg-button-ghost" href="#journey"><Play size={14} fill="currentColor" />See it grow</a>
