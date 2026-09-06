@@ -8,6 +8,7 @@ import "./experience-polish.css";
 import "./app-redesign.css";
 import "./design-system.css";
 import "./landing.css";
+import "./responsive-polish.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>

@@ -3,6 +3,7 @@ import { ArrowRight, Leaf, LockKeyhole, Sprout } from "lucide-react";
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import Workspace from "./Workspace";
 import AuthCallback from "./AuthCallback";
+import { browserOAuth } from "./lib/browserOAuth";
 import { DEMO_USER, isSupabaseConfigured, supabase } from "./lib/supabase";
 import LandingPage from "./components/landing/LandingPage";
 
@@ -27,8 +28,10 @@ function Login() {
         }
         setLoading(true);
         try {
-            const { error: authError } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/auth/callback` } });
-            if (authError) setError(`${authError.message} Make sure Google is enabled in Supabase Authentication → Providers and this URL is in the redirect allowlist.`);
+            const result = await browserOAuth.start(window.location.origin);
+            clearDemoSession();
+            if (result.session) navigate("/dashboard", { replace: true });
+            else window.location.assign(result.url);
         } catch (authError) {
             setError(authError?.message || "Google sign-in could not be started. Please try again or use the demo garden.");
         } finally { setLoading(false); }

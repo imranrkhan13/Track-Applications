@@ -50,6 +50,10 @@ Google login is intentionally disabled when Supabase is not configured; the logi
 
 The browser currently uses the Web Speech API when available. The service layer is prepared to send recorded audio to `/api/voice/transcribe` with `X-Voice-Provider: deepgram`, `whisper`, or `gradium`, and to send answer text to `/api/voice/rate`. A deployment target must provide those server routes to activate the external providers.
 
+Start Google sign-in from the application, not a copied authorization URL. PKCE requires the callback to return to the same browser and origin that started sign-in. Add each origin you actually use to Supabase's redirect allowlist, including `/auth/callback`: for example `http://localhost:5173/auth/callback`, `http://127.0.0.1:5173/auth/callback`, `https://career-garden.netlify.app/auth/callback`, and your custom domain's callback. `localhost` and `127.0.0.1` do not share browser storage. Do not redirect between domains during the callback. If the verifier is missing or the link has expired, start again from the login page in the same browser with site storage enabled.
+
+The client checks storage before leaving for Google, waits for session restoration, and owns the callback exchange once outside React's mount lifecycle. It intentionally does not disable PKCE or attempt to bypass a missing verifier.
+
 ## Data model and persistence
 
 In demo mode, jobs, role briefs, mock interview sessions, and notes are stored under user-scoped local-storage keys. When Supabase is configured, the data helpers are structured to use tables for `jobs`, `role_briefs`, `interview_sessions`, and `notes`. The current UI remains usable without a database so product review and local development do not depend on external credentials.
@@ -73,4 +77,6 @@ Do not commit provider keys to this repository or place them in browser-exposed 
 
 ## Verification
 
-The current repository passes `npm run build`. Vite emits only informational warnings about third-party module directives and an outdated Browserslist database; these do not block the production bundle.
+Run `npm test`, `npm run lint`, and `npm run build`. The auth regression tests cover storage failures, concurrent sign-in starts, repeated callbacks, missing/expired verifiers, cancellation, and existing sessions. These use a mocked auth provider; a real Google round trip still requires a configured Supabase project and a user completing consent.
+
+For visual checks, review the landing page and all workspace sections at 320, 390, 768, 1024, and 1440 pixels. Check the add-role dialog's inputs, scrolling, keyboard focus, and footer buttons as well as the mobile navigation. Vite may report third-party module directives, an outdated Browserslist database, and large bundle chunks; these are build warnings, not test failures.

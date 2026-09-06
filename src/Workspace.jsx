@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
-    ArrowRight, BarChart3, BriefcaseBusiness, CalendarDays, Check, CircleHelp, Clock3,
+    ArrowRight, BarChart3, BriefcaseBusiness, CalendarDays, Check, ChevronDown, CircleHelp, Clock3,
     ClipboardList, FileText, Filter, LayoutDashboard, Leaf, LogOut, Mic, MoreHorizontal, PanelLeftClose, PanelLeftOpen, Pencil, Plus, Settings, Sprout, Target, Trash2, TrendingUp,
     Search, Upload, Users, X, Zap,
 } from "lucide-react";
@@ -51,7 +51,7 @@ function Sidebar({ page, setPage, jobs, user, onSignOut, collapsed, onToggle }) 
             </div>
         </div>
         <div className="sidebar-panel">
-            <div className="sidebar-top sidebar-panel-head sidebar-v4-top"><button type="button" className="sidebar-product" onClick={() => setPage("overview")} aria-label="Open My Garden"><span className="sidebar-product-mark"><Sprout size={17} /></span><span className="sidebar-product-copy"><strong>Career Garden</strong><small>Job search, cultivated</small></span><span className="sidebar-product-caret">⌄</span></button><button type="button" className="sidebar-collapse-toggle" onClick={onToggle} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} title={collapsed ? "Expand sidebar" : "Collapse sidebar"}>{collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}</button></div>
+            <div className="sidebar-top sidebar-panel-head sidebar-v4-top"><button type="button" className="sidebar-product" onClick={() => setPage("overview")} aria-label="Open My Garden"><span className="sidebar-product-mark"><Sprout size={17} /></span><span className="sidebar-product-copy"><strong>Career Garden</strong><small>Job search, cultivated</small></span><span className="sidebar-product-caret"><ChevronDown size={13} /></span></button><button type="button" className="sidebar-collapse-toggle" onClick={onToggle} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} title={collapsed ? "Expand sidebar" : "Collapse sidebar"}>{collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}</button></div>
             <label className="sidebar-search"><Search size={16} /><input value={sidebarQuery} onChange={event => setSidebarQuery(event.target.value)} placeholder="Search workspace" aria-label="Search workspace" /><kbd>/</kbd></label>
             <nav className="side-nav sidebar-v4-nav"><div className="nav-group"><p>Workspace</p>{visiblePrimary.length ? visiblePrimary.map(renderItem) : <span className="sidebar-no-results">No matching section</span>}</div><section className="sidebar-cycle-v4 sidebar-cycle-simple" aria-label="Current plant stage"><div className="sidebar-cycle-v4-head"><div><span>Plant cycle</span><b>{currentStage.label}</b></div><em>{currentStage.step} / 06</em></div><div className="sidebar-cycle-current"><span className="sidebar-cycle-v4-node" style={{ background: currentStage.tint, color: currentStage.color }}><StageIcon stage={currentStage} size={15} /></span><span><b>{currentStage.title}</b><small>{currentJob ? "Your next move is in motion" : "Add a role to begin"}</small></span></div><div className="sidebar-cycle-v4-foot"><span><i style={{ width: `${cycleProgress}%` }} /></span><small>{cycleProgress}% of the plant cycle</small></div></section></nav>
             <div className="sidebar-footer sidebar-v4-footer"><div className="account-card"><button type="button" className="account-identity" onClick={() => setPage("settings")} aria-label="Open account settings"><div className="avatar">{initials(user)}</div><span><b>{displayName(user)}</b><small>{user?.email || "No email connected"}</small></span><MoreHorizontal size={16} /></button><button type="button" className="account-signout" onClick={onSignOut}><LogOut size={15} /><span>Sign out</span></button></div></div>
@@ -65,7 +65,7 @@ function Topbar({ page, onAdd, user, setPage }) {
     return <header className="topbar-new compact-topbar"><div><div className="crumb"><span>Garden</span><ArrowRight size={12} /><b>{title}</b></div><h1>{title}</h1><p>{subtitle}</p></div><div className="top-actions"><button type="button" className="primary-btn" onClick={onAdd} aria-label="Add role"><Plus size={17} />Add role</button><button type="button" className="avatar top-avatar" onClick={() => setPage("settings")} aria-label="Account settings" title="Account settings">{initials(user)}</button></div></header>;
 }
 
-function MobileNav({ page, setPage, onAdd }) { const items = [["overview", "Garden", LayoutDashboard], ["applications", "Roles", BriefcaseBusiness], ["prep", "Prepare", ClipboardList], ["mock", "Practice", Mic], ["analytics", "Insights", BarChart3]]; return <nav className="mobile-nav" aria-label="Primary navigation"><div className="mobile-nav-items">{items.map(([id, label, NavIcon]) => <button type="button" key={id} className={page === id ? "active" : ""} onClick={() => setPage(id)}>{React.createElement(NavIcon, { size: 17 })}<span>{label}</span></button>)}<button type="button" className="mobile-add" onClick={onAdd} aria-label="Add role"><Plus size={19} /></button></div></nav>; }
+function MobileNav({ page, setPage, onAdd }) { const items = [["overview", "Garden", LayoutDashboard], ["applications", "Roles", BriefcaseBusiness], ["prep", "Prepare", ClipboardList], ["mock", "Practice", Mic], ["analytics", "Insights", BarChart3]]; return <nav className="mobile-nav" aria-label="Primary navigation"><div className="mobile-nav-items">{items.map(([id, label, NavIcon]) => <button type="button" key={id} className={page === id ? "active" : ""} aria-label={label} aria-current={page === id ? "page" : undefined} onClick={() => setPage(id)}>{React.createElement(NavIcon, { size: 17 })}<span>{label}</span></button>)}<button type="button" className="mobile-add" onClick={onAdd} aria-label="Add role"><Plus size={19} /></button></div></nav>; }
 
 function CommandPalette({ open, onClose, onAdd, setPage }) {
     if (!open) return null;
@@ -127,6 +127,24 @@ function Applications({ jobs, openJob, editJob, addJob }) {
 function JobDrawer({ job, onClose, onSave, onDelete, error }) {
     const [draft, setDraft] = useState(job || seedForm);
     const [validation, setValidation] = useState("");
+    const dialogRef = useRef(null);
+    useEffect(() => {
+        const previousOverflow = document.body.style.overflow;
+        const opener = document.activeElement;
+        document.body.style.overflow = "hidden";
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            if (opener instanceof HTMLElement && opener.isConnected) opener.focus();
+        };
+    }, []);
+    const trapFocus = event => {
+        if (event.key !== "Tab") return;
+        const controls = [...dialogRef.current.querySelectorAll('button:not(:disabled), input, select, textarea, [tabindex="0"]')].filter(element => element.getClientRects().length);
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    };
     if (!job) return null;
     const update = (key, value) => setDraft(current => ({ ...current, [key]: value }));
     const isNew = !draft.id;
@@ -139,7 +157,7 @@ function JobDrawer({ job, onClose, onSave, onDelete, error }) {
         onSave(draft);
     };
     return <div className="drawer-backdrop" onMouseDown={event => event.target === event.currentTarget && onClose()}>
-        <aside className="job-drawer job-drawer-v5" aria-label={isNew ? "Add application" : "Edit application"}>
+        <aside ref={dialogRef} role="dialog" aria-modal="true" onKeyDown={trapFocus} className="job-drawer job-drawer-v5" aria-label={isNew ? "Add application" : "Edit application"}>
             <div className="drawer-head drawer-v5-head">
                 <div><span className="drawer-kicker">{isNew ? "Plant a new role" : "Role details"}</span><h2>{draft.company || "Give this role a home"}</h2><p>{isNew ? "Add the essentials now. You can prepare for it next." : "Keep the details fresh so the next step stays visible."}</p></div>
                 <button className="icon-btn" onClick={onClose} aria-label="Close application editor"><X size={18} /></button>
