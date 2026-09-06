@@ -24,7 +24,8 @@ export default function JourneySection({ onStart }) {
 
     useMotionValueEvent(scrollYProgress, "change", value => {
         if (reducedMotion) return;
-        setStep(Math.min(4, Math.floor(value * 5)));
+        const nextStep = Math.min(4, Math.max(0, Math.round(value * 4)));
+        setStep(current => current === nextStep ? current : nextStep);
     });
 
     const activeIndex = step < 4 ? step : outcome === "bloom" ? 4 : 5;
@@ -33,8 +34,8 @@ export default function JourneySection({ onStart }) {
     return <section className="cg-journey" id="journey" ref={sectionRef}>
         <div className="cg-journey-sticky">
             <div className="cg-shell cg-journey-heading">
-                <div><span className="cg-kicker cg-kicker-light"><i />Your application journey</span><h2>One opportunity.<br /><em>A whole journey.</em></h2></div>
-                <p>Scroll to grow the same opportunity from a saved role to an interview—and then to an outcome.</p>
+                <div><span className="cg-kicker cg-kicker-light"><i />Step 03 · Track the journey</span><h2>Six clear stages.<br /><em>One role in motion.</em></h2></div>
+                <p>Scroll or choose a stage to follow the same role from saved to applied, interview and outcome.</p>
             </div>
 
             <div className="cg-shell cg-journey-stage">
@@ -47,8 +48,8 @@ export default function JourneySection({ onStart }) {
 
                 <div className="cg-journey-plant-wrap">
                     <span className="cg-journey-halo" />
-                    <AnimatePresence mode="wait">
-                        <MotionDiv key={activeIndex} initial={{ opacity: 0, scale: 0.92, y: 22 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 1.04, y: -14 }} transition={{ duration: 0.58, ease: [0.22, 1, 0.36, 1] }} className="cg-journey-plant-motion">
+                    <AnimatePresence initial={false}>
+                        <MotionDiv key={activeIndex} initial={{ opacity: 0, scale: 0.94, y: 18, filter: "blur(4px)" }} animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, scale: 1.035, y: -8, filter: "blur(3px)" }} transition={{ duration: 0.54, ease: [0.22, 1, 0.36, 1] }} className="cg-journey-plant-motion">
                             <PlantSprite stage={activeIndex} className="cg-journey-plant" label={`${active.name}: ${active.status}`} />
                         </MotionDiv>
                     </AnimatePresence>

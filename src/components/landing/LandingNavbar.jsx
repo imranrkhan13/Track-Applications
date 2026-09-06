@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ArrowUpRight, Menu, Sprout, X } from "lucide-react";
 
-const LINKS = [["Journey", "#journey"], ["Product", "#dashboard"], ["Interview Prep", "#interview-prep"], ["Practice", "#practice"]];
+const LINKS = [["How it works", "#capture"], ["Journey", "#journey"], ["Your plan", "#plan"], ["Practice", "#practice"]];
 
 export default function LandingNavbar({ onStart, onSignIn }) {
     const [scrolled, setScrolled] = useState(false);

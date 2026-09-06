@@ -8,8 +8,6 @@ import IntelligenceSection from "./IntelligenceSection";
 import InterviewPrepSection from "./InterviewPrepSection";
 import PlanSection from "./PlanSection";
 import PracticeSection from "./PracticeSection";
-import ApplicationViews from "./ApplicationViews";
-import AnalyticsSection from "./AnalyticsSection";
 import LessonsSection from "./LessonsSection";
 import FinalCTA from "./FinalCTA";
 import LandingFooter from "./LandingFooter";
@@ -19,15 +17,13 @@ export default function LandingPage({ onStart, onSignIn }) {
         <LandingNavbar onStart={onStart} onSignIn={onSignIn} />
         <main>
             <HeroSection onStart={onStart} />
-            <JourneySection onStart={onStart} />
-            <DashboardDemo onStart={onStart} />
             <CaptureSection onStart={onStart} />
             <IntelligenceSection />
-            <InterviewPrepSection onStart={onStart} />
+            <JourneySection onStart={onStart} />
+            <DashboardDemo onStart={onStart} />
             <PlanSection />
+            <InterviewPrepSection onStart={onStart} />
             <PracticeSection />
-            <ApplicationViews />
-            <AnalyticsSection />
             <LessonsSection onStart={onStart} />
             <FinalCTA onStart={onStart} />
         </main>
