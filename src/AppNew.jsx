@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ArrowRight, Leaf, LockKeyhole, Sprout } from "lucide-react";
-import { BrowserRouter, Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import Workspace from "./Workspace";
 import AuthCallback from "./AuthCallback";
 import { DEMO_USER, isSupabaseConfigured, supabase } from "./lib/supabase";
@@ -27,9 +27,7 @@ function Login() {
         }
         setLoading(true);
         try {
-            // Keep the existing dashboard redirect allowlist. Authenticated
-            // explicitly exchanges the PKCE code before rendering the app.
-            const { error: authError } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/dashboard`, queryParams: { access_type: "offline", prompt: "select_account" } } });
+            const { error: authError } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/auth/callback` } });
             if (authError) setError(`${authError.message} Make sure Google is enabled in Supabase Authentication → Providers and this URL is in the redirect allowlist.`);
         } catch (authError) {
             setError(authError?.message || "Google sign-in could not be started. Please try again or use the demo garden.");
@@ -47,31 +45,27 @@ function Authenticated() {
         if (demoSession) return undefined;
         if (!supabase) return undefined;
         let active = true;
-        let authResolved = false;
-        const { data: listener } = supabase.auth.onAuthStateChange((_, session) => {
-            if (!active || !authResolved) return;
-            if (session) setUser(session.user);
-            else { setUser(null); navigate("/login", { replace: true }); }
+        const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+            if (!active) return;
+            if (session?.user) {
+                setUser(session.user);
+                setAuthChecked(true);
+            } else if (event === "SIGNED_OUT") {
+                setUser(null);
+                setAuthChecked(true);
+                navigate("/login", { replace: true });
+            }
         });
         const restoreSession = async () => {
-            let session = (await supabase.auth.getSession()).data.session;
-            const code = new URLSearchParams(window.location.search).get("code");
-            if (!session && code) {
-                const exchanged = await supabase.auth.exchangeCodeForSession(code);
-                if (!exchanged.error) {
-                    session = exchanged.data.session;
-                    window.history.replaceState({}, document.title, "/dashboard");
-                }
-            }
+            const { data, error } = await supabase.auth.getSession();
+            if (error) throw error;
             if (!active) return;
-            if (session) setUser(session.user);
+            if (data.session?.user) setUser(data.session.user);
             else navigate("/login", { replace: true });
-            authResolved = true;
             setAuthChecked(true);
         };
         restoreSession().catch(() => {
             if (!active) return;
-            authResolved = true;
             setAuthChecked(true);
             navigate("/login?auth_error=Google%20session%20could%20not%20be%20restored", { replace: true });
         });
@@ -82,9 +76,22 @@ function Authenticated() {
     return <Workspace user={user} onSignOut={signOut} />;
 }
 
+function hasAuthResponse(search) {
+    const params = new URLSearchParams(search);
+    return params.has("code") || params.has("error") || params.has("error_description");
+}
+
 function LandingRoute() {
     const navigate = useNavigate();
+    const location = useLocation();
+    if (hasAuthResponse(location.search)) return <Navigate to={`/auth/callback${location.search}`} replace />;
     return <LandingPage onStart={() => navigate("/login")} onSignIn={() => navigate("/login")} />;
 }
 
-export default function AppNew() { return <BrowserRouter><Routes><Route path="/" element={<LandingRoute />} /><Route path="/login" element={<Login />} /><Route path="/auth/callback" element={<AuthCallback />} /><Route path="/dashboard/*" element={<Authenticated />} /><Route path="*" element={<Navigate to="/" replace />} /></Routes></BrowserRouter>; }
+function AuthenticatedRoute() {
+    const location = useLocation();
+    if (hasAuthResponse(location.search)) return <Navigate to={`/auth/callback${location.search}`} replace />;
+    return <Authenticated />;
+}
+
+export default function AppNew() { return <BrowserRouter><Routes><Route path="/" element={<LandingRoute />} /><Route path="/login" element={<Login />} /><Route path="/auth/callback" element={<AuthCallback />} /><Route path="/dashboard/*" element={<AuthenticatedRoute />} /><Route path="*" element={<Navigate to="/" replace />} /></Routes></BrowserRouter>; }

@@ -46,7 +46,7 @@ Copy `.env.example` to `.env.local` when configuring the application. Client-sid
 
 ### Google login setup
 
-Google login is intentionally disabled when Supabase is not configured; the login screen shows the reason and keeps the demo garden available. To enable it, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` to `.env.local`, enable the Google provider in **Supabase → Authentication → Providers**, add the deployed site URL to the Supabase redirect allowlist, and add `${SITE_URL}/dashboard` as the OAuth redirect URL. The client uses Supabase PKCE flow and does not contain a Google client secret.
+Google login is intentionally disabled when Supabase is not configured; the login screen shows the reason and keeps the demo garden available. To enable it, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` to `.env.local`, enable the Google provider in **Supabase → Authentication → Providers**, and add `${SITE_URL}/auth/callback` to **Supabase → Authentication → URL Configuration → Redirect URLs**. In Google Cloud, use the project callback shown by Supabase (`https://<project-ref>.supabase.co/auth/v1/callback`) as the authorized redirect URI. The client uses one explicit PKCE callback exchange and does not contain a Google client secret.
 
 The browser currently uses the Web Speech API when available. The service layer is prepared to send recorded audio to `/api/voice/transcribe` with `X-Voice-Provider: deepgram`, `whisper`, or `gradium`, and to send answer text to `/api/voice/rate`. A deployment target must provide those server routes to activate the external providers.
 
