@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ArrowRight, Leaf, LockKeyhole, Sprout } from "lucide-react";
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import Workspace from "./Workspace";
+import Workspace from "./career/CareerWorkspace";
 import AuthCallback from "./AuthCallback";
 import { browserOAuth } from "./lib/browserOAuth";
 import { DEMO_USER, isSupabaseConfigured, supabase } from "./lib/supabase";

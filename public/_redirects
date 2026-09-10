@@ -1,2 +1,4 @@
+/api/career-research    /.netlify/functions/career-research    200
+/api/career-coach    /.netlify/functions/career-coach    200
 /api/research-role    /.netlify/functions/research-role    200
 /*    /index.html    200
