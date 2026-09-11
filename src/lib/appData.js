@@ -41,7 +41,7 @@ function writeRoleMeta(next) {
     try { localStorage.setItem(REMOTE_ROLE_META_KEY, JSON.stringify(next)); } catch { /* local metadata is a best-effort enhancement */ }
 }
 
-function roleMetaFor(userId, jobId) {
+export function roleMetaFor(userId, jobId) {
     return readRoleMeta()[userId]?.[jobId] || {};
 }
 
@@ -114,11 +114,11 @@ export async function saveJob(job, userId = "demo-user") {
     const localId = job.id || (typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `job-${Date.now()}`);
     const payload = toRemoteJob(job, userId);
     if (isRealUser(userId)) {
-        // New rows must let Postgres/Supabase generate the identity id. Only
-        // send an id when this is an edit of a row that already exists remotely.
-        const remotePayload = job.id ? { ...payload, id: job.id } : payload;
+        // Postgres generates new identity IDs. Edits use the ID only as a filter,
+        // never as an inserted or updated identity-column value.
+        const remotePayload = payload;
         const query = job.id
-            ? supabase.from("jobs").upsert(remotePayload).select().single()
+            ? supabase.from("jobs").update(remotePayload).eq("id", job.id).eq("user_id", userId).select().single()
             : supabase.from("jobs").insert(remotePayload).select().single();
         const result = await query;
         const saved = requireRemote(result, "application");

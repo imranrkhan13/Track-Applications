@@ -1,5 +1,17 @@
 # Career Garden
 
+## Current workspace (September 2026)
+
+The active application now lives in `src/career/`. It has three focused areas: **My jobs**, **Preparation**, and **Practice**. Each job includes tracking, research, a deadline-aware preparation plan, notes, artifacts and saved rehearsals. The finished landing page is preserved.
+
+**Deployment requirement:** apply `supabase/migrations/202609080001_career_workspace.sql` before publishing the new workspace. Set the public Supabase configuration and server-only research/model settings from `.env.example`. Without configuration, the app runs as an explicitly labeled browser-local demo; live research and AI coaching do not pretend to run.
+
+See [workspace release and setup](docs/workspace-release.md) for the current data model, security boundaries, required setup and verification steps. Run `npm test`, `npm run lint` and `npm run build` for the local checks. `npm run dev` serves both the app and the new local API routes.
+
+The notes below describe the **previous workspace**, whose components and local data are retained for compatibility. Its analytics navigation, generic plans and heuristic scoring are not part of the active replacement.
+
+## Previous workspace — historical notes
+
 A calmer career workspace for managing job applications, preparing for a specific role, and practicing interview answers out loud. The application is designed to work immediately in **demo mode** and can be connected to Supabase and server-side voice providers for production use.
 
 ## What is included
