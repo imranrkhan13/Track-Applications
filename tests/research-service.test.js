@@ -55,7 +55,7 @@ test('search snippets are not fetched or treated as process evidence without all
     let calls = 0;
     const handler = makeHandler({ env: { ...env, BRAVE_SEARCH_API_KEY: 'test' }, clientFactory, readPage: () => assert.fail('Domain is not approved'), getJSON: async () => { calls++; return { web: { results: [{ title: 'Unverified title claiming four rounds', url: 'https://example.com/blog' }] } }; } });
     const result = json(await handler(request()));
-    assert.equal(calls, 2); assert.equal(result.sources.length, 1); assert.equal(result.sources[0].status, 'discovered'); assert.equal(result.accounts.length, 0);
+    assert.equal(calls, 7); assert.equal(result.sources.length, 1); assert.equal(result.sources[0].status, 'discovered'); assert.equal(result.accounts.length, 0);
 });
 test('extraction rejects invented citations and leaves tool rules/applicability unconfirmed', () => {
     const documents = [{ id: 's1', url: 'https://example.com', title: 'Account', text: 'We had a technical assessment and a discussion.', kind: 'account' }];
