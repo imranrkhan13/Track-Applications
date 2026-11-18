@@ -79,13 +79,21 @@ Do not commit provider keys to this repository or place them in browser-exposed 
 | File | Responsibility |
 | --- | --- |
 | `src/AppNew.jsx` | Landing page, login/demo entrypoint, and authenticated workspace routing. |
-| `src/Workspace.jsx` | Application shell, navigation, dashboard, pipeline, analytics, settings, and job drawer. |
-| `src/RoleRoom.jsx` | Company research trails, six-stage candidate task plan, evidence log, and targeted questions. |
-| `src/InterviewPrep.jsx` | Legacy role-specific brief, question set, and story-bank workflow retained for compatibility. |
-| `src/MockInterview.jsx` | Voice practice room, provider selector, transcript, rating, and session history. |
+| `src/career/CareerWorkspace.jsx` | Workspace shell: job list/board, stage tracking, job drawer, and the Track → Research → Prepare → Practice flow. |
+| `src/career/Research.jsx` | Research dashboard: source cards with status/tier badges, reviewed-account evidence timeline, synthesized brief panel, JD panel. |
+| `src/career/Preparation.jsx` | Deadline-aware study plan with weekly list and day-by-day schedule calendar views. |
+| `src/career/Practice.jsx` | Role-specific prompts, timer, dictation, self-review, and optional AI coaching. |
+| `src/career/planner.js` + `src/lib/prepEngine.js` | Deterministic curriculum and timezone/deadline scheduler (no LLM in scheduling). |
+| `src/career/repository.js` | Demo (local) and Supabase (cloud) persistence with optimistic revision checks. |
+| `netlify/functions/career-research.mjs` | Authenticated research: discovery queries, seed catalogue, polite crawl, AI extraction. |
+| `netlify/functions/career-brief.mjs` | Authenticated brief synthesis from reviewed accounts (`/api/career-brief`). |
+| `netlify/functions/career-coach.mjs` | AI coaching on practice answers with quoted-evidence validation. |
+| `netlify/functions/lib/robots.mjs` | robots.txt parsing/caching (Allow/Disallow, wildcards, `$` anchors, Crawl-delay, Sitemaps). |
+| `netlify/functions/lib/scraper.mjs` | Polite crawler: robots checks, per-host rate limits, page/depth/budget caps, link discovery. |
+| `netlify/functions/lib/sources/adapters.mjs` | Per-site discovery/parse adapters (AmbitionBox, Medium, Glassdoor, generic). |
+| `netlify/functions/lib/ai/` | AI layer: provider abstraction, versioned prompts, claim extraction, brief synthesis. |
 | `src/lib/appData.js` | Local persistence and Supabase-aware data helpers. |
-| `src/lib/voiceInterview.js` | Voice provider status, browser recognition, server hooks, and local scoring fallback. |
-| `src/index.css` | Responsive visual system for the full application. |
+| `src/career/career.css` | Scoped workspace visual system. |
 
 ## Verification
 
