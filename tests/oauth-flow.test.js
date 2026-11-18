@@ -2,9 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createOAuthFlow } from '../src/lib/oauthFlow.js';
 
-function setup({ session = null, blocked = false, saveVerifier = true, exchangeError = null } = {}) {
+function setup({ session = null, blocked = false, saveVerifier = true, exchangeError = null, refreshFails = false } = {}) {
     const values = new Map();
-    const calls = { start: 0, exchange: 0 };
+    const calls = { start: 0, exchange: 0, signOut: 0 };
     const signedIn = { user: { id: 'candidate' } };
     const storage = {
         getItem: key => values.get(key) || null,
@@ -12,7 +12,8 @@ function setup({ session = null, blocked = false, saveVerifier = true, exchangeE
         removeItem: key => values.delete(key),
     };
     const auth = {
-        getSession: async () => ({ data: { session }, error: null }),
+        getSession: async () => refreshFails ? ({ data: { session: null }, error: { message: 'Refresh token is not valid' } }) : ({ data: { session }, error: null }),
+        signOut: async () => { calls.signOut++; return { error: null }; },
         signInWithOAuth: async options => {
             calls.start++;
             calls.options = options;
@@ -70,4 +71,18 @@ test('expired verifier and cancellation recover without SDK diagnostics', async 
     await flow.start('https://example.com');
     await assert.rejects(flow.complete('?code=expired'), /already used/);
     await assert.rejects(flow.complete('?error=access_denied'), /cancelled/);
+});
+test('a stale saved session is cleared and Google sign-in still opens', async () => {
+    const stale = setup({ refreshFails: true });
+    const result = await stale.flow.start('https://example.com');
+    assert.ok(result.url, 'sign-in must proceed to Google despite the dead session');
+    assert.equal(stale.calls.signOut, 1, 'the dead session is cleared');
+    assert.equal(stale.calls.start, 1);
+});
+test('callback with a dead saved session still exchanges the fresh code', async () => {
+    const stale = setup({ refreshFails: true });
+    await stale.flow.start('https://example.com');
+    const session = await stale.flow.complete('?code=fresh');
+    assert.deepEqual(session, stale.signedIn);
+    assert.equal(stale.calls.exchange, 1);
 });
