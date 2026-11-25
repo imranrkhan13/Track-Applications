@@ -101,4 +101,34 @@ Do not commit provider keys to this repository or place them in browser-exposed 
 
 Run `npm test`, `npm run lint`, and `npm run build`. The auth regression tests cover storage failures, concurrent sign-in starts, repeated callbacks, missing/expired verifiers, cancellation, and existing sessions. These use a mocked auth provider; a real Google round trip still requires a configured Supabase project and a user completing consent.
 
+`npm run smoke` runs a **full-application smoke test**. It serves the production `dist/` the way Netlify does (static files with an `index.html` fallback, `/api/*` routed to the real function handlers) and checks that the app boots, its JS/CSS assets resolve, deep links return the app shell, and the research API is wired and guards auth. Point it at a live deployment with `SMOKE_BASE_URL=https://your-site.netlify.app npm run smoke`.
+
+`npm run verify` runs the whole gate in order: lint → tests → build → smoke.
+
 For visual checks, review the landing page and all workspace sections at 320, 390, 768, 1024, and 1440 pixels. Check the add-role dialog's inputs, scrolling, keyboard focus, and footer buttons as well as the mobile navigation. Vite may report third-party module directives, an outdated Browserslist database, and large bundle chunks; these are build warnings, not test failures.
+
+## Continuous integration and deployment
+
+`.github/workflows/ci.yml` runs on every push and pull request:
+
+1. **verify** — `npm run lint`, `npm test`, `npm run build`, then the smoke test.
+2. **deploy** (pushes to `main` only) — deploys the built site to Netlify.
+3. **live-smoke** — smoke-tests the deployed URL.
+4. **revert** — if the live smoke test fails, the pushed commit is reverted and the previous version is redeployed, so a broken change never stays live.
+
+To reuse this pattern in another repository, copy `docs/ci-template.yml` to that repo's `.github/workflows/ci.yml` and change only the lines marked `# <-- CHANGE` (branch names, build scripts, deploy command). The only genuinely app-specific piece is the smoke test — everything else is generic.
+
+### Required repository secrets
+
+Set these under **Settings → Secrets and variables → Actions**:
+
+| Secret | Purpose |
+|---|---|
+| `NETLIFY_AUTH_TOKEN` | Netlify personal access token used to deploy and revert. |
+| `NETLIFY_SITE_ID` | The Netlify site's API ID (Site configuration → General). |
+
+Without them, verification still runs but deploy and live-smoke are skipped with a warning.
+
+### Important: disable Netlify auto-publish
+
+Turn **off** Netlify's own *Auto publishing* (Site configuration → Build & deploy → Continuous deployment). Otherwise Netlify deploys every push itself, bypassing this pipeline's checks and the automatic revert. With auto-publish off, only this workflow publishes production.
