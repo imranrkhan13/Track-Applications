@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { readPublicPage, sourceURL, textFromHTML } from './lib/safe-source.mjs';
 import { runScrapePlan } from './lib/scraper.mjs';
-import { adapterFor } from './lib/sources/adapters.mjs';
+import { adapterFor, BOARD_PROBES } from './lib/sources/adapters.mjs';
 import { makeProvider, hasAIProvider } from './lib/ai/provider.mjs';
 import { extractAccounts } from './lib/ai/extract.mjs';
 import seed1 from '../../research/interview-source-seeds.json' with { type: 'json' };
@@ -188,6 +188,22 @@ export function makeHandler({
                     const seed = sourceURL(d.url);
                     if (allowAll || permittedHosts.includes(seed.hostname)) crawlSeeds.add(seed.href);
                 } catch { /* skip unparseable */ }
+            }
+        }
+
+        // 1b. Direct job-board probe: slug-based boards (Greenhouse/Lever) are
+        //     public and deterministic, so probe them from the company name even
+        //     when search returned nothing. Still gated by the allowlist.
+        if (input.company) {
+            for (const base of BOARD_PROBES) {
+                const adapter = adapterFor(base);
+                if (!adapter) continue;
+                for (const d of adapter.discover({ company: input.company, role: input.role })) {
+                    try {
+                        const seed = sourceURL(d.url);
+                        if (allowAll || permittedHosts.includes(seed.hostname)) crawlSeeds.add(seed.href);
+                    } catch { /* skip unparseable */ }
+                }
             }
         }
 

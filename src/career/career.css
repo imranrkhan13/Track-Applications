@@ -446,3 +446,14 @@
 @media (prefers-reduced-motion: reduce) {
     .career-app .cg-progress-steps > li { animation: none; opacity: .85; }
 }
+
+/* Company profile panel. */
+.career-app .cg-profile-panel { border-left: 3px solid var(--cg-green); }
+.career-app .cg-profile-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 8px; }
+.career-app .cg-profile-bucket { padding: 12px; background: #fbfaf3; border: 1px solid var(--cg-line); border-radius: 10px; }
+.career-app .cg-profile-bucket-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.career-app .cg-profile-bucket-head b { font-size: .875rem; }
+.career-app .cg-profile-bucket-head span { min-width: 20px; padding: 1px 7px; border-radius: var(--cg-radius-pill, 999px); background: #e7ebda; color: var(--cg-green); font-size: .75rem; font-weight: 700; text-align: center; }
+.career-app .cg-profile-bucket ul { list-style: none; display: grid; gap: 6px; margin: 8px 0 0; padding: 0; }
+.career-app .cg-profile-bucket li { display: grid; gap: 1px; }
+.career-app .cg-profile-host { color: var(--cg-muted); font-size: .6875rem; }

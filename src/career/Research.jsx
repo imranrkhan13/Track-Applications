@@ -2,6 +2,7 @@ import { createElement, useEffect, useMemo, useState } from 'react';
 import { BookOpen, Search, Plus, ShieldCheck, Sparkles, Link2, AlertTriangle, Globe, FileText, CheckCircle2, Ban, RefreshCw } from 'lucide-react';
 import { workspaceFor, safeLink } from './repository';
 import { inferFamily, normalizeCompany, processFor } from './planner';
+import { companyProfile, BUCKET_META } from './companyProfile';
 import { ExternalLink } from './UI';
 import { supabase } from '../lib/supabase';
 
@@ -70,6 +71,32 @@ function ResearchProgress() {
         </div>
         <ol className="cg-progress-steps">{steps.map((s, i) => <li key={s.label} style={{ animationDelay: `${i * 1.4}s` }}><span className="cg-progress-icon">{createElement(s.icon, { 'aria-hidden': true })}</span><div><b>{s.label}</b><small>{s.detail}</small></div></li>)}</ol>
         <small className="cg-muted">This usually takes 15–60 seconds. Your job is already saved — you can leave this tab and return.</small>
+    </section>;
+}
+
+// Company profile: groups the research sources into product / tech / hiring /
+// reviews so the candidate sees what is known about the company at a glance.
+function CompanyProfile({ research }) {
+    const profile = useMemo(() => companyProfile(research), [research]);
+    if (!profile.total) return null;
+    return <section className="cg-surface cg-profile-panel">
+        <div className="cg-section-head">
+            <div><span className="cg-label">COMPANY PROFILE</span><h2>What we know about {research.query?.company || 'this company'}</h2></div>
+            <span className="cg-badge cg-badge-neutral">{profile.total} source{profile.total === 1 ? '' : 's'}</span>
+        </div>
+        <p className="cg-muted">Grouped from the sources research found. These are links to review, not verified facts about the company.</p>
+        <div className="cg-profile-grid">
+            {profile.order.map(key => {
+                const items = profile.buckets[key];
+                if (!items.length) return null;
+                const meta = BUCKET_META[key];
+                return <div className="cg-profile-bucket" key={key}>
+                    <div className="cg-profile-bucket-head"><b>{meta.label}</b><span>{items.length}</span></div>
+                    <small className="cg-muted">{meta.hint}</small>
+                    <ul>{items.slice(0, 6).map(item => <li key={item.url}><ExternalLink href={item.url}>{item.title}</ExternalLink><span className="cg-profile-host">{item.host}</span></li>)}</ul>
+                </div>;
+            })}
+        </div>
     </section>;
 }
 
@@ -223,6 +250,8 @@ export default function Research({ job, userId, onUpdate, onResearch, busy, rese
         </section>
 
         {researching && <ResearchProgress />}
+
+        <CompanyProfile research={w.research} />
 
         <ScrapeTransparency research={w.research} busy={busy} />
 
