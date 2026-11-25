@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { readPublicPage, sourceURL, textFromHTML } from './lib/safe-source.mjs';
 import { runScrapePlan } from './lib/scraper.mjs';
 import { adapterFor, BOARD_PROBES } from './lib/sources/adapters.mjs';
+import { discoverCompany, discoverSitemap, discoverCommonPaths, sitemapKeywords } from './lib/sources/discovery.mjs';
 import { makeProvider, hasAIProvider } from './lib/ai/provider.mjs';
 import { extractAccounts } from './lib/ai/extract.mjs';
 import seed1 from '../../research/interview-source-seeds.json' with { type: 'json' };
@@ -126,7 +127,44 @@ export function makeHandler({
 
         const catalogueSourceUrls = new Set(sources.map(s => s.url));
 
-        // --- Brave search with expanded query groups ---
+        // --- Free discovery (no API key): Wikipedia/Wikidata + official-site sitemap ---
+        // Finds the company's official website from Wikidata (never guessed),
+        // its encyclopedic background, and its own careers/engineering/blog
+        // pages from the site's sitemap. All subject to robots.txt downstream.
+        let discoveredAnything = sources.length > 0;
+        try {
+            const company = await discoverCompany({ company: input.company, getJSON });
+            if (company) {
+                discoveredAnything = true;
+                sources.push({
+                    title: `${company.title} — company overview (Wikipedia)`,
+                    url: company.wikiUrl,
+                    status: 'discovered',
+                    note: (company.summary || 'Encyclopedic company overview.').slice(0, 300),
+                });
+                if (company.officialUrl) {
+                    try {
+                        const site = sourceURL(company.officialUrl);
+                        sources.push({
+                            title: `${input.company} — official site`,
+                            url: site.href,
+                            status: 'discovered',
+                            note: 'Official company website (from Wikidata P856).',
+                        });
+                        const pages = await discoverSitemap({ origin: site.origin, readPage, keywords: sitemapKeywords(input.role) });
+                        for (const url of pages) {
+                            sources.push({ title: new URL(url).pathname, url, status: 'discovered', note: 'Found in the official site sitemap.' });
+                        }
+                        // Conventional paths — cheap and cover sites with huge sitemaps.
+                        for (const url of discoverCommonPaths(site.origin)) {
+                            sources.push({ title: new URL(url).pathname, url, status: 'discovered', note: 'Common company page (careers/blog/about). Read only if it exists.' });
+                        }
+                    } catch { /* official site is optional */ }
+                }
+            }
+        } catch { /* discovery is best-effort; never blocks research */ }
+
+        // --- Optional paid search (Brave) — used only if a key is configured ---
         if (env.BRAVE_SEARCH_API_KEY) {
             try {
                 const queries = discoveryQueries(input);
@@ -147,11 +185,14 @@ export function makeHandler({
                 for (const s of searchSources) {
                     if (!catalogueSourceUrls.has(s.url)) sources.push(s);
                 }
+                if (searchSources.length) discoveredAnything = true;
             } catch {
-                warnings.push('Live search failed. Showing catalogue links and your JD.');
+                warnings.push('Paid search failed; using free discovery and your JD instead.');
             }
-        } else {
-            warnings.push('Live web search is not configured. Only matching catalogue links and your supplied JD are available.');
+        }
+
+        if (!discoveredAnything) {
+            warnings.push('No public sources found for this company yet. Add a source manually or paste the job description.');
         }
 
         // Deduplicate by URL.

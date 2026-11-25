@@ -75,6 +75,11 @@ test('parseRobots: sitemaps extracted', () => {
     assert.equal(parsed.sitemaps[0], 'https://example.com/sitemap.xml');
 });
 
+test('parseRobots: global Sitemap before any User-agent is still captured', () => {
+    const parsed = parseRobots('Sitemap: https://stripe.com/sitemap/sitemap.xml\n\nUser-agent: ia_archiver\nDisallow: /docs');
+    assert.deepEqual(parsed.sitemaps, ['https://stripe.com/sitemap/sitemap.xml']);
+});
+
 test('parseRobots: comments are stripped', () => {
     const txt = '# Welcome to robots.txt\nUser-agent: *\nDisallow: /private # keep-out';
     const parsed = parseRobots(txt);
