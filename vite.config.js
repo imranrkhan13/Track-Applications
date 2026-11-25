@@ -6,6 +6,17 @@ import { makeBriefHandler } from './netlify/functions/career-brief.mjs';
 
 export default defineConfig(({ mode }) => ({
     plugins: [react(), {
+        // Replaces __PUBLIC_URL__ in index.html with the deploy origin so social
+        // tags resolve. Falls back to the Netlify site URL, then to a relative
+        // root, so a local build never emits a broken placeholder.
+        name: 'career-public-url',
+        transformIndexHtml(html, ctx) {
+            const env = loadEnv(mode, '.', '');
+            const origin = (env.VITE_PUBLIC_URL || process.env.URL || process.env.DEPLOY_PRIME_URL || '').replace(/\/$/, '');
+            if (!origin) ctx.server && ctx.server.config.logger.warn('VITE_PUBLIC_URL is not set; social share tags will use a relative URL.');
+            return html.replaceAll('__PUBLIC_URL__', origin);
+        },
+    }, {
         name: 'career-local-api',
         configureServer(server) {
             const env = loadEnv(mode, '.', '');
