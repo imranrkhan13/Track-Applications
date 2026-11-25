@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { readPublicPage, sourceURL, textFromHTML } from './lib/safe-source.mjs';
 import { runScrapePlan } from './lib/scraper.mjs';
 import { adapterFor } from './lib/sources/adapters.mjs';
-import { makeProvider } from './lib/ai/provider.mjs';
+import { makeProvider, hasAIProvider } from './lib/ai/provider.mjs';
 import { extractAccounts } from './lib/ai/extract.mjs';
 import seed1 from '../../research/interview-source-seeds.json' with { type: 'json' };
 import seed2 from '../../research/global-interview-sources.json' with { type: 'json' };
@@ -270,7 +270,7 @@ export function makeHandler({
 
         // --- AI extraction (provider abstraction) ---
         let accounts = [];
-        if (env.GEMINI_API_KEY && env.GEMINI_MODEL && documents.some(d => d.kind === 'account')) {
+        if (hasAIProvider(env) && documents.some(d => d.kind === 'account')) {
             try {
                 const generateJSON = provider || makeProvider({ env, request: (url, options) => getJSON(url, options) });
                 const extraction = await extractAccounts({

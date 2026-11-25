@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { createElement, useEffect, useMemo, useState } from 'react';
 import { BookOpen, Search, Plus, ShieldCheck, Sparkles, Link2, AlertTriangle, Globe, FileText, CheckCircle2, Ban, RefreshCw } from 'lucide-react';
 import { workspaceFor, safeLink } from './repository';
 import { inferFamily, normalizeCompany, processFor } from './planner';
@@ -47,6 +47,30 @@ function EvidenceTimeline({ variants, reports, onRemove, busy }) {
             </div>
         </li>;
     })}</ol>;
+}
+
+// Visible progress while research runs. We cannot observe server-side stage
+// completion, so this shows an honest elapsed timer and the real pipeline steps
+// rather than a fabricated per-step percentage.
+function ResearchProgress() {
+    const [seconds, setSeconds] = useState(0);
+    useEffect(() => {
+        const id = setInterval(() => setSeconds(s => s + 1), 1000);
+        return () => clearInterval(id);
+    }, []);
+    const steps = [
+        { icon: Search, label: 'Search & catalogue discovery', detail: 'Finding official pages, engineering blogs and candidate accounts for this exact role.' },
+        { icon: Globe, label: 'Reading permitted pages', detail: 'robots.txt is checked before every fetch; login-walled and paywalled pages are never read.' },
+        { icon: FileText, label: 'Extracting with exact quotes', detail: 'A stage is kept only when the AI can quote the source word-for-word.' },
+    ];
+    return <section className="cg-surface cg-research-progress" role="status" aria-live="polite">
+        <div className="cg-section-head">
+            <div><span className="cg-label">RESEARCH IN PROGRESS</span><h2>Gathering sources for this role</h2></div>
+            <span className="cg-badge cg-badge-neutral"><RefreshCw className="cg-spin" aria-hidden="true" /> {seconds}s</span>
+        </div>
+        <ol className="cg-progress-steps">{steps.map((s, i) => <li key={s.label} style={{ animationDelay: `${i * 1.4}s` }}><span className="cg-progress-icon">{createElement(s.icon, { 'aria-hidden': true })}</span><div><b>{s.label}</b><small>{s.detail}</small></div></li>)}</ol>
+        <small className="cg-muted">This usually takes 15–60 seconds. Your job is already saved — you can leave this tab and return.</small>
+    </section>;
 }
 
 // Scraping transparency: shows exactly where research data comes from.
@@ -148,7 +172,7 @@ function BriefPanel({ job, demo }) {
     </section>;
 }
 
-export default function Research({ job, userId, onUpdate, onResearch, busy, demo }) {
+export default function Research({ job, userId, onUpdate, onResearch, busy, researching, demo }) {
     const w = workspaceFor(job);
     const [open, setOpen] = useState(false);
     const [error, setError] = useState('');
@@ -197,6 +221,8 @@ export default function Research({ job, userId, onUpdate, onResearch, busy, demo
             {w.research?.warnings?.length > 0 && <details className="cg-disclosure"><summary><AlertTriangle aria-hidden="true" /> Research gaps · {w.research.warnings.length} to review</summary>{w.research.warnings.map(text => <p className="cg-inline-note" key={text}>{text}</p>)}</details>}
             {w.research && <small>Last researched {new Date(w.research.generatedAt).toLocaleString()} · {w.research.mode}</small>}
         </section>
+
+        {researching && <ResearchProgress />}
 
         <ScrapeTransparency research={w.research} busy={busy} />
 

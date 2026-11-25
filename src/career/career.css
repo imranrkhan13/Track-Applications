@@ -421,3 +421,28 @@
 .career-app .cg-scrape-host[data-read='true'] { border-color: #d3e6cf; background: #e7f2e4; color: #2c5b3a; }
 .career-app .cg-scrape-host[data-read='false'] { border-color: #eeddb4; background: #f9efd9; color: #7a5a1e; }
 .career-app .cg-scrape-host[data-blocked='true'] { border-color: #eed0ca; background: #f7e4e0; color: #8a3a30; }
+
+/* JD-derived project panel. */
+.career-app .cg-project-panel { border-left: 3px solid var(--cg-green); }
+.career-app .cg-project-stack { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; font-size: .875rem; }
+.career-app .cg-project-stack .cg-label { color: var(--cg-muted); }
+.career-app .cg-project-milestones { list-style: none; display: grid; gap: 10px; margin: 12px 0; padding: 0; }
+.career-app .cg-project-milestones > li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; padding: 12px; background: #fbfaf3; border: 1px solid var(--cg-line); border-radius: 10px; }
+.career-app .cg-milestone-index { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #e7ebda; color: var(--cg-green); font-size: .75rem; font-weight: 700; }
+.career-app .cg-project-milestones b { font-size: .9375rem; }
+.career-app .cg-project-milestones small { display: block; color: var(--cg-muted); font-size: .75rem; }
+.career-app .cg-project-milestones p { margin: 4px 0; font-size: .875rem; }
+.career-app .cg-project-milestones ul { margin: 4px 0 0; padding-left: 18px; font-size: .8125rem; color: var(--cg-muted); }
+
+/* Research progress panel. */
+.career-app .cg-research-progress { border-left: 3px solid var(--cg-green); }
+.career-app .cg-progress-steps { list-style: none; display: grid; gap: 10px; margin: 8px 0; padding: 0; }
+.career-app .cg-progress-steps > li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 12px; align-items: start; opacity: .45; animation: cg-step-pulse 4.2s ease-in-out infinite; }
+.career-app .cg-progress-icon { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: #e7ebda; color: var(--cg-green); }
+.career-app .cg-progress-icon svg { width: 14px; height: 14px; }
+.career-app .cg-progress-steps b { display: block; font-size: .9375rem; }
+.career-app .cg-progress-steps small { color: var(--cg-muted); }
+@keyframes cg-step-pulse { 0%, 70%, 100% { opacity: .45; } 15%, 45% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+    .career-app .cg-progress-steps > li { animation: none; opacity: .85; }
+}
