@@ -457,3 +457,10 @@
 .career-app .cg-profile-bucket ul { list-style: none; display: grid; gap: 6px; margin: 8px 0 0; padding: 0; }
 .career-app .cg-profile-bucket li { display: grid; gap: 1px; }
 .career-app .cg-profile-host { color: var(--cg-muted); font-size: .6875rem; }
+
+/* Plan strategy banner + tier chips. */
+.career-app .cg-strategy { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin: 10px 0 14px; padding: 14px 16px; background: linear-gradient(135deg, #f2f6ea, #fbfaf3); border: 1px solid var(--cg-line); border-left: 3px solid var(--cg-green); border-radius: 12px; }
+.career-app .cg-strategy b { display: block; margin: 2px 0 4px; font-size: .95rem; }
+.career-app .cg-strategy p { margin: 0; max-width: 60ch; }
+.career-app .cg-task-tag.cg-tag-essential { background: #dcefd9; color: #1f5b2e; }
+.career-app .cg-task-tag.cg-tag-stretch { background: #f1ead9; color: #7a5a12; }

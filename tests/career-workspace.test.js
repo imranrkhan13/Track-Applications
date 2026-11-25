@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRepository, emptyWorkspace, jobPayload, safeLink, workspaceFor, canonicalStatus } from '../src/career/repository.js';
-import { buildPreparation, deriveProject, inferFamily, jobDescriptionFor, localInstant, makeAvailability, normalizeCompany, planIsStale, practiceQuestions, processFor } from '../src/career/planner.js';
+import { buildPreparation, deriveProject, inferFamily, jobDescriptionFor, localInstant, makeAvailability, normalizeCompany, planIsStale, practiceQuestions, processFor, runwayBucket } from '../src/career/planner.js';
 import { schedulePreparation } from '../src/lib/prepEngine.js';
 
 const now = '2026-09-08T04:00:00Z';
@@ -189,4 +189,46 @@ test('research JD is not reused after changing the company, role or source link'
 test('a JD explicitly saying no DSA does not generate an algorithms task', () => {
     const job = role(); job.workspace.jdText = 'React required. No DSA is asked.';
     assert(!buildPreparation(job, 'user-1', now).tasks.some(t => t.id === 'algorithms'));
+});
+
+// --- Time-aware triage -------------------------------------------------------
+
+test('runwayBucket: boundaries map days to sprint / standard / extended', () => {
+    assert.equal(runwayBucket(1).id, 'sprint'); assert.equal(runwayBucket(4).id, 'sprint');
+    assert.equal(runwayBucket(5).id, 'standard'); assert.equal(runwayBucket(13).id, 'standard');
+    assert.equal(runwayBucket(14).id, 'extended'); assert.equal(runwayBucket(120).id, 'extended');
+});
+
+test('a short runway keeps only essentials and states what it set aside', () => {
+    const job = role(); job.workspace.deadline = '2026-09-12';
+    const plan = buildPreparation(job, 'user-1', now);
+    assert.equal(plan.strategy.bucket, 'sprint');
+    assert.match(plan.strategy.headline, /Short runway/);
+    assert(plan.tasks.every(t => t.tier === 'essential'));
+    assert(plan.tasks.some(t => t.id === 'format') && plan.tasks.some(t => t.id === 'role-map'));
+    assert(!plan.tasks.some(t => t.id === 'build'));
+    assert(plan.omitted.some(t => t.id === 'build'));
+    assert(plan.omitted.some(t => t.id === 'recall'));
+    assert(plan.omitted.every(t => t.reason.length > 0));
+});
+
+test('a long runway unlocks the build project and spaced recall', () => {
+    const plan = buildPreparation(role(), 'user-1', now);
+    assert.equal(plan.strategy.bucket, 'extended');
+    assert(plan.tasks.some(t => t.id === 'build'));
+    assert(plan.tasks.some(t => t.id === 'recall-week-2'));
+    assert.equal(plan.omitted.length, 0);
+});
+
+test('every task carries a recognised tier', () => {
+    const plan = buildPreparation(role(), 'user-1', now);
+    assert(plan.tasks.every(t => ['essential', 'core', 'stretch'].includes(t.tier)));
+});
+
+test('a flagged gap brings the recall task forward from three days to one', () => {
+    const plain = buildPreparation(role(), 'user-1', now).tasks.find(t => t.id === 'recall');
+    assert.equal(Date.parse(plain.availableAfter), Date.parse(now) + 3 * 86400000);
+    const gapJob = role(); gapJob.workspace.preferences.gaps = ['Technical problem solving'];
+    const gap = buildPreparation(gapJob, 'user-1', now).tasks.find(t => t.id === 'recall');
+    assert.equal(Date.parse(gap.availableAfter), Date.parse(now) + 86400000);
 });
