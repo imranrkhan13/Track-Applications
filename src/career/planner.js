@@ -13,11 +13,6 @@ export const RUNWAY_BUCKETS = [
     { id: 'extended', maxDays: Infinity, tiers: ['essential', 'core', 'stretch'], label: 'Full runway' },
 ];
 export function runwayBucket(spanDays) { return RUNWAY_BUCKETS.find(b => spanDays <= b.maxDays) || RUNWAY_BUCKETS[RUNWAY_BUCKETS.length - 1]; }
-const RUNWAY_COPY = {
-    sprint: span => ({ headline: 'Short runway — essentials only.', detail: `With ${span} day${span === 1 ? '' : 's'} to go, the plan covers confirming the format, your JD checklist and one rehearsal. The build project and spaced recall need a longer runway.` }),
-    standard: span => ({ headline: 'Focused runway.', detail: `With ${span} days, the plan covers the essentials plus the core build and review. Spaced recall unlocks on a longer runway.` }),
-    extended: span => ({ headline: 'Full runway.', detail: `With ${span} days, the plan includes the essentials, the core build and spaced recall across the coming weeks.` }),
-};
 export const normalizeCompany = value => value.trim().toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
 export function inferFamily(title) {
     if (/\b(ml|ai|machine learning|data scien|applied scien)/i.test(title)) return 'ml';
@@ -241,7 +236,7 @@ export function buildPreparation(job, userId, now = new Date().toISOString()) {
     for (const t of tasks) if (w.preferences.gaps.includes(t.skill)) t.priority += 35;
     for (const old of w.plan?.tasks || []) if (w.completed[old.id]?.done) { const index = tasks.findIndex(t => t.id === old.id); if (index >= 0) tasks[index] = old; else tasks.push(old); }
     const schedule = schedulePreparation({ tasks, slots, deadline, now, completedIds: Object.keys(w.completed).filter(id => w.completed[id]?.done), bufferFraction: .15 });
-    return { version: 2, generatedAt: now, deadline, timezone: w.preferences.timezone, family, tasks, ...schedule, process, inputFingerprint: fingerprint(job, w), urgency: urgencyInfo.urgency, daysRemaining: urgencyInfo.daysRemaining, deadlineKind: urgencyInfo.kind, assumptions: ['Practice tasks are recommendations, not guaranteed interview questions.', '15% of available time is left unscheduled.', ...(critical ? ['Under three days: a short triage plan, not a full curriculum.'] : []), ...(urgencyInfo.kind === 'application' ? ['This date is treated as an application deadline, not an interview date.'] : []), ...(spanDays > 56 ? ['Recurring recall is planned for eight weeks. Reassess your next milestone afterward.'] : []), ...(!process.variants.length ? ['No reviewed company process yet. This is a role-based plan.'] : []), ...(family === 'general' ? ['General checklist; specialist curriculum is not available for this role.'] : [])] };
+    return { version: 2, generatedAt: now, deadline, timezone: w.preferences.timezone, family, tasks, project, ...schedule, process, inputFingerprint: fingerprint(job, w), urgency: urgencyInfo.urgency, daysRemaining: urgencyInfo.daysRemaining, deadlineKind: urgencyInfo.kind, assumptions: ['Practice tasks are recommendations, not guaranteed interview questions.', '15% of available time is left unscheduled.', ...(critical ? ['Under three days: a short triage plan, not a full curriculum.'] : []), ...(urgencyInfo.kind === 'application' ? ['This date is treated as an application deadline, not an interview date.'] : []), ...(spanDays > 56 ? ['Recurring recall is planned for eight weeks. Reassess your next milestone afterward.'] : []), ...(!process.variants.length ? ['No reviewed company process yet. This is a role-based plan.'] : []), ...(family === 'general' ? ['General checklist; specialist curriculum is not available for this role.'] : [])] };
 }
 export function planIsStale(job) { const w = workspaceFor(job); return w.plan && w.plan.inputFingerprint !== fingerprint(job, w); }
 export function practiceQuestions(job) {

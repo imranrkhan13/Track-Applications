@@ -102,6 +102,10 @@ test('flow 5: invalid deadline preserves work; partial schedules respect release
     assert.equal(plan.scheduled[1].start, '2026-09-10T12:30:00.000Z');
     assert(plan.scheduledMinutes <= plan.budgetMinutes);
     current.workspace.deadline = '';
+    const auto = synchronizePreparation(current, 'demo-user', now);
+    assert.equal(auto.status, 'planned');
+    assert.equal(auto.job.workspace.deadline, '2026-09-24');
+    current.workspace.jdText = '';
     assert.equal(synchronizePreparation(current, 'demo-user', now).status, 'needs-date');
 });
 
