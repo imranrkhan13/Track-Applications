@@ -17,7 +17,9 @@
     display: grid;
     grid-template-columns: 252px minmax(0, 1fr);
     min-height: 100dvh;
-    background: #f5f5f7;
+    /* The rail's background is painted on the shell so it spans the full page
+       height; the sticky column itself stays transparent on top of it. */
+    background: linear-gradient(to right, #fafafa 0 252px, #f5f5f7 252px);
     color: var(--cg-ink);
     font: 400 .9375rem/1.55 'Manrope', 'Helvetica Neue', sans-serif;
     letter-spacing: -.01em;
@@ -48,18 +50,22 @@
     display: flex; flex-direction: column;
     width: 252px; flex-shrink: 0;
     padding: 24px 0 16px;
-    background: #fafafa;
-    border-right: 1px solid #eaeaec;
+    /* The rail's background comes from .career-app::before so it spans the
+       full page height instead of stopping at the fold. */
+    background: transparent;
+    border-right: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
     align-self: start;
+    z-index: 1;
 }
 .career-app .cg-sidebar-top {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 0 20px; margin-bottom: 20px;
+    gap: 10px; padding: 0 20px; margin-bottom: 20px;
 }
 .career-app .cg-brand {
     display: flex; align-items: center; gap: 11px;
+    min-width: 0;
     text-decoration: none; color: inherit;
 }
 .career-app .cg-brand-icon {
@@ -68,11 +74,13 @@
     border-radius: 10px;
     background: var(--cg-green);
     color: white;
+    /* The landing page reuses .cg-brand; keep its shadow out of the sidebar. */
+    box-shadow: none;
 }
 .career-app .cg-brand-icon svg { width: 18px; height: 18px; }
-.career-app .cg-brand-text { display: grid; gap: 1px; }
-.career-app .cg-brand-text strong { font-size: .9375rem; font-weight: 700; letter-spacing: -.02em; line-height: 1.2; }
-.career-app .cg-brand-text span { font-size: .6875rem; color: var(--cg-muted); }
+.career-app .cg-brand-text { display: grid; gap: 1px; min-width: 0; }
+.career-app .cg-brand-text strong { font-size: .9375rem; font-weight: 700; letter-spacing: -.02em; line-height: 1.2; white-space: nowrap; }
+.career-app .cg-brand-text span { font-size: .6875rem; color: var(--cg-muted); white-space: nowrap; }
 
 .career-app .cg-menu-toggle { display: none; }
 
@@ -216,7 +224,11 @@
 .career-app .cg-signout-btn:hover { color: #d94a4a; }
 
 /* Main content — clean, spacious. */
-.career-app .cg-main { width: 100%; max-width: 1280px; min-width: 0; margin: 0 auto; padding: 36px clamp(24px, 3.5vw, 48px) 64px; }
+.career-app .cg-main {
+    grid-column: 2; grid-row: 1;
+    width: 100%; max-width: 1240px; min-width: 0;
+    margin: 0; padding: 36px clamp(24px, 3.5vw, 48px) 64px;
+}
 .career-app .cg-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
 .career-app .cg-header > div { min-width: 0; }
 .career-app .cg-header h1 { margin: 4px 0 0; font-size: 1.75rem; font-weight: 700; letter-spacing: -.03em; line-height: 1.2; color: var(--cg-ink); }
@@ -250,16 +262,6 @@
 .career-app .cg-stage-overview { margin-bottom: 16px; border-block: 1px solid var(--cg-line); }
 .career-app .cg-stage-overview > summary { padding: 12px 0; font-weight: 600; font-size: .875rem; }
 .career-app .cg-stage-overview > summary > span { margin-left: 10px; color: var(--cg-muted); font-weight: 400; font-size: .8125rem; }
-.career-app .cg-stage-overview .cg-stage-strip { margin-top: 6px; margin-bottom: 12px; }
-.career-app .cg-stage-strip { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; margin-bottom: 16px; }
-.career-app .cg-stage-strip button { min-width: 0; padding: 10px; border: 1px solid var(--cg-line); border-radius: 10px; background: transparent; text-align: left; color: var(--cg-ink); }
-.career-app .cg-stage-strip button > span { display: flex; justify-content: space-between; gap: 6px; font-size: .6875rem; color: var(--cg-muted); margin-bottom: 4px; }
-.career-app .cg-stage-strip b { font-size: .8125rem; font-weight: 600; color: var(--cg-ink); }
-.career-app .cg-stage-strip strong, .career-app .cg-stage-strip small { display: block; overflow-wrap: anywhere; }
-.career-app .cg-stage-strip strong { font-size: .8125rem; font-weight: 600; }
-.career-app .cg-stage-strip small { color: var(--cg-muted); font-size: .6875rem; }
-.career-app .cg-stage-strip button:hover { background: #f5f5f7; }
-.career-app .cg-stage-strip button.active { background: #f0f0f2; border-color: #b0b0ba; }
 .career-app [data-stage='Saved'] { --stage-bg: #f0f0f3; --stage-ink: #59604b; }
 .career-app [data-stage='Applied'] { --stage-bg: #e9efdf; --stage-ink: #425c35; }
 .career-app [data-stage='Screening'] { --stage-bg: #f5eddb; --stage-ink: #785b2b; }
@@ -268,13 +270,17 @@
 .career-app [data-stage='Rejected'] { --stage-bg: #f3e9e3; --stage-ink: #805644; }
 .career-app .cg-stage { display: inline-flex; align-items: center; gap: 6px; border-radius: 6px; padding: 5px 9px; background: var(--stage-bg, #ebeee2); color: var(--stage-ink, var(--cg-ink)); font-size: .875rem; font-weight: 550; }
 .career-app .cg-stage svg { width: 15px; height: 15px; }
-.career-app .cg-next-banner { display: flex; align-items: center; gap: 12px; width: 100%; min-width: 0; margin-bottom: 16px; padding: 14px 18px; background: #f5f5f7; border: 1px solid var(--cg-line); border-radius: 12px; color: var(--cg-ink); text-align: left; }
-.career-app .cg-next-banner > span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.career-app .cg-next-banner { display: flex; align-items: center; gap: 14px; width: 100%; min-width: 0; margin-bottom: 16px; padding: 14px 18px; background: var(--cg-paper); border: 1px solid var(--cg-line); border-radius: 12px; color: var(--cg-ink); text-align: left; box-shadow: 0 1px 2px rgba(0,0,0,.03); transition: border-color .15s, box-shadow .15s; }
+.career-app .cg-next-banner > span:not(.cg-next-icon) { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .career-app .cg-next-banner :is(b, small) { display: block; }
 .career-app .cg-next-banner small { margin-bottom: 2px; font-size: .75rem; color: var(--cg-muted); }
 .career-app .cg-next-banner b { font-size: .9375rem; font-weight: 600; }
 .career-app .cg-next-banner b > span { font-weight: 400; }
-.career-app .cg-next-banner:hover { background: #eeeef0; }
+.career-app .cg-next-banner:hover { border-color: #c8c8d0; box-shadow: 0 4px 12px rgba(0,0,0,.06); }
+.career-app .cg-next-icon { display: grid; place-items: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: 10px; background: #eef4ea; color: #3e6b4f; }
+.career-app .cg-next-icon svg { width: 17px; height: 17px; }
+.career-app .cg-overdue-note { display: flex; align-items: center; gap: 7px; margin: -6px 0 16px; color: #a45a4a; font-size: .8125rem; }
+.career-app .cg-overdue-note svg { width: 15px; height: 15px; flex-shrink: 0; }
 
 /* Workflow tabs */
 .career-app .cg-workflow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 3px; padding: 4px; margin-bottom: 20px; border: 1px solid var(--cg-line); border-radius: 12px; background: #f5f5f7; }
@@ -288,7 +294,7 @@
 
 /* Jobs and overview lists. */
 .career-app .cg-stats-bar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px; }
-.career-app .cg-stats-bar > div { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 1px solid var(--cg-line); border-radius: 12px; background: var(--cg-paper); box-shadow: 0 1px 2px rgba(0,0,0,.03); }
+.career-app .cg-stat { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 1px solid var(--cg-line); border-radius: 12px; background: var(--cg-paper); box-shadow: 0 1px 2px rgba(0,0,0,.03); }
 .career-app .cg-stats-bar .cg-stat-symbol { display: grid; place-items: center; width: 38px; height: 38px; flex-shrink: 0; border-radius: 10px; }
 .career-app .cg-stats-bar .cg-stat-symbol svg { width: 16px; height: 16px; }
 .career-app .cg-stats-bar b { display: block; font-size: 1.25rem; font-weight: 700; letter-spacing: -.03em; line-height: 1; }
@@ -296,6 +302,66 @@
 .career-app .cg-stat-jobs { background: #eef4ea; color: #425c35; }
 .career-app .cg-stat-prep { background: #fdf4e4; color: #7a5a1e; }
 .career-app .cg-stat-practice { background: #eaf0f5; color: #3d5866; }
+.career-app .cg-stat-offer { background: #e6f0e6; color: #2f633e; }
+
+/* Dashboard overview: pipeline beside interview readiness. */
+.career-app .cg-overview-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(300px, 1fr); gap: 16px; margin-bottom: 16px; align-items: start; }
+.career-app .cg-overview-grid > * { min-width: 0; }
+.career-app .cg-pipeline, .career-app .cg-readiness { background: var(--cg-paper); border: 1px solid var(--cg-line); border-radius: var(--cg-radius); padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.career-app .cg-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.career-app .cg-panel-head h2 { font-size: 1.0625rem; font-weight: 650; letter-spacing: -.015em; }
+.career-app .cg-panel-head .cg-muted { font-size: .8125rem; }
+
+/* Pipeline: the six stages stay visible and act as filters. */
+.career-app .cg-stage-strip { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; margin: 0; padding: 0; list-style: none; }
+.career-app .cg-stage-strip li { min-width: 0; }
+.career-app .cg-stage-strip button { display: grid; gap: 2px; width: 100%; min-width: 0; padding: 10px; border: 1px solid var(--cg-line); border-radius: 10px; background: transparent; text-align: left; color: var(--cg-ink); transition: border-color .15s, background .15s; }
+.career-app .cg-stage-index { font-size: .625rem; font-weight: 700; letter-spacing: .08em; color: var(--cg-muted); }
+.career-app .cg-stage-name { font-size: .8125rem; font-weight: 600; line-height: 1.3; overflow-wrap: break-word; }
+.career-app .cg-stage-alias { font-size: .6875rem; font-weight: 500; line-height: 1.2; color: var(--cg-muted); overflow-wrap: break-word; }
+.career-app .cg-stage-strip b { font-size: 1.0625rem; font-weight: 700; letter-spacing: -.02em; line-height: 1.1; }
+.career-app .cg-stage-strip button:hover { background: #f5f5f7; border-color: #d4d4da; }
+.career-app .cg-stage-strip button.active { background: #f0f2ea; border-color: var(--cg-green); }
+.career-app .cg-stage-strip button.active .cg-stage-index { color: var(--cg-green); }
+
+/* Interview readiness: each interview and what it still needs. */
+.career-app .cg-readiness-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+
+.career-app .cg-readiness-list button { display: flex; align-items: center; gap: 11px; width: 100%; padding: 10px 11px; border: 1px solid var(--cg-line); border-radius: 10px; background: transparent; text-align: left; color: inherit; transition: border-color .15s, background .15s; }
+.career-app .cg-readiness-list button:hover { background: #f7f7f9; border-color: #d4d4da; }
+.career-app .cg-readiness-list .cg-company-mark { width: 32px; height: 32px; font-size: .875rem; border-radius: 8px; }
+.career-app .cg-readiness-body { flex: 1; min-width: 0; }
+.career-app .cg-readiness-body b { display: block; font-size: .875rem; font-weight: 600; overflow-wrap: anywhere; }
+.career-app .cg-readiness-body small { display: block; color: var(--cg-muted); font-size: .75rem; overflow-wrap: anywhere; }
+.career-app .cg-readiness-state { display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; padding: 4px 9px; border-radius: 999px; font-size: .75rem; font-weight: 600; }
+.career-app .cg-readiness-state svg { width: 13px; height: 13px; }
+.career-app .cg-readiness-state[data-state='ready'] { background: #e7f2e4; color: #2c5b3a; }
+.career-app .cg-readiness-state[data-state='pending'] { background: #f9efd9; color: #7a5a1e; }
+.career-app .cg-readiness-note { display: flex; align-items: center; gap: 7px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--cg-line); color: #7a5a1e; font-size: .8125rem; }
+.career-app .cg-readiness-note svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* Preparation readiness (Preparation tab): plan coverage and progress. */
+.career-app .cg-prep-ready { margin-bottom: 16px; padding: 18px 20px; background: var(--cg-paper); border: 1px solid var(--cg-line); border-radius: 14px; box-shadow: 0 1px 2px rgba(0,0,0,.03); }
+.career-app .cg-prep-ready-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.career-app .cg-prep-ready-stat { display: flex; align-items: center; gap: 11px; min-width: 0; padding: 11px 13px; border: 1px solid var(--cg-line); border-radius: 11px; background: #fbfbfc; }
+.career-app .cg-prep-ready-stat .cg-stat-symbol { display: grid; place-items: center; width: 34px; height: 34px; flex-shrink: 0; border-radius: 9px; }
+.career-app .cg-prep-ready-stat .cg-stat-symbol svg { width: 16px; height: 16px; }
+.career-app .cg-prep-ready-stat b { display: block; font-size: 1.0625rem; font-weight: 700; letter-spacing: -.02em; line-height: 1.2; }
+.career-app .cg-prep-ready-stat small { display: block; font-size: .75rem; color: var(--cg-muted); }
+.career-app .cg-prep-progress { margin-top: 14px; }
+.career-app .cg-prep-progress-bar { height: 8px; border-radius: 999px; background: #ececed; overflow: hidden; }
+.career-app .cg-prep-progress-bar > span { display: block; height: 100%; border-radius: 999px; background: var(--cg-green); transition: width .3s ease; }
+.career-app .cg-prep-progress small { display: block; margin-top: 7px; color: var(--cg-muted); font-size: .75rem; }
+.career-app .cg-prep-empty { display: flex; align-items: flex-start; gap: 10px; margin: 0; color: var(--cg-muted); font-size: .875rem; }
+.career-app .cg-prep-empty svg { width: 17px; height: 17px; flex-shrink: 0; margin-top: 1px; color: var(--cg-green); }
+.career-app .cg-prep-next { display: flex; align-items: center; gap: 11px; width: 100%; margin-top: 14px; padding: 11px 13px; border: 1px solid var(--cg-line); border-radius: 11px; background: #fbfbfc; text-align: left; color: inherit; transition: border-color .15s, background .15s; }
+.career-app .cg-prep-next:hover { background: #f5f5f7; border-color: #d4d4da; }
+.career-app .cg-prep-next > span:not(.cg-company-mark) { flex: 1; min-width: 0; }
+.career-app .cg-prep-next b { display: block; font-size: .875rem; font-weight: 600; overflow-wrap: anywhere; }
+.career-app .cg-prep-next small { display: block; color: var(--cg-muted); font-size: .75rem; overflow-wrap: anywhere; }
+.career-app .cg-prep-next svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--cg-muted); }
+.career-app .cg-prep-gap-note { display: flex; align-items: center; gap: 7px; margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--cg-line); color: #7a5a1e; font-size: .8125rem; }
+.career-app .cg-prep-gap-note svg { width: 15px; height: 15px; flex-shrink: 0; }
 .career-app .cg-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-bottom: 16px; border-bottom: 1px solid var(--cg-line); }
 .career-app .cg-toolbar > .cg-search { flex: 1 1 220px; }
 .career-app .cg-search { display: flex; align-items: center; gap: 8px; border: 1px solid var(--cg-line); border-radius: 10px; padding: 8px 12px; background: #f9f9fb; }
@@ -432,17 +498,24 @@
 /* Breakpoints preserve content, not just hide overflowing fields. */
 @media (max-width: 80rem) {
     .career-app .cg-stage-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .career-app .cg-overview-grid { grid-template-columns: minmax(0, 1fr); }
     .career-app .cg-detail-grid { grid-template-columns: minmax(0, 1fr); }
-    .career-app .cg-job-row { grid-template-columns: 42px minmax(0, 1fr) auto; gap: 12px; }
+    .career-app .cg-prep-ready-grid { grid-template-columns: minmax(0, 1fr); }
+    /* Identity and next step share the first row; stage sits under the role so
+       the row stays short instead of stacking into three tall lines. */
+    .career-app .cg-job-row { grid-template-columns: 42px minmax(0, 1fr) minmax(0, .9fr) auto; gap: 12px; }
     .career-app .cg-job-identity { grid-column: 2; grid-row: 1; }
-    .career-app .cg-row-action { grid-column: 3; grid-row: 1; }
+    .career-app .cg-next-cell { grid-column: 3; grid-row: 1; min-width: 0; }
+    .career-app .cg-row-action { grid-column: 4; grid-row: 1; }
     .career-app .cg-inline-stage { grid-column: 2; grid-row: 2; justify-self: start; }
-    .career-app .cg-next-cell { grid-column: 2 / -1; grid-row: 3; }
-    .career-app .cg-job-context { grid-column: 2 / -1; grid-row: 2; }
+    .career-app .cg-job-context { grid-column: 3 / -1; grid-row: 2; min-width: 0; }
+    .career-app .cg-inline-stage select { width: auto; min-width: 120px; }
+    /* The next step must never be squeezed into a one-character column. */
+    .career-app .cg-next-cell > span, .career-app .cg-next-cell small { white-space: normal; overflow-wrap: anywhere; }
 }
 @media (max-width: 64rem) {
-    .career-app { display: block; }
-    .career-app .cg-sidebar { position: static; height: auto; width: 100%; padding: 16px 20px; border-right: 0; border-bottom: 1px solid var(--cg-line); gap: 16px; overflow: visible; }
+    .career-app { display: block; background: #f5f5f7; }
+    .career-app .cg-sidebar { position: static; height: auto; width: 100%; padding: 16px 20px; background: #fafafa; border-right: 0; border-bottom: 1px solid var(--cg-line); gap: 16px; overflow: visible; }
     .career-app .cg-sidebar-panel:not(.is-open) { display: none; }
     .career-app .cg-sidebar-panel { gap: 16px; }
     .career-app .cg-menu-toggle { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 6px 12px; border: 1px solid var(--cg-line); border-radius: 10px; background: transparent; color: var(--cg-ink); font-size: .8125rem; }
@@ -450,7 +523,7 @@
     .career-app .cg-sidebar-spacer { display: none; }
     .career-app .cg-sidebar-user { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; }
     .career-app .cg-signout-btn { margin-top: 0; width: auto; }
-    .career-app .cg-main { padding-top: 28px; }
+    .career-app .cg-main { grid-column: auto; grid-row: auto; padding-top: 28px; }
     .career-app .cg-workflow-number { display: none; }
 }
 @media (max-width: 40rem) {
@@ -463,7 +536,8 @@
     .career-app .cg-surface { padding: 16px 14px; border-radius: 12px; }
     .career-app .cg-stage-strip { gap: 5px; }
     .career-app .cg-stage-strip button { padding: 8px; }
-    .career-app .cg-stage-strip strong { font-size: .8125rem; }
+    .career-app .cg-stage-name { font-size: .8125rem; }
+    .career-app .cg-stage-alias { font-size: .625rem; }
     .career-app .cg-workflow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .career-app .cg-workflow button { padding: 8px; }
     .career-app .cg-section-head { gap: 10px; }
@@ -476,7 +550,7 @@
     .career-app .cg-job-row { gap: 10px 8px; padding: 12px; }
     .career-app .cg-row-action > span { display: none; }
     .career-app .cg-next-banner { padding: 12px; gap: 10px; }
-    .career-app .cg-next-banner > svg:first-child { display: none; }
+    .career-app .cg-next-icon { width: 32px; height: 32px; }
     .career-app .cg-task > summary { gap: 10px; flex-wrap: wrap; }
     .career-app .cg-task-tag { display: none; }
     .career-app .cg-task-body { padding-left: 0; }
@@ -496,18 +570,31 @@
     .career-app .cg-header h1 { font-size: 1.35rem; }
     .career-app .cg-header p { font-size: .8125rem; }
     .career-app .cg-stats-bar { grid-template-columns: repeat(2, 1fr); gap: 6px; }
-    .career-app .cg-stats-bar > div { padding: 10px; gap: 8px; }
+    .career-app .cg-stat { padding: 10px; gap: 8px; }
     .career-app .cg-stats-bar .cg-stat-symbol { width: 32px; height: 32px; border-radius: 8px; }
     .career-app .cg-stats-bar .cg-stat-symbol svg { width: 15px; height: 15px; }
     .career-app .cg-stats-bar b { font-size: 1.1rem; }
     .career-app .cg-stats-bar small { font-size: .625rem; }
-    .career-app .cg-job-row { grid-template-columns: 36px minmax(0, 1fr) 36px; grid-template-areas: "mark identity action" "mark meta action"; row-gap: 8px; padding: 10px 12px; }
-    .career-app .cg-company-mark { grid-area: mark; width: 36px; height: 36px; }
+    .career-app .cg-pipeline, .career-app .cg-readiness { padding: 16px 14px; }
+    .career-app .cg-readiness-list button { flex-wrap: wrap; }
+    .career-app .cg-readiness-state { margin-left: 43px; }
+    .career-app .cg-prep-ready { padding: 16px 14px; }
+    .career-app .cg-prep-ready-grid { gap: 6px; }
+    /* Mark, identity and action on one line; stage and next step each get a
+       full-width row. Sharing one row squeezed the text to one character. */
+    .career-app .cg-job-row {
+        grid-template-columns: 36px minmax(0, 1fr) 36px;
+        grid-template-areas: "mark identity action" "stage stage stage" "meta meta meta";
+        row-gap: 8px; column-gap: 10px; padding: 12px;
+    }
+    .career-app .cg-company-mark { grid-area: mark; width: 36px; height: 36px; align-self: start; }
     .career-app .cg-job-identity { grid-area: identity; }
-    .career-app .cg-row-action { grid-area: action; }
-    .career-app .cg-inline-stage { grid-area: meta; grid-column: auto; grid-row: auto; justify-self: start; }
-    .career-app .cg-next-cell, .career-app .cg-job-context { grid-area: meta; grid-column: auto; grid-row: auto; }
-    .career-app .cg-inline-stage select { width: 100%; }
+    .career-app .cg-row-action { grid-area: action; align-self: start; }
+    .career-app .cg-inline-stage { grid-area: stage; justify-self: start; }
+    .career-app .cg-next-cell, .career-app .cg-job-context { grid-area: meta; }
+    .career-app .cg-inline-stage select { width: auto; min-width: 0; max-width: 100%; }
+    .career-app .cg-next-cell > span, .career-app .cg-next-cell small { white-space: normal; overflow-wrap: anywhere; }
+    .career-app .cg-next-cell small { margin-top: 2px; }
     .career-app .cg-toolbar { gap: 6px; }
     .career-app .cg-segment { margin-left: auto; }
     .career-app .cg-stage-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }

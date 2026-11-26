@@ -5,7 +5,9 @@ export default function JobListItem({ job, view, busy, onOpen, onStage }) {
     const w = workspaceFor(job);
     const tasks = w.plan?.tasks || [];
     const complete = tasks.filter(t => w.completed[t.id]?.done).length;
-    const next = w.plan?.scheduled?.find(t => !w.completed[t.id]?.done);
+    const nextSlot = w.plan?.scheduled?.find(t => !w.completed[t.id]?.done);
+    // Scheduled slots carry the task id, not the title — look it up.
+    const nextTitle = nextSlot ? tasks.find(t => t.id === nextSlot.id)?.title : null;
     const lastAttempt = w.attempts.at(-1);
     const today = new Date();
     const localDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -16,6 +18,6 @@ export default function JobListItem({ job, view, busy, onOpen, onStage }) {
         {view === 'applications' ? <>
             <label className="cg-inline-stage" data-stage={job.status}><span className="cg-sr">Stage for {job.role} at {job.company}</span><select disabled={busy} value={job.status} onChange={e => onStage(e.target.value)}>{STATUSES.map(s => <option key={s}>{s}</option>)}</select></label>
             <div className={`cg-next-cell ${overdue ? 'is-overdue' : ''}`}><span>{w.next_step || 'Choose a next step'}</span><small><CalendarDays />{job.next_date ? `${overdue ? 'Overdue · ' : ''}${job.next_date}` : 'No date set'}</small></div>
-        </> : view === 'prep' ? <div className="cg-job-context"><span>{w.plan ? `${complete} of ${tasks.length} tasks complete` : 'No plan yet'}</span>{w.plan ? <><progress max={tasks.length || 1} value={complete} aria-label={`Preparation progress for ${job.company}`} /><small>{next ? `Next: ${next.title}` : complete === tasks.length ? 'Your planned work is complete' : 'Adjust availability for remaining tasks'}</small></> : <small>{w.deadline ? `Prepare by ${w.deadline}` : 'Choose a deadline and your study time'}</small>}</div> : <div className="cg-job-context"><span><Mic />{w.attempts.length ? `${w.attempts.length} saved ${w.attempts.length === 1 ? 'rehearsal' : 'rehearsals'}` : 'Ready for your first rehearsal'}</span><small>{lastAttempt ? `Last practised ${new Date(lastAttempt.createdAt).toLocaleDateString()}` : 'Role-specific prompts and a clear review rubric'}</small></div>}
+        </> : view === 'prep' ? <div className="cg-job-context"><span>{w.plan ? `${complete} of ${tasks.length} tasks complete` : 'No plan yet'}</span>{w.plan ? <><progress max={tasks.length || 1} value={complete} aria-label={`Preparation progress for ${job.company}`} /><small>{nextTitle ? `Next: ${nextTitle}` : complete === tasks.length ? 'Your planned work is complete' : 'Adjust availability for remaining tasks'}</small></> : <small>{w.deadline ? `Prepare by ${w.deadline}` : 'Choose a deadline and your study time'}</small>}</div> : <div className="cg-job-context"><span><Mic />{w.attempts.length ? `${w.attempts.length} saved ${w.attempts.length === 1 ? 'rehearsal' : 'rehearsals'}` : 'Ready for your first rehearsal'}</span><small>{lastAttempt ? `Last practised ${new Date(lastAttempt.createdAt).toLocaleDateString()}` : 'Role-specific prompts and a clear review rubric'}</small></div>}
         <button className="cg-row-action" onClick={onOpen} aria-label={`Open ${view === 'prep' ? 'preparation for' : view === 'mock' ? 'practice for' : ''} ${job.role} at ${job.company}`}><span>{view === 'prep' ? 'Open plan' : view === 'mock' ? 'Practise' : 'Open'}</span><ArrowRight /></button>
     </article>;}
