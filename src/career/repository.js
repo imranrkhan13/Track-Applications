@@ -2,7 +2,7 @@ export const STATUSES = ['Saved', 'Applied', 'Screening', 'Interview', 'Offer', 
 export const STAGE_NAMES = ['Seed', 'Sprout', 'Taking root', 'Growing', 'Bloom', 'New beginning'];
 export function canonicalStatus(value) { return STATUSES.find(s => s.toLowerCase() === String(value).toLowerCase()) || ({ UNDER_REVIEW: 'Screening' })[value] || value; }
 const DEMO_KEY = 'career-garden-workspace-v2';
-export const emptyWorkspace = () => ({ version: 2, jdText: '', deadline: '', next_step: '', source: '', preferences: { dailyMinutes: 60, weekdays: [1, 2, 3, 4, 5], startTime: '18:00', timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, roleFamily: '', level: '', channel: '', language: 'English', gaps: [] }, research: null, reports: [], plan: null, completed: {}, attempts: [], activity: [] });
+export const emptyWorkspace = () => ({ version: 2, jdText: '', deadline: '', next_step: '', source: '', preferences: { dailyMinutes: 60, weekdays: [1, 2, 3, 4, 5], startTime: '18:00', timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, roleFamily: '', level: '', channel: '', language: 'English', deadlineKind: 'interview', gaps: [] }, research: null, reports: [], plan: null, completed: {}, attempts: [], activity: [] });
 export function workspaceFor(job) {
     const defaults = emptyWorkspace();
     const saved = job?.workspace || {};

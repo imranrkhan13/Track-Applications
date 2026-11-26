@@ -388,3 +388,33 @@
     .career-app .cg-timeline-head { flex-direction: column; align-items: flex-start; }
     .career-app .cg-brief-lines li { grid-template-columns: 1fr; }
 }
+
+/* Today band: urgency, next task, overdue work and the job's next action. */
+.career-app .cg-today { margin-top: 20px; padding: clamp(16px, 2vw, 24px); }
+.career-app .cg-today.is-critical { border-color: #d9b98a; background: #fdf6ea; }
+.career-app .cg-today-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.career-app .cg-urgency { display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px; border-radius: 999px; background: #eef1e5; color: var(--cg-ink); font-size: .8125rem; font-weight: 600; }
+.career-app .cg-urgency[data-urgency='critical'] { background: #f4e3c6; color: #7a4f14; }
+.career-app .cg-urgency[data-urgency='past'] { background: #f1dcdc; color: #8a2f2f; }
+.career-app .cg-urgency svg { width: 15px; height: 15px; }
+.career-app .cg-today-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+.career-app .cg-today-grid > div { display: grid; gap: 4px; min-width: 0; }
+.career-app .cg-today-grid b { font-size: .75rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--cg-muted); }
+.career-app .cg-today-grid span { font-size: .9375rem; line-height: 1.5; overflow-wrap: anywhere; }
+
+/* Setup checklist that teaches which inputs shape the plan. */
+.career-app .cg-setup { margin-top: 18px; padding: 0 18px; border: 1px solid var(--cg-line); border-radius: 12px; background: #f5f6ec; }
+.career-app .cg-setup > summary { display: flex; align-items: center; gap: 10px; padding: 16px 0; cursor: pointer; list-style: none; font-size: .9375rem; }
+.career-app .cg-setup > summary::-webkit-details-marker { display: none; }
+.career-app .cg-setup > summary b { font-weight: 650; }
+.career-app .cg-setup > summary .cg-muted { margin-left: auto; font-size: .8125rem; }
+.career-app .cg-setup > summary svg { width: 18px; height: 18px; color: var(--cg-green); }
+.career-app .cg-setup-list { margin: 0; padding: 0 0 4px; list-style: none; display: grid; gap: 2px; }
+.career-app .cg-setup-list li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; padding: 11px 0; border-top: 1px solid var(--cg-line); }
+.career-app .cg-setup-list b { display: block; font-size: .9375rem; font-weight: 600; }
+.career-app .cg-setup-list small { color: var(--cg-muted); font-size: .8125rem; }
+.career-app .cg-setup-mark { display: grid; place-items: center; width: 22px; height: 22px; color: var(--cg-muted); }
+.career-app .cg-setup-mark svg { width: 16px; height: 16px; }
+.career-app .cg-setup-list li.is-done .cg-setup-mark { color: var(--cg-green); }
+.career-app .cg-setup-list li.is-done b { color: var(--cg-muted); }
+.career-app .cg-setup > .cg-secondary { margin: 8px 0 18px; }

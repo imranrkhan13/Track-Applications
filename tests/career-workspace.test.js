@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRepository, emptyWorkspace, jobPayload, safeLink, workspaceFor, canonicalStatus } from '../src/career/repository.js';
-import { buildPreparation, inferFamily, jobDescriptionFor, localInstant, makeAvailability, normalizeCompany, planIsStale, practiceQuestions, processFor } from '../src/career/planner.js';
+import { buildPreparation, deadlineInfo, inferFamily, jobDescriptionFor, localInstant, makeAvailability, normalizeCompany, planIsStale, practiceQuestions, processFor } from '../src/career/planner.js';
 import { schedulePreparation } from '../src/lib/prepEngine.js';
 
 const now = '2026-09-08T04:00:00Z';
@@ -156,4 +156,37 @@ test('research JD is not reused after changing the company, role or source link'
 test('a JD explicitly saying no DSA does not generate an algorithms task', () => {
     const job = role(); job.workspace.jdText = 'React required. No DSA is asked.';
     assert(!buildPreparation(job, 'user-1', now).tasks.some(t => t.id === 'algorithms'));
+});
+test('deadlineInfo classifies urgency, kind and past deadlines', () => {
+    const base = role().workspace;
+    assert.equal(deadlineInfo({ ...base, deadline: '2026-09-11' }, now).urgency, 'critical'); // 3 days
+    assert.equal(deadlineInfo({ ...base, deadline: '2026-09-29' }, now).urgency, 'normal');   // 21 days
+    assert.equal(deadlineInfo({ ...base, deadline: '2026-09-14' }, now).urgency, 'soon');     // 6 days
+    const past = deadlineInfo({ ...base, deadline: '2026-09-01' }, now);
+    assert.equal(past.past, true); assert.equal(past.urgency, 'past');
+    assert.equal(deadlineInfo({ ...base, deadline: '' }, now).urgency, 'unknown');
+    assert.equal(deadlineInfo({ ...base, deadline: '2026-09-29', preferences: { ...base.preferences, deadlineKind: 'application' } }, now).kind, 'application');
+});
+test('an interview within three days yields a triage plan, not the full curriculum', () => {
+    const job = role(); job.workspace.deadline = '2026-09-10'; // 2 days out
+    const plan = buildPreparation(job, 'user-1', now);
+    assert.equal(plan.urgency, 'critical');
+    assert(plan.tasks.some(t => t.id === 'mock'));
+    assert(plan.tasks.some(t => t.id.startsWith('triage-')));
+    assert(!plan.tasks.some(t => t.id === 'build'));
+    assert(!plan.tasks.some(t => t.id === 'recall-week-2'));
+    assert(plan.assumptions.some(a => /triage plan/.test(a)));
+});
+test('an application deadline is labelled distinctly from an interview date', () => {
+    const job = role(); job.workspace.preferences.deadlineKind = 'application';
+    const plan = buildPreparation(job, 'user-1', now);
+    assert.equal(plan.deadlineKind, 'application');
+    assert(plan.assumptions.some(a => /application deadline/.test(a)));
+});
+test('an applied role with no next date gets a follow-up task; a saved role does not', () => {
+    const applied = role({ status: 'Applied' });
+    assert(buildPreparation(applied, 'user-1', now).tasks.some(t => t.id === 'application-follow-up'));
+    assert(!buildPreparation(role({ status: 'Saved' }), 'user-1', now).tasks.some(t => t.id === 'application-follow-up'));
+    const booked = role({ status: 'Applied', next_date: '2026-09-20' });
+    assert(!buildPreparation(booked, 'user-1', now).tasks.some(t => t.id === 'application-follow-up'));
 });
