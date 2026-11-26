@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { makeProvider } from './lib/ai/provider.mjs';
+import { makeProvider, hasAIProvider } from './lib/ai/provider.mjs';
 import { COACH_SYSTEM, coachUser } from './lib/ai/prompts/extract.v1.js';
 const reply = (statusCode, payload) => ({ statusCode, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }, body: JSON.stringify(payload) });
 export function validateCoach(value, answer, rubric) {
@@ -23,7 +23,7 @@ export function makeCoachHandler({ env = process.env, clientFactory = createClie
         if (!token) return reply(401, { error: 'Sign in for AI coaching. Self-review is available without a provider.' });
         const url = env.SUPABASE_URL || env.VITE_SUPABASE_URL;
         const key = env.SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY;
-        if (!url || !key || !env.GEMINI_API_KEY || !env.GEMINI_MODEL) return reply(503, { error: 'AI coaching is not configured. Your answer is preserved; use the rubric for self-review.' });
+        if (!url || !key || !hasAIProvider(env)) return reply(503, { error: 'AI coaching is not configured. Your answer is preserved; use the rubric for self-review.' });
         try {
             const client = clientFactory(url, key, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false, autoRefreshToken: false } });
             const session = await client.auth.getUser(token);

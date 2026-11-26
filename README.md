@@ -18,7 +18,7 @@ A calmer career workspace for managing job applications, preparing for a specifi
 
 The redesigned workspace brings the complete search loop into one product. Users can maintain a pipeline with statuses, next steps, dates, compensation, links, and notes; see all six plant stages on the dashboard; switch between table and board views; open analytics for response-rate and source-mix signals; and keep a lightweight activity timeline.
 
-The **Candidate Room** is the role-first preparation loop. For each saved application it provides source trails for the official role, hiring process, tech-stack signals, and company context; an evidence log; a six-stage task plan; targeted questions; and a direct handoff into mock interview practice. The **Research & build plan** action uses the Netlify server function to fetch a public job page, Google Docs/Drive export, or other readable URL without browser CORS issues, search the main company signals, and work backwards from the saved deadline or interview date. If a server Gemini key is configured, it also creates a grounded role brief; otherwise it still returns a source-backed dated template. Research results, task progress, and notes are stored locally per user and role until a server-side research table is connected.
+The **Candidate Room** is the role-first preparation loop. For each saved application it provides source trails for the official role, hiring process, tech-stack signals, and company context; an evidence log; a six-stage task plan; targeted questions; and a direct handoff into mock interview practice. The **Research & build plan** action uses the Netlify server function to fetch a public job page, Google Docs/Drive export, or other readable URL without browser CORS issues, discover the company's official site (Wikipedia/Wikidata) and its careers/engineering/blog pages (sitemap + conventional paths) with **no paid API key required**, and work backwards from the saved deadline or interview date. An optional Brave key adds wider web results. If a server Gemini key is configured, it also creates a grounded role brief; otherwise it still returns a source-backed dated template. Research results, task progress, and notes are stored locally per user and role until a server-side research table is connected.
 
 The **Role Prep** area creates a private preparation room for a selected application. It accepts a job description or interview notes, builds a role-specific positioning brief, suggests focused questions, and maintains a story bank for behavioral answers. The **Mock Interview** room provides three practice prompts, browser voice capture where supported, an editable transcript, a provider-routing selector, a structured rating rubric, and saved answer history.
 
@@ -90,7 +90,9 @@ Do not commit provider keys to this repository or place them in browser-exposed 
 | `netlify/functions/career-coach.mjs` | AI coaching on practice answers with quoted-evidence validation. |
 | `netlify/functions/lib/robots.mjs` | robots.txt parsing/caching (Allow/Disallow, wildcards, `$` anchors, Crawl-delay, Sitemaps). |
 | `netlify/functions/lib/scraper.mjs` | Polite crawler: robots checks, per-host rate limits, page/depth/budget caps, link discovery. |
-| `netlify/functions/lib/sources/adapters.mjs` | Per-site discovery/parse adapters (AmbitionBox, Medium, Glassdoor, generic). |
+| `netlify/functions/lib/sources/adapters.mjs` | Per-site discovery/parse adapters (AmbitionBox, Medium, Glassdoor, Greenhouse, Lever, generic) plus the shared `cleanHTML` extractor. |
+| `netlify/functions/lib/sources/discovery.mjs` | Keyless discovery: Wikipedia/Wikidata (official site) and sitemap + conventional-path finding. No API key required. |
+| `src/career/companyProfile.js` | Classifies research sources into product / tech / hiring / reviews for the company-profile panel. |
 | `netlify/functions/lib/ai/` | AI layer: provider abstraction, versioned prompts, claim extraction, brief synthesis. |
 | `src/lib/appData.js` | Local persistence and Supabase-aware data helpers. |
 | `src/career/career.css` | Scoped workspace visual system. |
@@ -99,4 +101,34 @@ Do not commit provider keys to this repository or place them in browser-exposed 
 
 Run `npm test`, `npm run lint`, and `npm run build`. The auth regression tests cover storage failures, concurrent sign-in starts, repeated callbacks, missing/expired verifiers, cancellation, and existing sessions. These use a mocked auth provider; a real Google round trip still requires a configured Supabase project and a user completing consent.
 
+`npm run smoke` runs a **full-application smoke test**. It serves the production `dist/` the way Netlify does (static files with an `index.html` fallback, `/api/*` routed to the real function handlers) and checks that the app boots, its JS/CSS assets resolve, deep links return the app shell, and the research API is wired and guards auth. Point it at a live deployment with `SMOKE_BASE_URL=https://your-site.netlify.app npm run smoke`.
+
+`npm run verify` runs the whole gate in order: lint → tests → build → smoke.
+
 For visual checks, review the landing page and all workspace sections at 320, 390, 768, 1024, and 1440 pixels. Check the add-role dialog's inputs, scrolling, keyboard focus, and footer buttons as well as the mobile navigation. Vite may report third-party module directives, an outdated Browserslist database, and large bundle chunks; these are build warnings, not test failures.
+
+## Continuous integration and deployment
+
+`.github/workflows/ci.yml` runs on every push and pull request:
+
+1. **verify** — `npm run lint`, `npm test`, `npm run build`, then the smoke test.
+2. **deploy** (pushes to `main` only) — deploys the built site to Netlify.
+3. **live-smoke** — smoke-tests the deployed URL.
+4. **revert** — if the live smoke test fails, the pushed commit is reverted and the previous version is redeployed, so a broken change never stays live.
+
+To reuse this pattern in another repository, copy `docs/ci-template.yml` to that repo's `.github/workflows/ci.yml` and change only the lines marked `# <-- CHANGE` (branch names, build scripts, deploy command). The only genuinely app-specific piece is the smoke test — everything else is generic.
+
+### Required repository secrets
+
+Set these under **Settings → Secrets and variables → Actions**:
+
+| Secret | Purpose |
+|---|---|
+| `NETLIFY_AUTH_TOKEN` | Netlify personal access token used to deploy and revert. |
+| `NETLIFY_SITE_ID` | The Netlify site's API ID (Site configuration → General). |
+
+Without them, verification still runs but deploy and live-smoke are skipped with a warning.
+
+### Important: disable Netlify auto-publish
+
+Turn **off** Netlify's own *Auto publishing* (Site configuration → Build & deploy → Continuous deployment). Otherwise Netlify deploys every push itself, bypassing this pipeline's checks and the automatic revert. With auto-publish off, only this workflow publishes production.

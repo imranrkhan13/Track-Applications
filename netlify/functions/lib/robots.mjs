@@ -61,6 +61,13 @@ export function parseRobots(text, userAgent = USER_AGENT) {
             continue;
         }
 
+        // Sitemap is a global directive (RFC 9309 §2.2.1): it is not scoped to
+        // a user-agent group, so it must be recorded before the group gate.
+        if (directive === 'sitemap') {
+            if (value) sitemaps.push(value);
+            continue;
+        }
+
         // Only apply to our user agent or *
         const applies = currentUserAgents.some(ua =>
             ua === userAgent.toLowerCase() || ua === '*'
@@ -83,9 +90,6 @@ export function parseRobots(text, userAgent = USER_AGENT) {
                 }
                 break;
             }
-            case 'sitemap':
-                if (value) sitemaps.push(value);
-                break;
         }
     }
 

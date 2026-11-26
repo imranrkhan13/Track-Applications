@@ -1,0 +1,139 @@
+# Continuous verification and deployment.
+#
+# Every push and pull request runs: lint → unit/integration tests → production
+# build → full-application smoke test (serves dist/ with the real API handlers).
+#
+# On a push to the main branch, a passing build is deployed to Netlify and then
+# smoke-tested AGAINST THE LIVE SITE. If the live smoke test fails, the deploy
+# is automatically reverted (the pushed commit is reverted and the previous
+# version is redeployed), so a broken change never stays live.
+#
+# Requires repository secrets (Settings → Secrets and variables → Actions):
+#   NETLIFY_AUTH_TOKEN  — a Netlify personal access token
+#   NETLIFY_SITE_ID     — the Netlify site's API ID
+# Without them, deploy and smoke-of-live are skipped (verification still runs).
+#
+# IMPORTANT: turn OFF Netlify's own "Auto publishing" so only this pipeline
+# publishes production. Otherwise Netlify would deploy unchecked changes.
+
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Lint, test, build, smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Tests
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Smoke test the build
+        run: npm run smoke
+
+  deploy:
+    name: Deploy to Netlify
+    needs: verify
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      deployed: ${{ steps.deploy.outputs.deployed }}
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Deploy production
+        id: deploy
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          if [ -z "$NETLIFY_AUTH_TOKEN" ] || [ -z "$NETLIFY_SITE_ID" ]; then
+            echo "deployed=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::NETLIFY_AUTH_TOKEN / NETLIFY_SITE_ID are not set; skipping deploy."
+            exit 0
+          fi
+          npm i -g netlify-cli@17
+          netlify deploy --build --prod --message "CI ${GITHUB_SHA::7}" --json > deploy.json
+          URL=$(node -e "const d=require('./deploy.json');process.stdout.write(d.url||d.deploy_url||d.site_url||'')")
+          echo "deployed=true" >> "$GITHUB_OUTPUT"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "Deployed to $URL"
+
+  live-smoke:
+    name: Smoke test the live site
+    needs: deploy
+    if: needs.deploy.outputs.deployed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Smoke test the deployment (with retries for propagation)
+        env:
+          SMOKE_BASE_URL: ${{ needs.deploy.outputs.url }}
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if node scripts/smoke.mjs; then exit 0; fi
+            echo "Attempt $attempt failed; retrying in 15s…"
+            sleep 15
+          done
+          echo "::error::The deployed site failed its smoke test."
+          exit 1
+
+  revert:
+    name: Revert the bad deploy
+    needs: [deploy, live-smoke]
+    if: always() && needs.deploy.outputs.deployed == 'true' && needs.live-smoke.result == 'failure'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Revert the pushed commit and redeploy the previous version
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: |
+          set -e
+          if git log -1 --pretty=%s | grep -qi '^Revert'; then
+            echo "::error::HEAD is already a revert commit; stopping to avoid a loop. Manual check needed."
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ "$(git rev-list --parents -n 1 HEAD | wc -w)" -gt 2 ]; then
+            git revert --no-edit -m 1 HEAD
+          else
+            git revert --no-edit HEAD
+          fi
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+          npm i -g netlify-cli@17
+          netlify deploy --build --prod --message "Revert of ${GITHUB_SHA::7} (failed smoke test)"
+          echo "::error::The deployment failed smoke checks and was reverted to the previous version."
+          exit 1

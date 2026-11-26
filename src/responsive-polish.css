@@ -6,7 +6,8 @@
   --cg-font-mono: "DM Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-html { overflow-x: clip; }
+html { overflow-x: clip; scroll-behavior: smooth; scroll-padding-top: 96px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 body,
 button,
 input,
