@@ -1,0 +1,140 @@
+# Reusable CI/CD template: verify → deploy → live-smoke → auto-revert.
+#
+# Copy this file to `.github/workflows/ci.yml` in a new repo and change the
+# lines marked  # <-- CHANGE  . Everything else is generic.
+#
+# The only real per-app work is the smoke test: a script that proves the WHOLE
+# application works (boots, assets load, routes resolve, API is wired). Point
+# `npm run smoke` at it. It must exit non-zero on failure and accept a live URL
+# via the SMOKE_BASE_URL environment variable.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   DEPLOY_TOKEN   — the deploy platform's token (Netlify/Vercel/etc.)
+#   DEPLOY_ID      — the deploy platform's project/site id
+# Runtime config (Supabase, API keys, etc.) goes in the DEPLOY PLATFORM's env
+# vars, not here — the app reads those on the server at runtime.
+#
+# Turn OFF the platform's own auto-deploy so only this pipeline ships prod.
+
+name: CI
+
+on:
+  push:
+    branches: [main, master]   # <-- CHANGE branch names if needed
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # 1. The gate: nothing deploys unless this passes.
+  verify:
+    name: Lint, test, build, smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc   # <-- CHANGE if not a Node app
+          cache: npm
+      - run: npm ci
+      - run: npm run lint             # <-- CHANGE per your scripts
+      - run: npm test
+      - run: npm run build
+      - run: npm run smoke            # the app-specific check
+
+  # 2. Deploy, only on pushes to the main branch.
+  deploy:
+    name: Deploy
+    needs: verify
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      deployed: ${{ steps.deploy.outputs.deployed }}
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version-file: .nvmrc, cache: npm }
+      - run: npm ci
+      - name: Deploy production
+        id: deploy
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          DEPLOY_ID: ${{ secrets.DEPLOY_ID }}
+        run: |
+          if [ -z "$DEPLOY_TOKEN" ] || [ -z "$DEPLOY_ID" ]; then
+            echo "deployed=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Deploy secrets are not set; skipping deploy."
+            exit 0
+          fi
+          # <-- CHANGE: your deploy command. It must print the live URL to
+          #     deploy.json (or however you capture it), then set outputs below.
+          npm i -g netlify-cli@17
+          netlify deploy --build --prod --message "CI ${GITHUB_SHA::7}" --json > deploy.json
+          URL=$(node -e "const d=require('./deploy.json');process.stdout.write(d.url||d.deploy_url||d.site_url||'')")
+          echo "deployed=true" >> "$GITHUB_OUTPUT"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "Deployed to $URL"
+
+  # 3. Prove the LIVE site works, with retries for CDN propagation.
+  live-smoke:
+    name: Smoke test the live site
+    needs: deploy
+    if: needs.deploy.outputs.deployed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version-file: .nvmrc, cache: npm }
+      - run: npm ci
+      - name: Smoke test the deployment
+        env:
+          SMOKE_BASE_URL: ${{ needs.deploy.outputs.url }}
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if node scripts/smoke.mjs; then exit 0; fi
+            echo "Attempt $attempt failed; retrying in 15s…"
+            sleep 15
+          done
+          echo "::error::The deployed site failed its smoke test."
+          exit 1
+
+  # 4. If the live check failed, undo the deploy automatically.
+  revert:
+    name: Revert the bad deploy
+    needs: [deploy, live-smoke]
+    if: always() && needs.deploy.outputs.deployed == 'true' && needs.live-smoke.result == 'failure'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write            # needed to push the revert commit
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Revert the pushed commit and redeploy the previous version
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          DEPLOY_ID: ${{ secrets.DEPLOY_ID }}
+        run: |
+          set -e
+          # Guard: never revert a revert (would ping-pong forever).
+          if git log -1 --pretty=%s | grep -qi '^Revert'; then
+            echo "::error::HEAD is already a revert commit; stopping to avoid a loop. Manual check needed."
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # A merge commit needs -m 1; a normal commit does not.
+          if [ "$(git rev-list --parents -n 1 HEAD | wc -w)" -gt 2 ]; then
+            git revert --no-edit -m 1 HEAD
+          else
+            git revert --no-edit HEAD
+          fi
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+          # <-- CHANGE: redeploy the previous version (same command as deploy).
+          npm i -g netlify-cli@17
+          netlify deploy --build --prod --message "Revert of ${GITHUB_SHA::7} (failed smoke test)"
+          echo "::error::The deployment failed smoke checks and was reverted to the previous version."
+          exit 1

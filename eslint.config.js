@@ -26,4 +26,9 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  {
+    // Node-side files: Vite config, build scripts and Netlify functions.
+    files: ['vite.config.js', 'scripts/**/*.{js,mjs}', 'netlify/**/*.mjs'],
+    languageOptions: { globals: globals.node },
+  },
 ])

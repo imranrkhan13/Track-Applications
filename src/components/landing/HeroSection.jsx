@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useReducedMotion, useSpring } from "framer-motion";
 import { ArrowDownRight, ArrowRight, BriefcaseBusiness, CalendarRange, Check, LoaderCircle, Mic2, Play, Search } from "lucide-react";
-import workspaceImage from "../../assets/career-garden-workspace-wide.png";
-import workspaceImageSquare from "../../assets/career-garden-workspace.jpeg";
+import heroWideAvif from "../../assets/opt/hero-wide-1672.avif";
+import heroWideWebp from "../../assets/opt/hero-wide-1672.webp";
+import heroSquareAvif from "../../assets/opt/hero-square-800.avif";
+import heroSquareWebp from "../../assets/opt/hero-square-800.webp";
 import { RevealLine } from "./Motion";
 
 const PHASE_COPY = ["See it work", "Saving the role…", "Researching the company…", "Building your plan…", "Interview room ready"];
@@ -70,8 +72,11 @@ export default function HeroSection({ onStart }) {
 
             <MotionDiv className="cg-hero-scene" style={{ x: roomX, y: roomY }} initial={{ opacity: 0, scale: 1.025 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.12, duration: 1 }}>
                 <picture className="cg-hero-room-media">
-                    <source media="(max-width: 560px)" srcSet={workspaceImageSquare} />
-                    <img className="cg-hero-room" src={workspaceImage} width="1672" height="941" alt="A warm botanical home office for focused career work" fetchPriority="high" />
+                    <source type="image/avif" media="(max-width: 560px)" srcSet={heroSquareAvif} />
+                    <source type="image/webp" media="(max-width: 560px)" srcSet={heroSquareWebp} />
+                    <source type="image/avif" srcSet={heroWideAvif} />
+                    <source type="image/webp" srcSet={heroWideWebp} />
+                    <img className="cg-hero-room" src={heroWideWebp} width="1672" height="941" alt="A warm botanical home office for focused career work" fetchPriority="high" decoding="async" />
                 </picture>
                 <span className="cg-hero-room-shade" />
                 <MotionArticle className="cg-hero-product" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .84, duration: .62, ease: [0.22, 1, 0.36, 1] }}>

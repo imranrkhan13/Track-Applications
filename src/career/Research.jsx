@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react';
-import { BookOpen, Search, Plus, ShieldCheck, Sparkles, Link2, AlertTriangle } from 'lucide-react';
+import { createElement, useEffect, useMemo, useState } from 'react';
+import { BookOpen, Search, Plus, ShieldCheck, Sparkles, Link2, AlertTriangle, Globe, FileText, CheckCircle2, Ban, RefreshCw } from 'lucide-react';
 import { workspaceFor, safeLink } from './repository';
 import { inferFamily, normalizeCompany, processFor } from './planner';
+import { companyProfile, BUCKET_META } from './companyProfile';
 import { ExternalLink } from './UI';
 import { supabase } from '../lib/supabase';
 
@@ -47,6 +48,105 @@ function EvidenceTimeline({ variants, reports, onRemove, busy }) {
             </div>
         </li>;
     })}</ol>;
+}
+
+// Visible progress while research runs. We cannot observe server-side stage
+// completion, so this shows an honest elapsed timer and the real pipeline steps
+// rather than a fabricated per-step percentage.
+function ResearchProgress() {
+    const [seconds, setSeconds] = useState(0);
+    useEffect(() => {
+        const id = setInterval(() => setSeconds(s => s + 1), 1000);
+        return () => clearInterval(id);
+    }, []);
+    const steps = [
+        { icon: Search, label: 'Search & catalogue discovery', detail: 'Finding official pages, engineering blogs and candidate accounts for this exact role.' },
+        { icon: Globe, label: 'Reading permitted pages', detail: 'robots.txt is checked before every fetch; login-walled and paywalled pages are never read.' },
+        { icon: FileText, label: 'Extracting with exact quotes', detail: 'A stage is kept only when the AI can quote the source word-for-word.' },
+    ];
+    return <section className="cg-surface cg-research-progress" role="status" aria-live="polite">
+        <div className="cg-section-head">
+            <div><span className="cg-label">RESEARCH IN PROGRESS</span><h2>Gathering sources for this role</h2></div>
+            <span className="cg-badge cg-badge-neutral"><RefreshCw className="cg-spin" aria-hidden="true" /> {seconds}s</span>
+        </div>
+        <ol className="cg-progress-steps">{steps.map((s, i) => <li key={s.label} style={{ animationDelay: `${i * 1.4}s` }}><span className="cg-progress-icon">{createElement(s.icon, { 'aria-hidden': true })}</span><div><b>{s.label}</b><small>{s.detail}</small></div></li>)}</ol>
+        <small className="cg-muted">This usually takes 15–60 seconds. Your job is already saved — you can leave this tab and return.</small>
+    </section>;
+}
+
+// Company profile: groups the research sources into product / tech / hiring /
+// reviews so the candidate sees what is known about the company at a glance.
+function CompanyProfile({ research }) {
+    const profile = useMemo(() => companyProfile(research), [research]);
+    if (!profile.total) return null;
+    return <section className="cg-surface cg-profile-panel">
+        <div className="cg-section-head">
+            <div><span className="cg-label">COMPANY PROFILE</span><h2>What we know about {research.query?.company || 'this company'}</h2></div>
+            <span className="cg-badge cg-badge-neutral">{profile.total} source{profile.total === 1 ? '' : 's'}</span>
+        </div>
+        <p className="cg-muted">Grouped from the sources research found. These are links to review, not verified facts about the company.</p>
+        <div className="cg-profile-grid">
+            {profile.order.map(key => {
+                const items = profile.buckets[key];
+                if (!items.length) return null;
+                const meta = BUCKET_META[key];
+                return <div className="cg-profile-bucket" key={key}>
+                    <div className="cg-profile-bucket-head"><b>{meta.label}</b><span>{items.length}</span></div>
+                    <small className="cg-muted">{meta.hint}</small>
+                    <ul>{items.slice(0, 6).map(item => <li key={item.url}><ExternalLink href={item.url}>{item.title}</ExternalLink><span className="cg-profile-host">{item.host}</span></li>)}</ul>
+                </div>;
+            })}
+        </div>
+    </section>;
+}
+
+// Scraping transparency: shows exactly where research data comes from.
+// Pipeline stages + per-host chips colored by outcome (read / link-only / robots-blocked).
+function ScrapeTransparency({ research, busy }) {
+    if (!research) return null;
+    const sources = research.sources || [];
+    const documents = research.documents || [];
+    const readUrls = new Set(documents.map(d => d.url).filter(Boolean));
+    const hosts = new Map();
+    for (const s of sources) {
+        let hostname;
+        try { hostname = new URL(s.url).hostname; } catch { continue; }
+        const entry = hosts.get(hostname) || { hostname, count: 0, read: 0, blocked: 0 };
+        entry.count++;
+        if (readUrls.has(s.url) || s.status === 'read' || s.status === 'thin') entry.read++;
+        if (s.status === 'disallowed' || s.note?.toLowerCase().includes('robots')) entry.blocked++;
+        hosts.set(hostname, entry);
+    }
+    const readCount = [...hosts.values()].reduce((n, h) => n + h.read, 0);
+    const blockedCount = [...hosts.values()].reduce((n, h) => n + h.blocked, 0);
+    return <section className="cg-surface cg-scrape-panel" aria-label="Where this research comes from">
+        <div className="cg-section-head">
+            <div><span className="cg-label">RESEARCH TRANSPARENCY</span><h2>Where this data comes from</h2></div>
+            {busy && <span className="cg-badge cg-badge-neutral"><RefreshCw className="cg-spin" aria-hidden="true" /> Working…</span>}
+        </div>
+        <p className="cg-muted">Every source below was collected for this role. Pages are only read when the site's robots.txt permits crawling and the operator has allowlisted the host — everything else stays a link for you to open yourself.</p>
+        <div className="cg-scrape-pipeline">
+            <div className="cg-scrape-step">
+                <span className="cg-scrape-step-icon"><Search aria-hidden="true" /></span>
+                <div><b>Search &amp; catalogue discovery</b><small>{sources.length} source{sources.length === 1 ? '' : 's'} found across {hosts.size} site{hosts.size === 1 ? '' : 's'} — official pages, the reviewed catalogue, and site-specific queries</small></div>
+            </div>
+            <div className="cg-scrape-step">
+                <span className="cg-scrape-step-icon"><Globe aria-hidden="true" /></span>
+                <div><b>Polite crawl of permitted hosts</b><small>{readCount} page{readCount === 1 ? '' : 's'} read · robots.txt checked before every fetch, rate-limited per host{blockedCount ? ` · ${blockedCount} blocked by robots.txt` : ''}</small></div>
+            </div>
+            <div className="cg-scrape-step">
+                <span className="cg-scrape-step-icon"><FileText aria-hidden="true" /></span>
+                <div><b>AI extraction with exact quotes</b><small>{documents.length} document{documents.length === 1 ? '' : 's'} processed — every extracted stage must quote the source text word-for-word; you review before it becomes evidence</small></div>
+            </div>
+        </div>
+        {hosts.size > 0 && <div className="cg-scrape-hosts">
+            {[...hosts.values()].map(h => <span key={h.hostname} className="cg-scrape-host" data-read={h.read > 0} data-blocked={h.blocked > 0} title={`${h.count} source${h.count === 1 ? '' : 's'} · ${h.read} read${h.blocked ? ` · ${h.blocked} robots-blocked` : ''}`}>
+                {h.read > 0 && !h.blocked ? <CheckCircle2 aria-hidden="true" /> : h.blocked ? <Ban aria-hidden="true" /> : <Link2 aria-hidden="true" />}
+                {h.hostname}
+            </span>)}
+        </div>}
+        <small className="cg-muted">X/Twitter is never scraped. Login-walled or paywalled pages are never bypassed — paste your own notes for those.</small>
+    </section>;
 }
 
 // Synthesized brief panel: calls /api/career-brief with the user's reviewed claims.
@@ -99,7 +199,7 @@ function BriefPanel({ job, demo }) {
     </section>;
 }
 
-export default function Research({ job, userId, onUpdate, onResearch, busy, demo }) {
+export default function Research({ job, userId, onUpdate, onResearch, busy, researching, demo }) {
     const w = workspaceFor(job);
     const [open, setOpen] = useState(false);
     const [error, setError] = useState('');
@@ -148,6 +248,12 @@ export default function Research({ job, userId, onUpdate, onResearch, busy, demo
             {w.research?.warnings?.length > 0 && <details className="cg-disclosure"><summary><AlertTriangle aria-hidden="true" /> Research gaps · {w.research.warnings.length} to review</summary>{w.research.warnings.map(text => <p className="cg-inline-note" key={text}>{text}</p>)}</details>}
             {w.research && <small>Last researched {new Date(w.research.generatedAt).toLocaleString()} · {w.research.mode}</small>}
         </section>
+
+        {researching && <ResearchProgress />}
+
+        <CompanyProfile research={w.research} />
+
+        <ScrapeTransparency research={w.research} busy={busy} />
 
         <BriefPanel job={job} demo={demo} />
 

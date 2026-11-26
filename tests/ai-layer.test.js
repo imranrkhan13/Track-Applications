@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { makeProvider, validateShape } from '../netlify/functions/lib/ai/provider.mjs';
+import { makeProvider, validateShape, hasAIProvider } from '../netlify/functions/lib/ai/provider.mjs';
 import { extractAccounts, validateExtraction } from '../netlify/functions/lib/ai/extract.mjs';
 import { synthesizeBrief, validateBrief } from '../netlify/functions/lib/ai/synthesize.mjs';
 import { makeBriefHandler, validateBriefRequest } from '../netlify/functions/career-brief.mjs';
@@ -55,6 +55,39 @@ test('provider rejects responses that fail shape validation', async () => {
 test('provider refuses to run without credentials', async () => {
     const generateJSON = makeProvider({ env: {} });
     await assert.rejects(generateJSON({ system: 's', user: 'u' }), /not configured/);
+});
+
+test('provider falls through to the next provider when the first fails', async () => {
+    const seen = [];
+    const request = async url => {
+        seen.push(url);
+        if (url.includes('generativelanguage')) throw new Error('Gemini rate-limited');
+        return { ok: true, text: async () => JSON.stringify({ choices: [{ message: { content: '{"accounts":[]}' } }] }) };
+    };
+    const generateJSON = makeProvider({ env: { GEMINI_API_KEY: 'k', GEMINI_MODEL: 'm', GROQ_API_KEY: 'g' }, request });
+    const value = await generateJSON({ system: 's', user: 'u', shape: { accounts: 'array' } });
+    assert.deepEqual(value, { accounts: [] });
+    assert(seen.some(u => u.includes('generativelanguage')));
+    assert(seen.some(u => u.includes('groq.com')));
+});
+
+test('hasAIProvider reports true when any single provider is configured', () => {
+    assert.equal(hasAIProvider({}), false);
+    assert.equal(hasAIProvider({ GEMINI_API_KEY: 'k', GEMINI_MODEL: 'm' }), true);
+    assert.equal(hasAIProvider({ GROQ_API_KEY: 'g' }), true);
+    assert.equal(hasAIProvider({ COHERE_API_KEY: 'c' }), true);
+    assert.equal(hasAIProvider({ OPENROUTER_API_KEY: 'o' }), true);
+    // A key without a model is not a usable Gemini config.
+    assert.equal(hasAIProvider({ GEMINI_API_KEY: 'k' }), false);
+});
+
+test('provider strips markdown fences around JSON', async () => {
+    const request = async () => ({
+        ok: true,
+        text: async () => JSON.stringify({ candidates: [{ content: { parts: [{ text: '```json\n{"accounts":[]}\n```' }] } }] }),
+    });
+    const generateJSON = makeProvider({ env: { GEMINI_API_KEY: 'k', GEMINI_MODEL: 'm' }, request });
+    assert.deepEqual(await generateJSON({ system: 's', user: 'u', shape: { accounts: 'array' } }), { accounts: [] });
 });
 
 // ---------------------------------------------------------------------------

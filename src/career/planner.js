@@ -2,6 +2,22 @@ import { assembleProcessMap, schedulePreparation } from '../lib/prepEngine.js';
 import { workspaceFor } from './repository.js';
 
 export const FAMILIES = [['engineering', 'Software engineering'], ['ml', 'Machine learning / data science'], ['design', 'Design / UX'], ['product', 'Product management'], ['general', 'Other role']];
+// Task tiers are the plan's honesty axis: with little runway we keep only the
+// essential set and say plainly what was left out, rather than compressing the
+// whole curriculum into too few days.
+export const TIERS = ['essential', 'core', 'stretch'];
+// How much of the curriculum the runway before the interview can carry.
+export const RUNWAY_BUCKETS = [
+    { id: 'sprint', maxDays: 4, tiers: ['essential'], label: 'Short runway' },
+    { id: 'standard', maxDays: 13, tiers: ['essential', 'core'], label: 'Focused runway' },
+    { id: 'extended', maxDays: Infinity, tiers: ['essential', 'core', 'stretch'], label: 'Full runway' },
+];
+export function runwayBucket(spanDays) { return RUNWAY_BUCKETS.find(b => spanDays <= b.maxDays) || RUNWAY_BUCKETS[RUNWAY_BUCKETS.length - 1]; }
+const RUNWAY_COPY = {
+    sprint: span => ({ headline: 'Short runway — essentials only.', detail: `With ${span} day${span === 1 ? '' : 's'} to go, the plan covers confirming the format, your JD checklist and one rehearsal. The build project and spaced recall need a longer runway.` }),
+    standard: span => ({ headline: 'Focused runway.', detail: `With ${span} days, the plan covers the essentials plus the core build and review. Spaced recall unlocks on a longer runway.` }),
+    extended: span => ({ headline: 'Full runway.', detail: `With ${span} days, the plan includes the essentials, the core build and spaced recall across the coming weeks.` }),
+};
 export const normalizeCompany = value => value.trim().toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
 export function inferFamily(title) {
     if (/\b(ml|ai|machine learning|data scien|applied scien)/i.test(title)) return 'ml';
@@ -107,10 +123,77 @@ export function requirementsFor(job) {
         return evidence ? [{ id, title, exercise, evidence: evidence.slice(0, 600), resources: [RESOURCES[resourceKey]] }] : [];
     });
 }
+// JD -> project derivation. Deterministic and auditable: every detected
+// capability quotes the JD sentence it came from, and the resulting project is
+// a practice suggestion, never a claim about the employer's real task.
+const CAPABILITIES = [
+    { id: 'rest-api', label: 'REST / HTTP API design', noun: 'a REST API', match: /\b(rest|restful|http apis?|api design|endpoints?|graphql)\b/i, stack: 'an HTTP framework (Express, FastAPI or Go net/http)' },
+    { id: 'database', label: 'Data modelling & persistence', noun: 'a persisted data store', match: /\b(postgres|postgresql|mysql|\bsql\b|database|schema|\borm\b|dynamodb|mongo)/i, stack: 'Postgres or SQLite' },
+    { id: 'auth', label: 'Authentication & authorization', noun: 'an auth flow with roles', match: /\b(auth|oauth|\bjwt\b|session|permission|\brbac\b|access control)/i, stack: 'JWT or session cookies' },
+    { id: 'frontend', label: 'Frontend / component UI', noun: 'a component interface', match: /\b(react|vue|angular|svelte|frontend|\bui\b|component|\bcss\b|tailwind)/i, stack: 'React (or the framework named in the JD)' },
+    { id: 'testing', label: 'Automated testing', noun: 'a tested core', match: /\b(test|unit test|integration test|\btdd\b|jest|pytest|playwright|cypress)/i, stack: 'Jest/Vitest or Pytest' },
+    { id: 'realtime', label: 'Realtime / streaming', noun: 'a realtime update path', match: /\b(realtime|real-time|websocket|\bsse\b|streaming|pub\/sub|kafka|queue|event-driven)/i, stack: 'WebSockets or Server-Sent Events' },
+    { id: 'ml-training', label: 'Model training', noun: 'a training pipeline', match: /\b(train|training loop|fine-?tun|pytorch|tensorflow|gradient|optimiz)/i, stack: 'PyTorch' },
+    { id: 'ml-eval', label: 'Model evaluation', noun: 'an evaluation harness', match: /\b(evaluation|\beval\b|metric|precision|recall|\bf1\b|\bauc\b|\bwer\b|benchmark|accuracy)/i, stack: 'scikit-learn metrics' },
+    { id: 'data-pipeline', label: 'Data pipeline / ETL', noun: 'an ingest pipeline', match: /\b(etl|pipeline|ingest|data processing|airflow|spark|batch)/i, stack: 'a scheduler or plain scripts' },
+    { id: 'llm', label: 'LLM / retrieval application', noun: 'a retrieval pipeline', match: /\b(llm|large language|prompt|\brag\b|embedding|vector|retrieval)/i, stack: 'an embedding store and a prompt harness' },
+    { id: 'cloud', label: 'Deployment / cloud', noun: 'a containerised deployment', match: /\b(aws|gcp|azure|docker|kubernetes|deploy|ci\/cd|terraform)/i, stack: 'Docker' },
+    { id: 'accessibility', label: 'Accessibility', noun: 'an accessible interface', match: /\b(accessibility|wcag|a11y|screen reader|aria)/i, stack: 'axe and keyboard testing' },
+    { id: 'perf', label: 'Performance / optimisation', noun: 'a measured optimisation', match: /\b(performance|optimization|optimisation|latency|throughput|caching|scalab)/i, stack: 'a profiler and a benchmark script' },
+    { id: 'design-research', label: 'User research & flows', noun: 'a revised user flow', match: /\b(user research|usability|wireframe|prototype|design system|figma)/i, stack: 'Figma and a usability checklist' },
+    { id: 'product-metrics', label: 'Product metrics & experiments', noun: 'a metric-driven decision', match: /\b(metric|\bkpi\b|experiment|a\/b|north star|roadmap|prioritiz|prioritis)/i, stack: 'a spreadsheet or analytics tool' },
+];
+const PROJECT_READMES = ['One-paragraph purpose and the exact JD requirement it targets', 'Setup and run commands that work from a clean checkout', 'One design trade-off you made and why', 'Known limitations and what you would do next'];
+
+/** Derive a concrete, JD-grounded practice project. Returns a role-default
+ * spec when the JD is missing or names no recognised capability. */
+export function deriveProject(job) {
+    const w = workspaceFor(job);
+    const family = w.preferences.roleFamily || inferFamily(job.role);
+    const adapter = ADAPTERS[family] || ADAPTERS.general;
+    const sentences = jobDescriptionFor(job).split(/[\n.!?]+/).map(s => s.trim()).filter(Boolean);
+    const detected = CAPABILITIES.map(cap => {
+        const evidence = sentences.find(s => cap.match.test(s) && !/\b(not required|no experience|not necessary|not needed|no knowledge|familiarity with)\b/i.test(s));
+        return evidence ? { id: cap.id, label: cap.label, noun: cap.noun, stack: cap.stack, evidence: evidence.slice(0, 300) } : null;
+    }).filter(Boolean).slice(0, 4);
+
+    const evidence = detected.map(d => ({ capability: d.id, label: d.label, quote: d.evidence }));
+    const stack = [...new Set(detected.map(d => d.stack))];
+    const milestones = [
+        { title: 'Scope and skeleton', minutes: 30, deliverable: `A repo with a README stating which JD requirement (${detected[0]?.label || adapter.skill}) it targets and how you will know it works.`, acceptance: ['Repo runs from a clean checkout', 'The targeted requirement is named', 'A first failing check exists'] },
+        { title: 'Core behaviour', minutes: 90, deliverable: `The primary capability working end to end${detected[0] ? ` — ${detected[0].noun}` : ''}.`, acceptance: ['The happy path works', 'Inputs are validated', 'One error path is handled'] },
+        { title: 'Tests and edge cases', minutes: 45, deliverable: 'Automated checks for success, one failure and one edge case.', acceptance: ['Tests pass locally', 'A failure case is asserted', 'An edge case is covered'] },
+        { title: 'Document and review', minutes: 30, deliverable: 'A README a reviewer can follow, plus a note on one limitation.', acceptance: ['Setup steps are accurate', 'One trade-off is explained', 'Limitations are honest'] },
+    ];
+
+    if (!detected.length) return {
+        id: 'project', basis: 'role_default', family, title: adapter.title, summary: adapter.brief,
+        artifact: adapter.artifact, rubric: adapter.rubric, evidence: [], stack: adapter.resource ? [adapter.resource.title] : [],
+        milestones, readme: PROJECT_READMES,
+        caveat: 'No job description was matched, so this is a role-based practice project. Paste the JD or confirm expectations with your recruiter.',
+    };
+
+    const [top, second] = detected;
+    const title = family === 'ml' ? `Build ${top.noun} with ${second ? second.noun.replace(/^an? /, 'a ') : 'a reproducible evaluation'}`
+        : family === 'design' ? `Redesign one flow around ${top.label.toLowerCase()}`
+        : family === 'product' ? `Write a product decision for ${top.noun.replace(/^an? /, '')}`
+        : `Build ${top.noun}${second ? ` with ${second.noun}` : ''}`;
+    const summary = `A scoped practice project derived from your job description. It exercises ${detected.map(d => d.label.toLowerCase()).join(', ')} so you have a concrete artifact to walk through in the interview. Start from the smallest version that runs, then add the remaining requirements.`;
+    return {
+        id: 'project', basis: 'jd_requirement', family, title, summary,
+        artifact: `A runnable project, its tests and a README covering: ${PROJECT_READMES.map(r => r[0].toLowerCase() + r.slice(1)).join('; ')}.`,
+        rubric: ['Targets a stated JD requirement', 'Runs from a clean checkout', 'Tests cover success, failure and an edge case', 'One trade-off and one limitation are explained'],
+        evidence, stack: stack.length ? stack : [adapter.resource?.title || 'the stack named in the JD'],
+        milestones, readme: PROJECT_READMES,
+        caveat: 'This is a practice project derived from your job description, not a task the employer assigned. Confirm real expectations with your recruiter.',
+    };
+}
+
 export function buildPreparation(job, userId, now = new Date().toISOString()) {
     const w = workspaceFor(job);
     const family = w.preferences.roleFamily || inferFamily(job.role);
     const adapter = ADAPTERS[family] || ADAPTERS.general;
+    const project = deriveProject(job);
     const process = processFor(job, userId, now);
     const { slots, deadline } = makeAvailability(w.preferences, w.deadline, now);
     const task = (id, title, minutes, brief, artifact, rubric, extra = {}) => ({ id, title, minutes, brief, artifact, rubric, priority: 60, skill: 'Interview communication', reason: 'Recommended preparation; not a claimed employer question.', basis: 'general_recommendation', evidenceIds: [], dependsOn: [], ...extra });
@@ -129,10 +212,10 @@ export function buildPreparation(job, userId, now = new Date().toISOString()) {
         task('format', 'Confirm the next interview', 20, 'Ask your recruiter about round format, duration, skills and allowed tools. Record the answer under Research.', 'A recruiter question or confirmed round brief.', ['Round and date clarified', 'AI and internet rules checked'], { priority: 95 }),
         task('company', `Understand ${job.company} and its customers`, 25, 'Read the official product and team pages. Record two facts with source URLs and three questions. Do not assume a stack from the company name.', 'A one-page company brief with sources.', ['Facts link to sources', 'Questions connect to the role'], { priority: 75 }),
         task('learn', `Review: ${adapter.skill.toLowerCase()}`, 35, 'Revisit one weak concept using the lesson. Explain it without notes and identify what you cannot yet explain.', 'A short explanation and worked example.', adapter.rubric, { skill: adapter.skill, resources: adapter.resource ? [RESOURCES[adapter.resource]] : [], dependsOn: ['role-map'], priority: 75 }),
-        task('build', adapter.title, 60, adapter.brief, adapter.artifact, adapter.rubric, { skill: adapter.skill, dependsOn: ['learn'], priority: 70 }),
+        task('build', project.title, 60, `${project.summary} Start with the first milestone and get the smallest version running.`, project.artifact, project.rubric, { skill: adapter.skill, dependsOn: ['learn'], priority: 70, basis: project.basis === 'jd_requirement' ? 'jd_requirement' : 'general_recommendation', evidenceIds: project.basis === 'jd_requirement' ? ['job-description'] : [], reason: project.basis === 'jd_requirement' ? `Your JD mentions: “${project.evidence[0].quote}”` : 'Recommended preparation; not a claimed employer question.' }),
         task('review', 'Review your work and its limitations', 30, 'Test or critique the artifact. Explain a failure case, an alternative and your next improvement.', 'Reviewed artifact with limitations.', adapter.rubric, { skill: adapter.skill, dependsOn: ['build'] }),
-        task('stories', 'Prepare two specific experience stories', 30, 'Choose a trade-off and a difficult collaboration. Explain your decision, the outcome and what you learned.', 'Two stories with real details, not invented metrics.', ['Personal contribution', 'Supported outcome', 'Specific reflection'], { priority: 85 }),
-        task('mock', 'Rehearse a role-specific interview', 40, 'Use Practice to answer a craft prompt and project question. Time yourself, then assess your answer against the rubric.', 'Saved answer, self-review and an improvement.', adapter.rubric, { skill: adapter.skill, dependsOn: ['stories'], priority: 90 }),
+        task('stories', 'Prepare two specific experience stories', 30, 'Choose a trade-off and a difficult collaboration. Explain your decision, the outcome and what you learned.', 'Two stories with real details, not invented metrics.', ['Personal contribution', 'Supported outcome', 'Specific reflection'], { priority: 85, tier: 'essential' }),
+        task('mock', 'Rehearse a role-specific interview', 40, 'Use Practice to answer a craft prompt and project question. Time yourself, then assess your answer against the rubric.', 'Saved answer, self-review and an improvement.', adapter.rubric, { skill: adapter.skill, dependsOn: ['stories'], priority: 90, tier: 'essential' }),
         task('recall', 'Explain the weak concept again', 20, 'Without reopening the lesson, answer a different example. Compare it with your first attempt.', 'A second unaided explanation.', adapter.rubric, { skill: adapter.skill, dependsOn: ['learn'], priority: 50 }),
     ];
     const jd = jobDescriptionFor(job);

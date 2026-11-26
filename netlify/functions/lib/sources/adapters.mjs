@@ -8,6 +8,46 @@
 // fetched with the generic adapter, which strips HTML normally.
 
 // ---------------------------------------------------------------------------
+// Shared HTML cleaning
+// ---------------------------------------------------------------------------
+
+// Strip a document to readable text.  Prefers <article> then <main> so
+// navigation, sidebars and footers do not pollute the extracted text.  Also
+// captures <title> and the meta/og description for a one-line summary.
+export function cleanHTML(html, { prefer = ['article', 'main'] } = {}) {
+    const source = String(html || '');
+    const title = source.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1]?.trim() || '';
+    const description = source.match(/<meta[^>]+(?:property|name)=["'](?:og:description|description)["'][^>]+content=["']([^"']*)["']/i)?.[1]?.trim()
+        || source.match(/<meta[^>]+content=["']([^"']*)["'][^>]+(?:property|name)=["'](?:og:description|description)["']/i)?.[1]?.trim()
+        || '';
+
+    let cleaned = source
+        .replace(/<script\b[\s\S]*?<\/script>/gi, ' ')
+        .replace(/<style\b[\s\S]*?<\/style>/gi, ' ')
+        .replace(/<noscript\b[\s\S]*?<\/noscript>/gi, ' ')
+        .replace(/<!--[\s\S]*?-->/g, ' ')
+        .replace(/<nav\b[\s\S]*?<\/nav>/gi, ' ')
+        .replace(/<footer\b[\s\S]*?<\/footer>/gi, ' ')
+        .replace(/<header\b[\s\S]*?<\/header>/gi, ' ');
+
+    for (const tag of prefer) {
+        const match = cleaned.match(new RegExp(`<${tag}\\b[\\s\\S]*?<\\/${tag}>`, 'i'));
+        if (match) { cleaned = match[0]; break; }
+    }
+
+    cleaned = cleaned
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/&amp;/gi, '&')
+        .replace(/&quot;/gi, '"')
+        .replace(/&#39;|&apos;/gi, "'")
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    return { title, description, text: cleaned.slice(0, 20000) };
+}
+
+// ---------------------------------------------------------------------------
 // Registry
 // ---------------------------------------------------------------------------
 
@@ -43,29 +83,9 @@ register(['www.ambitionbox.com', 'ambitionbox.com'], {
         ];
     },
 
-    // Strip navigation, sidebar, footer.  AmbitionBox main content is in
-    // article or the main content area.
     parse(html) {
-        // Keep title
-        const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
-        const title = titleMatch ? titleMatch[1].trim() : '';
-
-        // Remove scripts, styles, and nav boilerplate.
-        let cleaned = html
-            .replace(/<script\b[\s\S]*?<\/script>/gi, ' ')
-            .replace(/<style\b[\s\S]*?<\/style>/gi, ' ')
-            .replace(/<nav\b[\s\S]*?<\/nav>/gi, ' ')
-            .replace(/<footer\b[\s\S]*?<\/footer>/gi, ' ')
-            .replace(/<header\b[\s\S]*?<\/header>/gi, ' ');
-
-        // Keep the main content area if present.
-        const mainMatch = cleaned.match(/<main\b[\s\S]*?<\/main>/i);
-        if (mainMatch) cleaned = mainMatch[0];
-
-        // Strip remaining HTML.
-        cleaned = cleaned.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/\s+/g, ' ').trim();
-
-        return { title, text: cleaned.slice(0, 20000) };
+        const { title, description, text } = cleanHTML(html, { prefer: ['main', 'article'] });
+        return { title, description, text };
     },
 });
 
@@ -90,19 +110,8 @@ register(['medium.com', 'www.medium.com', '*.medium.com'], {
     },
 
     parse(html) {
-        const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
-        // Medium article content is in <article> or data-blocks.
-        let cleaned = html
-            .replace(/<script\b[\s\S]*?<\/script>/gi, ' ')
-            .replace(/<style\b[\s\S]*?<\/style>/gi, ' ')
-            .replace(/<nav\b[\s\S]*?<\/nav>/gi, ' ')
-            .replace(/<footer\b[\s\S]*?<\/footer>/gi, ' ');
-
-        const articleMatch = cleaned.match(/<article\b[\s\S]*?<\/article>/i);
-        if (articleMatch) cleaned = articleMatch[0];
-
-        cleaned = cleaned.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/\s+/g, ' ').trim();
-        return { title: titleMatch ? titleMatch[1].trim() : '', text: cleaned.slice(0, 20000) };
+        const { title, description, text } = cleanHTML(html, { prefer: ['article', 'main'] });
+        return { title, description, text };
     },
 });
 
@@ -132,20 +141,65 @@ register(['www.glassdoor.com', 'glassdoor.com', 'www.glassdoor.co.in', 'glassdoo
     },
 
     parse(html) {
-        const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
-        let cleaned = html
-            .replace(/<script\b[\s\S]*?<\/script>/gi, ' ')
-            .replace(/<style\b[\s\S]*?<\/style>/gi, ' ')
-            .replace(/<nav\b[\s\S]*?<\/nav>/gi, ' ')
-            .replace(/<footer\b[\s\S]*?<\/footer>/gi, ' ')
-            .replace(/<header\b[\s\S]*?<\/header>/gi, ' ');
-        cleaned = cleaned.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/\s+/g, ' ').trim();
-        return { title: titleMatch ? titleMatch[1].trim() : '', text: cleaned.slice(0, 20000) };
+        const { title, description, text } = cleanHTML(html, { prefer: ['main', 'article'] });
+        return { title, description, text };
     },
 });
 
 // ---------------------------------------------------------------------------
-// Generic careers / blog page (fallback)
+// Greenhouse — job boards (boards.greenhouse.io / job-boards.greenhouse.io)
+// ---------------------------------------------------------------------------
+
+const companySlug = value => String(value || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '');
+
+register(['boards.greenhouse.io', 'job-boards.greenhouse.io', 'www.greenhouse.io', 'greenhouse.io'], {
+    id: 'greenhouse',
+
+    discover({ company }) {
+        const slug = companySlug(company);
+        if (!slug) return [];
+        return [
+            {
+                url: `https://boards.greenhouse.io/${slug}`,
+                title: `${company} roles on Greenhouse`,
+                note: 'Employer job board. Reveals teams, level and the roles the company hires for.',
+            },
+        ];
+    },
+
+    parse(html) {
+        const { title, description, text } = cleanHTML(html, { prefer: ['main', 'article'] });
+        return { title, description, text };
+    },
+});
+
+// ---------------------------------------------------------------------------
+// Lever — job boards (jobs.lever.co)
+// ---------------------------------------------------------------------------
+
+register(['jobs.lever.co', 'lever.co', 'www.lever.co'], {
+    id: 'lever',
+
+    discover({ company }) {
+        const slug = companySlug(company);
+        if (!slug) return [];
+        return [
+            {
+                url: `https://jobs.lever.co/${slug}`,
+                title: `${company} roles on Lever`,
+                note: 'Employer job board. Reveals teams, level and the roles the company hires for.',
+            },
+        ];
+    },
+
+    parse(html) {
+        const { title, description, text } = cleanHTML(html, { prefer: ['main', 'article'] });
+        return { title, description, text };
+    },
+});
+
+// ---------------------------------------------------------------------------
+// Generic careers / company blog page (fallback)
 // ---------------------------------------------------------------------------
 
 const GENERIC = {
@@ -157,16 +211,17 @@ const GENERIC = {
     },
 
     parse(html) {
-        const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
-        let cleaned = html
-            .replace(/<script\b[\s\S]*?<\/script>/gi, ' ')
-            .replace(/<style\b[\s\S]*?<\/style>/gi, ' ')
-            .replace(/<nav\b[\s\S]*?<\/nav>/gi, ' ')
-            .replace(/<footer\b[\s\S]*?<\/footer>/gi, ' ')
-            .replace(/<header\b[\s\S]*?<\/header>/gi, ' ');
-        cleaned = cleaned.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/\s+/g, ' ').trim();
-        return { title: titleMatch ? titleMatch[1].trim() : '', text: cleaned.slice(0, 20000) };
+        // Company careers pages and engineering blogs usually put the article
+        // in <article> or <main>; fall back to the whole document.
+        const { title, description, text } = cleanHTML(html, { prefer: ['article', 'main'] });
+        return { title, description, text };
     },
 };
 
 export { GENERIC as defaultAdapter };
+
+// Base URLs for public job boards that can be probed directly from a company
+// name (slug-based, no search key needed). career-research probes these even
+// when no search results exist, so a logged job still surfaces the employer's
+// own board — subject to the same allowlist and robots.txt checks.
+export const BOARD_PROBES = ['https://boards.greenhouse.io/', 'https://jobs.lever.co/'];

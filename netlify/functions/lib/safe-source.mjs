@@ -32,10 +32,10 @@ export async function readPublicPage(raw, { allowedHosts, maxBytes = 180000, tim
         const addresses = await Promise.race([resolve(url.hostname), new Promise((_, reject) => { dnsTimer = setTimeout(() => reject(new Error('Source timed out.')), Math.max(1, deadline - Date.now())); })]).finally(() => clearTimeout(dnsTimer));
         if (!addresses.length || addresses.some(address => !isPublicIPv4(address))) throw new Error('Source resolves to a restricted network.');
         const result = await new Promise((resolveResponse, reject) => {
-            const req = https.request(url, { method: 'GET', headers: { 'user-agent': 'CareerGardenResearch/2.0', accept: 'text/html,text/plain', 'accept-encoding': 'identity' }, lookup: (_hostname, options, callback) => options?.all ? callback(null, [{ address: addresses[0], family: 4 }]) : callback(null, addresses[0], 4) }, res => {
+            const req = https.request(url, { method: 'GET', headers: { 'user-agent': 'CareerGardenResearch/2.0', accept: 'text/html,text/plain,application/xml', 'accept-encoding': 'identity' }, lookup: (_hostname, options, callback) => options?.all ? callback(null, [{ address: addresses[0], family: 4 }]) : callback(null, addresses[0], 4) }, res => {
                 if ([301, 302, 303, 307, 308].includes(res.statusCode)) { res.resume(); resolveResponse({ redirect: res.headers.location }); return; }
                 if (res.statusCode !== 200) { res.resume(); reject(new Error(`Source returned HTTP ${res.statusCode}. Paste the JD if access is restricted.`)); return; }
-                if (!/^(text\/(html|plain)|application\/xhtml\+xml)/i.test(res.headers['content-type'] || '')) { res.resume(); reject(new Error('This source is not readable HTML or text. Paste text from your PDF, Drive file or private document.')); return; }
+                if (!/^(text\/(html|plain|xml)|application\/(xhtml\+xml|xml))/i.test(res.headers['content-type'] || '')) { res.resume(); reject(new Error('This source is not readable HTML or text. Paste text from your PDF, Drive file or private document.')); return; }
                 let size = 0;
                 const chunks = [];
                 res.on('data', chunk => { size += chunk.length; if (size > maxBytes) req.destroy(new Error('Source exceeds the safe reading limit. Paste the relevant section.')); else chunks.push(chunk); });

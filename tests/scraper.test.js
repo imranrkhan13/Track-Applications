@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { parseRobots, isAllowed, fetchRobots, clearRobotsCache } from '../netlify/functions/lib/robots.mjs';
 import { discoverLinks, crawlHost, runScrapePlan, resetHostClocks } from '../netlify/functions/lib/scraper.mjs';
-import { adapterFor } from '../netlify/functions/lib/sources/adapters.mjs';
+import { adapterFor, cleanHTML, BOARD_PROBES } from '../netlify/functions/lib/sources/adapters.mjs';
 import { sourceURL, textFromHTML } from '../netlify/functions/lib/safe-source.mjs';
 
 // ---------------------------------------------------------------------------
@@ -73,6 +73,11 @@ test('parseRobots: sitemaps extracted', () => {
     const parsed = parseRobots(txt);
     assert.equal(parsed.sitemaps.length, 1);
     assert.equal(parsed.sitemaps[0], 'https://example.com/sitemap.xml');
+});
+
+test('parseRobots: global Sitemap before any User-agent is still captured', () => {
+    const parsed = parseRobots('Sitemap: https://stripe.com/sitemap/sitemap.xml\n\nUser-agent: ia_archiver\nDisallow: /docs');
+    assert.deepEqual(parsed.sitemaps, ['https://stripe.com/sitemap/sitemap.xml']);
 });
 
 test('parseRobots: comments are stripped', () => {
@@ -180,6 +185,54 @@ test('glassdoor adapter discover returns interview URL', () => {
     const a = adapterFor('https://www.glassdoor.com/');
     const result = a.discover({ company: 'Stripe' });
     assert(result.length > 0);
+});
+
+test('adapterFor: matches Greenhouse + Lever job boards', () => {
+    assert.equal(adapterFor('https://boards.greenhouse.io/stripe').id, 'greenhouse');
+    assert.equal(adapterFor('https://job-boards.greenhouse.io/acme').id, 'greenhouse');
+    assert.equal(adapterFor('https://jobs.lever.co/stripe').id, 'lever');
+});
+
+test('greenhouse + lever adapters build slug-based board URLs', () => {
+    const gh = adapterFor('https://boards.greenhouse.io/').discover({ company: 'Acme Corp' });
+    assert.equal(gh[0].url, 'https://boards.greenhouse.io/acmecorp');
+    const lv = adapterFor('https://jobs.lever.co/').discover({ company: 'Acme Corp' });
+    assert.equal(lv[0].url, 'https://jobs.lever.co/acmecorp');
+});
+
+test('job-board adapters abstain without a company name', () => {
+    assert.deepEqual(adapterFor('https://boards.greenhouse.io/').discover({ company: '' }), []);
+    assert.deepEqual(adapterFor('https://jobs.lever.co/').discover({}), []);
+});
+
+test('BOARD_PROBES: every base resolves to a slug-building adapter', () => {
+    assert(BOARD_PROBES.length > 0);
+    for (const base of BOARD_PROBES) {
+        const adapter = adapterFor(base);
+        assert(adapter, `${base} should have an adapter`);
+        assert.equal(adapter.discover({ company: 'Acme' }).length, 1);
+    }
+});
+
+test('cleanHTML: prefers <article> and drops nav/footer/scripts', () => {
+    const html = '<title>Eng Blog</title><nav>Home About</nav><article><h1>Scaling</h1><p>We &amp; ship</p></article><footer>© 2026</footer><script>x()</script>';
+    const out = cleanHTML(html);
+    assert.equal(out.title, 'Eng Blog');
+    assert.match(out.text, /Scaling/);
+    assert.doesNotMatch(out.text, /Home About/);
+    assert.doesNotMatch(out.text, /© 2026/);
+});
+
+test('cleanHTML: captures og:description', () => {
+    const html = '<meta property="og:description" content="A payments API."><main>Body text here.</main>';
+    assert.equal(cleanHTML(html).description, 'A payments API.');
+});
+
+test('defaultAdapter.parse strips boilerplate to readable text', async () => {
+    const { defaultAdapter } = await import('../netlify/functions/lib/sources/adapters.mjs');
+    const out = defaultAdapter.parse('<header>Menu</header><main>Real content about the team.</main>');
+    assert.match(out.text, /Real content/);
+    assert.doesNotMatch(out.text, /Menu/);
 });
 
 // ---------------------------------------------------------------------------

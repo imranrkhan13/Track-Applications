@@ -5,6 +5,7 @@
 
 import { readPublicPage, sourceURL, textFromHTML } from './safe-source.mjs';
 import { fetchRobots, isAllowed } from './robots.mjs';
+import { adapterFor, defaultAdapter } from './sources/adapters.mjs';
 const DEFAULT_MIN_DELAY_MS = 1500;
 const DEFAULT_MAX_PAGES = 5;
 const DEFAULT_MAX_DEPTH = 2;
@@ -70,12 +71,19 @@ export async function fetchPolite(raw, {
 
     try {
         const page = await readPublicPage(url.href, { allowedHosts, maxBytes, timeoutMs });
-        const text = textFromHTML(page.text);
+        // Prefer a site-specific adapter's parser so navigation, sidebars and
+        // boilerplate do not pollute the extracted text. Fall back to the
+        // generic strip when no adapter matches or the adapter yields nothing.
+        const adapter = adapterFor(url.href) || defaultAdapter;
+        let parsed = { title: '', description: '', text: '' };
+        try { parsed = adapter.parse(page.text) || parsed; } catch { /* fall back below */ }
+        const text = (parsed.text || '').trim() || textFromHTML(page.text);
         const titleMatch = page.text.match(/<title[^>]*>([^<]*)<\/title>/i);
         return {
             status: text.length > 120 ? 'read' : 'thin',
             url: page.url || url.href,
-            title: titleMatch ? titleMatch[1].trim().slice(0, 300) : null,
+            title: (parsed.title || (titleMatch ? titleMatch[1].trim() : '')).slice(0, 300) || null,
+            description: (parsed.description || '').slice(0, 400),
             text: text.slice(0, 20000),
         };
     } catch (e) {

@@ -19,9 +19,15 @@ export function createOAuthFlow({ auth, storage, storageKey }) {
 
     async function start(origin) {
         // Session restoration must finish before generating the next verifier.
+        // A stale saved session (expired/revoked refresh token) must not block a
+        // fresh Google sign-in: clear it and continue to the provider instead
+        // of throwing, so the user can always get back in.
         const existing = await auth.getSession();
-        if (existing.error) throw existing.error;
-        if (existing.data.session?.user) return { session: existing.data.session };
+        if (existing.error) {
+            try { await auth.signOut(); } catch { /* Sign-out is best effort; the dead session is replaced on next sign-in. */ }
+        } else if (existing.data.session?.user) {
+            return { session: existing.data.session };
+        }
         checkStorage();
         const result = await auth.signInWithOAuth({ provider: "google", options: {
             redirectTo: `${origin}/auth/callback`, skipBrowserRedirect: true,
@@ -40,8 +46,12 @@ export function createOAuthFlow({ auth, storage, storageKey }) {
                 : "Google could not complete sign-in. Please start again from this browser.");
         }
         const existing = await auth.getSession();
-        if (existing.error) throw existing.error;
-        if (existing.data.session?.user) return existing.data.session;
+        if (existing.error) {
+            // Dead saved session on callback: fall through to the code exchange,
+            // which is the authoritative result of this sign-in.
+        } else if (existing.data.session?.user) {
+            return existing.data.session;
+        }
         const code = params.get("code");
         if (!code) throw new Error("No sign-in response was received. Continue with Google to start again.");
         let verifier;

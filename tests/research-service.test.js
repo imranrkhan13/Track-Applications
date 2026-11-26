@@ -41,10 +41,10 @@ test('missing migration is reported, never bypassing the usage limit', async () 
     assert.equal((await handler(request())).statusCode, 503);
 });
 test('JD paste works with no providers and honestly labels partial research', async () => {
-    const handler = makeHandler({ env, clientFactory, readPage: () => assert.fail('Pasted JD needs no fetch') });
+    const handler = makeHandler({ env, clientFactory, readPage: () => assert.fail('Pasted JD needs no fetch'), getJSON: async () => ({}) });
     const result = json(await handler(request({ jdText: 'Python role requirements' })));
     assert.equal(result.jd.status, 'pasted'); assert.equal(result.mode, 'partial');
-    assert.equal(result.accounts.length, 0); assert(result.warnings.some(w => w.includes('not configured')));
+    assert.equal(result.accounts.length, 0); assert(result.warnings.some(w => w.includes('No public sources found')));
 });
 test('blocked JD preserves useful partial response and requests pasted text', async () => {
     const handler = makeHandler({ env, clientFactory, readPage: async () => { throw new Error('Private document. Paste text.'); } });
@@ -52,10 +52,15 @@ test('blocked JD preserves useful partial response and requests pasted text', as
     assert.equal(result.jd.status, 'unavailable'); assert(result.warnings.some(w => w.includes('Paste text')));
 });
 test('search snippets are not fetched or treated as process evidence without allowed host', async () => {
-    let calls = 0;
-    const handler = makeHandler({ env: { ...env, BRAVE_SEARCH_API_KEY: 'test' }, clientFactory, readPage: () => assert.fail('Domain is not approved'), getJSON: async () => { calls++; return { web: { results: [{ title: 'Unverified title claiming four rounds', url: 'https://example.com/blog' }] } }; } });
+    let braveCalls = 0;
+    const getJSON = async url => {
+        if (url.includes('wikipedia.org') || url.includes('wikidata.org')) return {};
+        braveCalls++;
+        return { web: { results: [{ title: 'Unverified title claiming four rounds', url: 'https://example.com/blog' }] } };
+    };
+    const handler = makeHandler({ env: { ...env, BRAVE_SEARCH_API_KEY: 'test' }, clientFactory, readPage: () => assert.fail('Domain is not approved'), getJSON });
     const result = json(await handler(request()));
-    assert.equal(calls, 7); assert.equal(result.sources.length, 1); assert.equal(result.sources[0].status, 'discovered'); assert.equal(result.accounts.length, 0);
+    assert.equal(braveCalls, 7); assert.equal(result.sources.length, 1); assert.equal(result.sources[0].status, 'discovered'); assert.equal(result.accounts.length, 0);
 });
 test('extraction rejects invented citations and leaves tool rules/applicability unconfirmed', () => {
     const documents = [{ id: 's1', url: 'https://example.com', title: 'Account', text: 'We had a technical assessment and a discussion.', kind: 'account' }];

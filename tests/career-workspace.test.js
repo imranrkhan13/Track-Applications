@@ -112,6 +112,39 @@ test('JD changes select relevant resources and explicit DSA only when mentioned'
     assert(plan.tasks.find(t => t.id === 'learn').resources[0].url.includes('react.dev'));
     assert(!buildPreparation(role(), 'user-1', now).tasks.some(t => t.id === 'algorithms'));
 });
+test('JD-derived project quotes the JD and turns it into a concrete spec', () => {
+    const job = role(); job.workspace.jdText = 'You will build REST APIs backed by Postgres and add authentication with JWT.';
+    const project = deriveProject(job);
+    assert.equal(project.basis, 'jd_requirement');
+    assert(project.evidence.some(e => e.capability === 'rest-api' && /REST APIs/.test(e.quote)));
+    assert(project.evidence.some(e => e.capability === 'auth'));
+    assert(project.stack.length > 0);
+    assert(project.milestones.length >= 4 && project.milestones.every(m => m.acceptance.length && m.deliverable));
+    assert(project.readme.length > 0);
+});
+test('a project never claims an employer task and abstains without a JD', () => {
+    const withJd = deriveProject(Object.assign(role(), { workspace: { ...role().workspace, jdText: 'React frontend work.' } }));
+    assert.match(withJd.caveat, /not a task the employer assigned/i);
+    const noJd = deriveProject(role());
+    assert.equal(noJd.basis, 'role_default');
+    assert.equal(noJd.evidence.length, 0);
+    assert(noJd.milestones.length >= 4);
+});
+test('a negated JD mention is not treated as a requirement', () => {
+    const job = role(); job.workspace.jdText = 'Experience with Kubernetes is not required for this role.';
+    const project = deriveProject(job);
+    assert(!project.evidence.some(e => e.capability === 'cloud'));
+    assert.equal(project.basis, 'role_default');
+});
+test('the plan build task carries the derived project, not a generic brief', () => {
+    const job = role(); job.workspace.jdText = 'Design REST APIs and test them.';
+    const plan = buildPreparation(job, 'user-1', now);
+    const build = plan.tasks.find(t => t.id === 'build');
+    assert.equal(build.title, plan.project.title);
+    assert.equal(build.basis, 'jd_requirement');
+    assert.deepEqual(build.evidenceIds, ['job-description']);
+    assert.match(build.reason, /Your JD mentions/);
+});
 test('short availability defers indivisible project without silently splitting it', () => {
     const job = role(); job.workspace.preferences.dailyMinutes = 20;
     const plan = buildPreparation(job, 'user-1', now);

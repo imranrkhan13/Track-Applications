@@ -3,7 +3,7 @@
 // research/coach quota.  Abstains honestly when evidence is thin.
 
 import { createClient } from '@supabase/supabase-js';
-import { makeProvider } from './lib/ai/provider.mjs';
+import { makeProvider, hasAIProvider } from './lib/ai/provider.mjs';
 import { synthesizeBrief } from './lib/ai/synthesize.mjs';
 
 const reply = (statusCode, payload) => ({ statusCode, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }, body: JSON.stringify(payload) });
@@ -45,7 +45,7 @@ export function makeBriefHandler({ env = process.env, clientFactory = createClie
         const url = env.SUPABASE_URL || env.VITE_SUPABASE_URL;
         const key = env.SUPABASE_ANON_KEY || env.VITE_SUPABASE_ANON_KEY;
         if (!url || !key) return reply(503, { error: 'Server authentication is not configured.' });
-        if (!env.GEMINI_API_KEY || !env.GEMINI_MODEL) return reply(503, { error: 'AI synthesis is not configured. Your reviewed accounts remain the source of truth.' });
+        if (!hasAIProvider(env)) return reply(503, { error: 'AI synthesis is not configured. Your reviewed accounts remain the source of truth.' });
 
         const client = clientFactory(url, key, { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false, autoRefreshToken: false } });
         try {
