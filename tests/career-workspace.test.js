@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRepository, emptyWorkspace, jobPayload, safeLink, workspaceFor, canonicalStatus } from '../src/career/repository.js';
-import { buildPreparation, deriveProject, inferFamily, jobDescriptionFor, localInstant, makeAvailability, normalizeCompany, planIsStale, practiceQuestions, processFor, runwayBucket } from '../src/career/planner.js';
+import { buildPreparation, deadlineInfo, inferFamily, jobDescriptionFor, localInstant, makeAvailability, normalizeCompany, planIsStale, practiceQuestions, processFor } from '../src/career/planner.js';
 import { schedulePreparation } from '../src/lib/prepEngine.js';
 
 const now = '2026-09-08T04:00:00Z';
@@ -190,45 +190,36 @@ test('a JD explicitly saying no DSA does not generate an algorithms task', () =>
     const job = role(); job.workspace.jdText = 'React required. No DSA is asked.';
     assert(!buildPreparation(job, 'user-1', now).tasks.some(t => t.id === 'algorithms'));
 });
-
-// --- Time-aware triage -------------------------------------------------------
-
-test('runwayBucket: boundaries map days to sprint / standard / extended', () => {
-    assert.equal(runwayBucket(1).id, 'sprint'); assert.equal(runwayBucket(4).id, 'sprint');
-    assert.equal(runwayBucket(5).id, 'standard'); assert.equal(runwayBucket(13).id, 'standard');
-    assert.equal(runwayBucket(14).id, 'extended'); assert.equal(runwayBucket(120).id, 'extended');
+test('deadlineInfo classifies urgency, kind and past deadlines', () => {
+    const base = role().workspace;
+    assert.equal(deadlineInfo({ ...base, deadline: '2026-09-11' }, now).urgency, 'critical'); // 3 days
+    assert.equal(deadlineInfo({ ...base, deadline: '2026-09-29' }, now).urgency, 'normal');   // 21 days
+    assert.equal(deadlineInfo({ ...base, deadline: '2026-09-14' }, now).urgency, 'soon');     // 6 days
+    const past = deadlineInfo({ ...base, deadline: '2026-09-01' }, now);
+    assert.equal(past.past, true); assert.equal(past.urgency, 'past');
+    assert.equal(deadlineInfo({ ...base, deadline: '' }, now).urgency, 'unknown');
+    assert.equal(deadlineInfo({ ...base, deadline: '2026-09-29', preferences: { ...base.preferences, deadlineKind: 'application' } }, now).kind, 'application');
 });
-
-test('a short runway keeps only essentials and states what it set aside', () => {
-    const job = role(); job.workspace.deadline = '2026-09-12';
+test('an interview within three days yields a triage plan, not the full curriculum', () => {
+    const job = role(); job.workspace.deadline = '2026-09-10'; // 2 days out
     const plan = buildPreparation(job, 'user-1', now);
-    assert.equal(plan.strategy.bucket, 'sprint');
-    assert.match(plan.strategy.headline, /Short runway/);
-    assert(plan.tasks.every(t => t.tier === 'essential'));
-    assert(plan.tasks.some(t => t.id === 'format') && plan.tasks.some(t => t.id === 'role-map'));
+    assert.equal(plan.urgency, 'critical');
+    assert(plan.tasks.some(t => t.id === 'mock'));
+    assert(plan.tasks.some(t => t.id.startsWith('triage-')));
     assert(!plan.tasks.some(t => t.id === 'build'));
-    assert(plan.omitted.some(t => t.id === 'build'));
-    assert(plan.omitted.some(t => t.id === 'recall'));
-    assert(plan.omitted.every(t => t.reason.length > 0));
+    assert(!plan.tasks.some(t => t.id === 'recall-week-2'));
+    assert(plan.assumptions.some(a => /triage plan/.test(a)));
 });
-
-test('a long runway unlocks the build project and spaced recall', () => {
-    const plan = buildPreparation(role(), 'user-1', now);
-    assert.equal(plan.strategy.bucket, 'extended');
-    assert(plan.tasks.some(t => t.id === 'build'));
-    assert(plan.tasks.some(t => t.id === 'recall-week-2'));
-    assert.equal(plan.omitted.length, 0);
+test('an application deadline is labelled distinctly from an interview date', () => {
+    const job = role(); job.workspace.preferences.deadlineKind = 'application';
+    const plan = buildPreparation(job, 'user-1', now);
+    assert.equal(plan.deadlineKind, 'application');
+    assert(plan.assumptions.some(a => /application deadline/.test(a)));
 });
-
-test('every task carries a recognised tier', () => {
-    const plan = buildPreparation(role(), 'user-1', now);
-    assert(plan.tasks.every(t => ['essential', 'core', 'stretch'].includes(t.tier)));
-});
-
-test('a flagged gap brings the recall task forward from three days to one', () => {
-    const plain = buildPreparation(role(), 'user-1', now).tasks.find(t => t.id === 'recall');
-    assert.equal(Date.parse(plain.availableAfter), Date.parse(now) + 3 * 86400000);
-    const gapJob = role(); gapJob.workspace.preferences.gaps = ['Technical problem solving'];
-    const gap = buildPreparation(gapJob, 'user-1', now).tasks.find(t => t.id === 'recall');
-    assert.equal(Date.parse(gap.availableAfter), Date.parse(now) + 86400000);
+test('an applied role with no next date gets a follow-up task; a saved role does not', () => {
+    const applied = role({ status: 'Applied' });
+    assert(buildPreparation(applied, 'user-1', now).tasks.some(t => t.id === 'application-follow-up'));
+    assert(!buildPreparation(role({ status: 'Saved' }), 'user-1', now).tasks.some(t => t.id === 'application-follow-up'));
+    const booked = role({ status: 'Applied', next_date: '2026-09-20' });
+    assert(!buildPreparation(booked, 'user-1', now).tasks.some(t => t.id === 'application-follow-up'));
 });
