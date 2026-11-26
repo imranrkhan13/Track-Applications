@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRepository, emptyWorkspace, jobPayload, safeLink, workspaceFor, canonicalStatus } from '../src/career/repository.js';
-import { buildPreparation, deadlineInfo, inferFamily, jobDescriptionFor, localInstant, makeAvailability, normalizeCompany, planIsStale, practiceQuestions, processFor } from '../src/career/planner.js';
+import { buildPreparation, deadlineInfo, deriveProject, inferFamily, jobDescriptionFor, localInstant, makeAvailability, normalizeCompany, planIsStale, practiceQuestions, processFor } from '../src/career/planner.js';
 import { schedulePreparation } from '../src/lib/prepEngine.js';
 
 const now = '2026-09-08T04:00:00Z';
