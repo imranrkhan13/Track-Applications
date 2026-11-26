@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Sprout, BriefcaseBusiness, CalendarCheck2, Mic, LogOut, Menu, X, ChevronRight, LayoutDashboard, CalendarDays } from 'lucide-react';
+import { Sprout, CalendarCheck2, Mic, LogOut, Menu, X, ChevronRight, LayoutDashboard, CalendarDays } from 'lucide-react';
 
 export default function Sidebar({ view, user, busy, onNavigate, onSignOut, stats }) {
     const [open, setOpen] = useState(false);

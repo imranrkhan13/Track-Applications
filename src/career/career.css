@@ -125,6 +125,48 @@
 /* Spacer pushes user card to bottom */
 .career-app .cg-sidebar-spacer { flex: 1; min-height: 12px; }
 
+/* Sidebar metrics */
+.career-app .cg-side-metrics {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+    padding: 0 4px;
+}
+.career-app .cg-metric {
+    display: grid; justify-items: center; gap: 2px;
+    padding: 10px 4px; border: 1px solid var(--cg-line); border-radius: 10px;
+    background: var(--cg-paper);
+}
+.career-app .cg-metric-value {
+    font-size: 1.1rem; font-weight: 700; letter-spacing: -.03em;
+    color: var(--cg-ink); line-height: 1;
+}
+.career-app .cg-metric-label {
+    font-size: .625rem; font-weight: 600; color: var(--cg-muted);
+    letter-spacing: .04em;
+}
+.career-app .cg-nav-badge {
+    display: inline-grid; place-items: center;
+    min-width: 20px; height: 20px; padding: 0 5px;
+    border-radius: 10px;
+    background: var(--cg-green); color: white;
+    font-size: .6875rem; font-weight: 700;
+    margin-left: auto;
+}
+.career-app .cg-side-next {
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; padding: 10px 12px; margin: 4px 0;
+    border: 1px solid var(--cg-line); border-radius: 10px;
+    background: var(--cg-paper); color: var(--cg-ink);
+    text-align: left; cursor: pointer; font: inherit;
+}
+.career-app .cg-side-next:hover { border-color: #c8c8d0; }
+.career-app .cg-side-next small {
+    display: block; color: var(--cg-muted); font-size: .6875rem;
+}
+.career-app .cg-side-next b {
+    display: block; font-size: .8125rem; font-weight: 600;
+    margin-top: 1px;
+}
+
 /* User card at bottom */
 .career-app .cg-sidebar-user {
     padding: 0 8px; margin-top: 8px;
