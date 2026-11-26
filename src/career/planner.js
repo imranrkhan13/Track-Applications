@@ -42,6 +42,21 @@ export function localInstant(day, time, timezone) {
     if (represent(guess) !== target || [-3600000, 3600000, -1800000, 1800000].some(delta => represent(guess + delta) === target)) throw new Error('This local time is skipped or repeated by daylight saving. Choose a different start time.');
     return new Date(guess).toISOString();
 }
+// Deadline urgency is a product heuristic, not an interview probability.
+// `kind` distinguishes an application-closing date from an interview date.
+export function deadlineInfo(workspace, now = new Date().toISOString()) {
+    const w = workspace || {};
+    const kind = w.preferences?.deadlineKind || 'interview';
+    const deadline = w.deadline || '';
+    if (!deadline) return { kind, daysRemaining: null, urgency: 'unknown', past: false };
+    const today = Date.parse(`${dateInZone(now, w.preferences?.timezone || 'UTC')}T00:00:00Z`);
+    const target = Date.parse(`${deadline}T00:00:00Z`);
+    if (!Number.isFinite(today) || !Number.isFinite(target)) return { kind, daysRemaining: null, urgency: 'unknown', past: false };
+    const daysRemaining = Math.round((target - today) / 86400000);
+    if (daysRemaining < 0) return { kind, daysRemaining, urgency: 'past', past: true };
+    const urgency = daysRemaining <= 3 ? 'critical' : daysRemaining <= 7 ? 'soon' : 'normal';
+    return { kind, daysRemaining, urgency, past: false };
+}
 export function makeAvailability(preferences, deadline, now) {
     const { dailyMinutes, weekdays, startTime, timezone } = preferences;
     if (!Number.isInteger(dailyMinutes) || dailyMinutes < 20 || dailyMinutes > 240) throw new Error('Choose 20–240 study minutes per day.');
@@ -99,7 +114,17 @@ export function buildPreparation(job, userId, now = new Date().toISOString()) {
     const process = processFor(job, userId, now);
     const { slots, deadline } = makeAvailability(w.preferences, w.deadline, now);
     const task = (id, title, minutes, brief, artifact, rubric, extra = {}) => ({ id, title, minutes, brief, artifact, rubric, priority: 60, skill: 'Interview communication', reason: 'Recommended preparation; not a claimed employer question.', basis: 'general_recommendation', evidenceIds: [], dependsOn: [], ...extra });
-    const tasks = [
+    const urgencyInfo = deadlineInfo(w, now);
+    const critical = urgencyInfo.urgency === 'critical';
+    const spanDays = Math.floor((Date.parse(deadline) - Date.parse(now)) / 86400000);
+    // Under three days: triage the next round instead of promising a full curriculum.
+    const tasks = critical ? [
+        task('triage-brief', 'List the three outcomes this role must prove', 20, 'Skim the job description and pick the three requirements that matter most. For each, name the strongest proof you already have and the one gap you would fix first.', 'Three requirements, your proof for each and the single gap you will close.', ['Requirements are specific', 'Proof is truthful', 'Gap is realistic in the time left'], { priority: 105 }),
+        task('triage-gap', `Repair your weakest relevant skill: ${adapter.skill.toLowerCase()}`, 30, adapter.brief, adapter.artifact, adapter.rubric, { skill: adapter.skill, resources: adapter.resource ? [RESOURCES[adapter.resource]] : [], priority: 100 }),
+        task('triage-stories', 'Rehearse two specific experience stories', 25, 'Choose one trade-off and one difficult collaboration. Explain your decision, the outcome and what you learned. Use real details, not invented metrics.', 'Two stories with real details and a clear personal contribution.', ['Personal contribution', 'Supported outcome', 'Specific reflection'], { priority: 95 }),
+        task('mock', 'Rehearse a role-specific interview', 30, 'Use Practice to answer a craft prompt and a project question. Time yourself, then assess your answer against the rubric.', 'Saved answer, self-review and one improvement.', adapter.rubric, { skill: adapter.skill, dependsOn: ['triage-stories'], priority: 90 }),
+        task('triage-logistics', 'Confirm logistics and prepare your questions', 15, 'Confirm the time, format, duration and any tools allowed. Prepare three questions for the interviewer about the team and the work.', 'Confirmed logistics and three prepared questions.', ['Time and format confirmed', 'Questions are specific to the role'], { priority: 85 }),
+    ] : [
         task('role-map', 'Turn the job description into a checklist', 25, 'Identify three required outcomes. Match each to something you have done and mark the gaps. If no JD is available, ask for it.', 'Three requirements, matching proof and open questions.', ['Specific requirements', 'Truthful evidence', 'Unknowns recorded'], { priority: 100 }),
         task('format', 'Confirm the next interview', 20, 'Ask your recruiter about round format, duration, skills and allowed tools. Record the answer under Research.', 'A recruiter question or confirmed round brief.', ['Round and date clarified', 'AI and internet rules checked'], { priority: 95 }),
         task('company', `Understand ${job.company} and its customers`, 25, 'Read the official product and team pages. Record two facts with source URLs and three questions. Do not assume a stack from the company name.', 'A one-page company brief with sources.', ['Facts link to sources', 'Questions connect to the role'], { priority: 75 }),
@@ -111,26 +136,29 @@ export function buildPreparation(job, userId, now = new Date().toISOString()) {
         task('recall', 'Explain the weak concept again', 20, 'Without reopening the lesson, answer a different example. Compare it with your first attempt.', 'A second unaided explanation.', adapter.rubric, { skill: adapter.skill, dependsOn: ['learn'], priority: 50 }),
     ];
     const jd = jobDescriptionFor(job);
-    if (family === 'engineering' && /\breact\b/i.test(jd)) tasks.find(t => t.id === 'learn').resources = [RESOURCES.react];
-    if (family === 'ml' && /\b(asr|speech recognition|wer)\b/i.test(jd)) tasks.find(t => t.id === 'learn').resources = [RESOURCES.audio, RESOURCES.ml];
-    const algorithmsRequired = jd.split(/[\n.!?]+/).some(s => /\b(algorithms|data structures|dsa)\b/i.test(s) && !/\b(no|not|without)\b/i.test(s));
-    if (family === 'engineering' && algorithmsRequired) tasks.push(task('algorithms', 'Practice one relevant data structure', 45, 'Solve one small problem, test edge cases and explain time and space complexity.', 'Tested solution and complexity analysis.', ['Correctness', 'Edge cases', 'Complexity'], { resources: [RESOURCES.algorithms], skill: 'Technical problem solving', reason: 'Algorithmic skills are mentioned in the supplied JD.', basis: 'jd_requirement', evidenceIds: ['job-description'], priority: 80 }));
-    for (const requirement of requirementsFor(job)) tasks.push(task(`jd-${requirement.id}`, requirement.title, 40, `${requirement.exercise} Start with the linked concept, then try it without notes.`, 'A small working example or critique, one edge case and a short explanation.', ['Matches the stated requirement', 'Demonstrates the concept', 'Explains a limitation'], { resources: requirement.resources, skill: adapter.skill, dependsOn: ['role-map'], reason: `Your JD says: “${requirement.evidence}”`, basis: 'jd_requirement', evidenceIds: ['job-description'], priority: 85 }));
-    const latestBySkill = new Map();
-    for (const attempt of w.attempts) latestBySkill.set(attempt.skill, attempt);
-    for (const attempt of [...latestBySkill.values()].filter(a => a.selfAssessment === 'needs-work' && w.preferences.gaps.includes(a.skill)).slice(-3)) {
-        tasks.push(task(`repair-${attempt.id}`, `Revisit: ${attempt.skill.toLowerCase()}`, 25, `Answer your saved prompt again without notes: ${attempt.question}. Then compare it with your previous answer. ${attempt.reflection ? `Your improvement note: ${attempt.reflection}` : 'Identify one assumption and one better-supported explanation.'}`, 'A revised answer and a concrete comparison with your previous attempt.', attempt.rubric || adapter.rubric, { skill: attempt.skill, reason: 'You marked this skill as needing practice in a saved rehearsal.', basis: 'self_review', evidenceIds: [`attempt-${attempt.id}`], priority: 105 }));
+    if (!critical) {
+        if (family === 'engineering' && /\breact\b/i.test(jd)) tasks.find(t => t.id === 'learn').resources = [RESOURCES.react];
+        if (family === 'ml' && /\b(asr|speech recognition|wer)\b/i.test(jd)) tasks.find(t => t.id === 'learn').resources = [RESOURCES.audio, RESOURCES.ml];
+        const algorithmsRequired = jd.split(/[\n.!?]+/).some(s => /\b(algorithms|data structures|dsa)\b/i.test(s) && !/\b(no|not|without)\b/i.test(s));
+        if (family === 'engineering' && algorithmsRequired) tasks.push(task('algorithms', 'Practice one relevant data structure', 45, 'Solve one small problem, test edge cases and explain time and space complexity.', 'Tested solution and complexity analysis.', ['Correctness', 'Edge cases', 'Complexity'], { resources: [RESOURCES.algorithms], skill: 'Technical problem solving', reason: 'Algorithmic skills are mentioned in the supplied JD.', basis: 'jd_requirement', evidenceIds: ['job-description'], priority: 80 }));
+        for (const requirement of requirementsFor(job)) tasks.push(task(`jd-${requirement.id}`, requirement.title, 40, `${requirement.exercise} Start with the linked concept, then try it without notes.`, 'A small working example or critique, one edge case and a short explanation.', ['Matches the stated requirement', 'Demonstrates the concept', 'Explains a limitation'], { resources: requirement.resources, skill: adapter.skill, dependsOn: ['role-map'], reason: `Your JD says: “${requirement.evidence}”`, basis: 'jd_requirement', evidenceIds: ['job-description'], priority: 85 }));
+        const latestBySkill = new Map();
+        for (const attempt of w.attempts) latestBySkill.set(attempt.skill, attempt);
+        for (const attempt of [...latestBySkill.values()].filter(a => a.selfAssessment === 'needs-work' && w.preferences.gaps.includes(a.skill)).slice(-3)) {
+            tasks.push(task(`repair-${attempt.id}`, `Revisit: ${attempt.skill.toLowerCase()}`, 25, `Answer your saved prompt again without notes: ${attempt.question}. Then compare it with your previous answer. ${attempt.reflection ? `Your improvement note: ${attempt.reflection}` : 'Identify one assumption and one better-supported explanation.'}`, 'A revised answer and a concrete comparison with your previous attempt.', attempt.rubric || adapter.rubric, { skill: attempt.skill, reason: 'You marked this skill as needing practice in a saved rehearsal.', basis: 'self_review', evidenceIds: [`attempt-${attempt.id}`], priority: 105 }));
+        }
+        for (const variant of process.variants.slice(0, 3)) for (const stage of variant.stages.slice(0, 4)) tasks.push(task(`evidence-${variant.id}-${stage.key}`, `Prepare for: ${stage.label || stage.key}`, 35, `Rehearse the reported assessment: ${stage.evidenceSpan}. Confirm these rules for your own interview. This is an original practice exercise.`, 'Practice response and assessment constraints.', ['Addresses the brief', 'Explains limitations', 'Follows confirmed tool rules'], { basis: 'reported_signal', evidenceIds: [variant.id], reason: 'Based on the account you reviewed. It may not describe your current process.', skill: adapter.skill, priority: 90 }));
+        tasks.find(t => t.id === 'recall').availableAfter = new Date(Date.parse(now) + 2 * 86400000).toISOString();
+        for (let week = 2; week <= Math.min(8, Math.ceil(spanDays / 7)); week++) {
+            tasks.push(task(`recall-week-${week}`, `Week ${week}: revisit your weakest skill`, 30, 'Attempt a new example without notes. Use the same rubric as your previous attempt. Identify one change in your reasoning and a question you still have.', 'A fresh attempt, comparison and one corrected explanation.', adapter.rubric, { skill: adapter.skill, dependsOn: ['learn'], priority: 55, availableAfter: new Date(Date.parse(now) + (week - 1) * 7 * 86400000).toISOString() }));
+        }
     }
-    for (const variant of process.variants.slice(0, 3)) for (const stage of variant.stages.slice(0, 4)) tasks.push(task(`evidence-${variant.id}-${stage.key}`, `Prepare for: ${stage.label || stage.key}`, 35, `Rehearse the reported assessment: ${stage.evidenceSpan}. Confirm these rules for your own interview. This is an original practice exercise.`, 'Practice response and assessment constraints.', ['Addresses the brief', 'Explains limitations', 'Follows confirmed tool rules'], { basis: 'reported_signal', evidenceIds: [variant.id], reason: 'Based on the account you reviewed. It may not describe your current process.', skill: adapter.skill, priority: 90 }));
-    const spanDays = Math.floor((Date.parse(deadline) - Date.parse(now)) / 86400000);
-    tasks.find(t => t.id === 'recall').availableAfter = new Date(Date.parse(now) + 2 * 86400000).toISOString();
-    for (let week = 2; week <= Math.min(8, Math.ceil(spanDays / 7)); week++) {
-        tasks.push(task(`recall-week-${week}`, `Week ${week}: revisit your weakest skill`, 30, 'Attempt a new example without notes. Use the same rubric as your previous attempt. Identify one change in your reasoning and a question you still have.', 'A fresh attempt, comparison and one corrected explanation.', adapter.rubric, { skill: adapter.skill, dependsOn: ['learn'], priority: 55, availableAfter: new Date(Date.parse(now) + (week - 1) * 7 * 86400000).toISOString() }));
-    }
+    // An applied role with no booked next step gets a small follow-up nudge.
+    if (job.status === 'Applied' && !job.next_date) tasks.push(task('application-follow-up', 'Follow up on your application', 15, 'If you have not heard back, send a short, polite follow-up to the recruiter or hiring manager. Reference the role and restate your interest.', 'A short follow-up message ready to send.', ['Names the role', 'Is concise and polite', 'Offers a clear next step'], { priority: 45 }));
     for (const t of tasks) if (w.preferences.gaps.includes(t.skill)) t.priority += 35;
     for (const old of w.plan?.tasks || []) if (w.completed[old.id]?.done) { const index = tasks.findIndex(t => t.id === old.id); if (index >= 0) tasks[index] = old; else tasks.push(old); }
     const schedule = schedulePreparation({ tasks, slots, deadline, now, completedIds: Object.keys(w.completed).filter(id => w.completed[id]?.done), bufferFraction: .15 });
-    return { version: 2, generatedAt: now, deadline, timezone: w.preferences.timezone, family, tasks, ...schedule, process, inputFingerprint: fingerprint(job, w), assumptions: ['Practice tasks are recommendations, not guaranteed interview questions.', '15% of available time is left unscheduled.', ...(spanDays > 56 ? ['Recurring recall is planned for eight weeks. Reassess your next milestone afterward.'] : []), ...(!process.variants.length ? ['No reviewed company process yet. This is a role-based plan.'] : []), ...(family === 'general' ? ['General checklist; specialist curriculum is not available for this role.'] : [])] };
+    return { version: 2, generatedAt: now, deadline, timezone: w.preferences.timezone, family, tasks, ...schedule, process, inputFingerprint: fingerprint(job, w), urgency: urgencyInfo.urgency, daysRemaining: urgencyInfo.daysRemaining, deadlineKind: urgencyInfo.kind, assumptions: ['Practice tasks are recommendations, not guaranteed interview questions.', '15% of available time is left unscheduled.', ...(critical ? ['Under three days: a short triage plan, not a full curriculum.'] : []), ...(urgencyInfo.kind === 'application' ? ['This date is treated as an application deadline, not an interview date.'] : []), ...(spanDays > 56 ? ['Recurring recall is planned for eight weeks. Reassess your next milestone afterward.'] : []), ...(!process.variants.length ? ['No reviewed company process yet. This is a role-based plan.'] : []), ...(family === 'general' ? ['General checklist; specialist curriculum is not available for this role.'] : [])] };
 }
 export function planIsStale(job) { const w = workspaceFor(job); return w.plan && w.plan.inputFingerprint !== fingerprint(job, w); }
 export function practiceQuestions(job) {
