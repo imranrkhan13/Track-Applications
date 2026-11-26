@@ -43,13 +43,16 @@
 
 /* Sidebar — clean, airy, modern. */
 .career-app .cg-sidebar {
-    position: sticky; top: 0; height: 100dvh;
+    position: sticky; top: 0;
+    height: 100dvh; max-height: 100dvh;
     display: flex; flex-direction: column;
     width: 252px; flex-shrink: 0;
     padding: 24px 0 16px;
     background: #fafafa;
     border-right: 1px solid #eaeaec;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    align-self: start;
 }
 .career-app .cg-sidebar-top {
     display: flex; align-items: center; justify-content: space-between;
@@ -83,7 +86,7 @@
 /* Primary nav buttons */
 .career-app .cg-sidebar nav button {
     display: flex; align-items: center; gap: 10px;
-    width: 100%; min-height: 42px; padding: 8px 12px;
+    width: 100%; min-height: 44px; padding: 8px 12px;
     border: 0; border-radius: 10px;
     background: transparent; color: #5e5e64;
     font-size: .875rem; font-weight: 500;
@@ -91,11 +94,11 @@
     transition: background .15s, color .15s, box-shadow .15s;
 }
 .career-app .cg-sidebar nav button:hover {
-    background: #f0f0f3; color: #1a1a1e;
+    background: #ececef; color: #1a1a1e;
 }
 .career-app .cg-sidebar nav button.selected {
-    color: #1a1a1e; background: #eeeeee;
-    box-shadow: 0 0 0 1px rgba(0,0,0,.04);
+    color: #1a1a1e; background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 0 0 1px rgba(0,0,0,.04);
     font-weight: 600;
 }
 .career-app .cg-nav-icon {
@@ -103,9 +106,11 @@
     width: 32px; height: 32px; flex-shrink: 0;
     border-radius: 8px;
     background: transparent;
+    transition: background .15s;
 }
 .career-app .cg-nav-icon svg { width: 18px; height: 18px; stroke-width: 1.8; }
-.career-app nav button.selected .cg-nav-icon { background: white; }
+.career-app .cg-sidebar nav button:hover .cg-nav-icon { background: #e4e4e8; }
+.career-app nav button.selected .cg-nav-icon { background: #eef4ea; color: #3e6b4f; }
 .career-app .cg-nav-label { flex: 1; min-width: 0; }
 .career-app .cg-nav-arrow { width: 16px; height: 16px; flex-shrink: 0; opacity: .5; }
 
@@ -128,37 +133,41 @@
 /* Sidebar metrics */
 .career-app .cg-side-metrics {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
-    padding: 0 4px;
+    padding: 0 4px; margin-bottom: 6px;
 }
 .career-app .cg-metric {
-    display: grid; justify-items: center; gap: 2px;
-    padding: 10px 4px; border: 1px solid var(--cg-line); border-radius: 10px;
+    display: grid; justify-items: center; gap: 3px;
+    padding: 12px 4px; border: 1px solid var(--cg-line); border-radius: 12px;
     background: var(--cg-paper);
+    transition: border-color .15s, box-shadow .15s;
 }
+.career-app .cg-metric:hover { border-color: #c8c8d0; box-shadow: 0 2px 6px rgba(0,0,0,.04); }
 .career-app .cg-metric-value {
-    font-size: 1.1rem; font-weight: 700; letter-spacing: -.03em;
+    font-size: 1.15rem; font-weight: 700; letter-spacing: -.03em;
     color: var(--cg-ink); line-height: 1;
 }
 .career-app .cg-metric-label {
     font-size: .625rem; font-weight: 600; color: var(--cg-muted);
-    letter-spacing: .04em;
+    letter-spacing: .04em; text-transform: uppercase;
 }
 .career-app .cg-nav-badge {
     display: inline-grid; place-items: center;
-    min-width: 20px; height: 20px; padding: 0 5px;
+    min-width: 20px; height: 20px; padding: 0 6px;
     border-radius: 10px;
     background: var(--cg-green); color: white;
     font-size: .6875rem; font-weight: 700;
-    margin-left: auto;
+    margin-left: auto; flex-shrink: 0;
 }
 .career-app .cg-side-next {
     display: flex; align-items: center; gap: 10px;
-    width: 100%; padding: 10px 12px; margin: 4px 0;
-    border: 1px solid var(--cg-line); border-radius: 10px;
+    width: 100%; padding: 11px 12px; margin: 4px 0 10px;
+    border: 1px solid var(--cg-line); border-radius: 12px;
     background: var(--cg-paper); color: var(--cg-ink);
     text-align: left; cursor: pointer; font: inherit;
+    transition: border-color .15s, box-shadow .15s;
 }
-.career-app .cg-side-next:hover { border-color: #c8c8d0; }
+.career-app .cg-side-next:hover { border-color: #c8c8d0; box-shadow: 0 2px 6px rgba(0,0,0,.04); }
+.career-app .cg-side-next > svg { color: #3e6b4f; flex-shrink: 0; }
 .career-app .cg-side-next small {
     display: block; color: var(--cg-muted); font-size: .6875rem;
 }
