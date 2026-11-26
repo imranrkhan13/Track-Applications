@@ -99,4 +99,4 @@ body, button, input, select, textarea{font-family:Inter,ui-sans-serif,system-ui,
 body{background:var(--cg-canvas);color:var(--cg-ink)}
 .section-kicker{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#71867a}
 button{touch-action:manipulation}
-html, body, #root{max-width:100%;overflow-x:hidden}
+html, body, #root{max-width:100%;overflow-x:clip}
