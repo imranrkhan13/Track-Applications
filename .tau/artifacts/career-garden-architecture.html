@@ -1,0 +1,172 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>career-garden-architecture</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f7f7f5; color: #181816; }
+    .shell { max-width: 1120px; margin: 0 auto; padding: 32px 24px 56px; }
+    header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; border-bottom: 1px solid #d9d9d2; padding-bottom: 14px; margin-bottom: 24px; }
+    h1 { font-size: 24px; line-height: 1.2; margin: 0; font-weight: 700; }
+    .meta { color: #66665f; font-size: 13px; }
+    .canvas { background: #ffffff; border: 1px solid #d9d9d2; border-radius: 8px; padding: 24px; overflow: auto; }
+    .canvas.html-canvas { padding: 0; overflow: hidden; }
+    .html-frame { display: block; width: 100%; min-height: 78vh; border: 0; background: #ffffff; }
+    .artifact-pre { white-space: pre-wrap; word-break: break-word; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 13px; line-height: 1.5; margin: 0; }
+    img, video, canvas, svg { max-width: 100%; height: auto; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #d9d9d2; padding: 8px 10px; vertical-align: top; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+    @media (prefers-color-scheme: dark) {
+      body { background: #181816; color: #f1f1ed; }
+      header, .canvas, th, td { border-color: #3a3a34; }
+      .canvas { background: #20201d; }
+      .meta { color: #aaa99f; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <h1>career-garden-architecture</h1>
+      <div class="meta">html artifact</div>
+    </header>
+    <section class="canvas html-canvas">
+<iframe class="html-frame" sandbox="allow-scripts allow-forms allow-popups-by-user-activation" referrerpolicy="no-referrer" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot; /&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot; /&gt;
+&lt;title&gt;Career Garden — Architecture &amp; Flow&lt;/title&gt;
+&lt;style&gt;
+  :root{
+    --paper:#f7f4ee; --ink:#1f2a24; --muted:#5c6b62; --line:#d8d2c4;
+    --forest:#1f5136; --forest2:#2f7a4f; --amber:#b4791f; --sky:#2c5f8a;
+    --card:#fffdf9; --demo:#f0e6d2;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:&quot;Manrope&quot;,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5}
+  header.top{padding:34px 28px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fffdf9,#f7f4ee)}
+  h1{font-family:Georgia,&quot;Newsreader&quot;,serif;font-size:30px;margin:0 0 6px}
+  .sub{color:var(--muted);font-size:14px;max-width:760px}
+  .badges{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+  .badge{font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:#fff}
+  .badge.ok{background:#e7f2ea;border-color:#bcdcc6;color:var(--forest)}
+  .badge.warn{background:#fbf1de;border-color:#ecd7ac;color:var(--amber)}
+  main{padding:26px 28px 60px;max-width:1180px;margin:0 auto}
+  h2{font-family:Georgia,&quot;Newsreader&quot;,serif;font-size:20px;margin:34px 0 12px;border-bottom:1px solid var(--line);padding-bottom:6px}
+  .grid{display:grid;gap:14px}
+  .cols-3{grid-template-columns:repeat(3,1fr)}
+  .cols-2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:820px){.cols-3,.cols-2{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .card h3{margin:0 0 6px;font-size:14px;letter-spacing:.02em;text-transform:uppercase;color:var(--forest)}
+  .card p{margin:0;font-size:13.5px;color:var(--muted)}
+  code{background:#efe9dc;padding:1px 5px;border-radius:5px;font-size:12.5px;color:#3a4a40}
+  /* flow */
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;margin-top:8px}
+  .step{flex:1 1 210px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;position:relative}
+  .step .n{font-family:Georgia,serif;font-size:12px;color:#fff;background:var(--forest2);border-radius:999px;padding:2px 9px;display:inline-block;margin-bottom:8px}
+  .step h4{margin:0 0 6px;font-size:15px}
+  .step p{margin:0;font-size:12.5px;color:var(--muted)}
+  .arrow{display:flex;align-items:center;justify-content:center;color:var(--forest2);font-size:22px;padding:0 6px;flex:0 0 auto}
+  @media(max-width:820px){.arrow{transform:rotate(90deg);width:100%;padding:4px 0}}
+  /* pipeline */
+  .pipe{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+  .node{background:#fff;border:1px solid var(--line);border-radius:9px;padding:8px 12px;font-size:12.5px}
+  .node.hi{background:#e7f2ea;border-color:#bcdcc6}
+  .node.gate{background:#fbf1de;border-color:#ecd7ac}
+  .sep{color:var(--forest2);font-weight:700}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--forest);font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#3a4a40}
+  .note{font-size:12.5px;color:var(--muted);margin-top:10px}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;header class=&quot;top&quot;&gt;
+  &lt;h1&gt;Career Garden — how it works&lt;/h1&gt;
+  &lt;p class=&quot;sub&quot;&gt;A job-search workspace that tracks applications, researches the interview process from public sources, builds a deadline-aware preparation plan, and rehearses answers. React/Vite SPA + Netlify Functions + Supabase, with an optional Gemini/Brave AI layer.&lt;/p&gt;
+  &lt;div class=&quot;badges&quot;&gt;
+    &lt;span class=&quot;badge ok&quot;&gt;npm test · 117/117 pass&lt;/span&gt;
+    &lt;span class=&quot;badge ok&quot;&gt;npm run lint · clean&lt;/span&gt;
+    &lt;span class=&quot;badge ok&quot;&gt;npm run build · success&lt;/span&gt;
+    &lt;span class=&quot;badge warn&quot;&gt;docs: 8 test files (was 6)&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/header&gt;
+
+&lt;main&gt;
+  &lt;h2&gt;1 · The core loop — one job, four steps&lt;/h2&gt;
+  &lt;div class=&quot;flow&quot;&gt;
+    &lt;div class=&quot;step&quot;&gt;&lt;span class=&quot;n&quot;&gt;01&lt;/span&gt;&lt;h4&gt;Track&lt;/h4&gt;&lt;p&gt;Save a job: company, role, stage, dates, links, notes. Six plant stages (Seed → New beginning), list &amp;amp; board views, activity log.&lt;/p&gt;&lt;/div&gt;
+    &lt;div class=&quot;arrow&quot;&gt;→&lt;/div&gt;
+    &lt;div class=&quot;step&quot;&gt;&lt;span class=&quot;n&quot;&gt;02&lt;/span&gt;&lt;h4&gt;Research&lt;/h4&gt;&lt;p&gt;Authenticated fetch of the JD, catalogue + search discovery, polite crawl of allowlisted hosts, AI extraction of interview accounts. Sources stay &lt;em&gt;unreviewed&lt;/em&gt; until you confirm them.&lt;/p&gt;&lt;/div&gt;
+    &lt;div class=&quot;arrow&quot;&gt;→&lt;/div&gt;
+    &lt;div class=&quot;step&quot;&gt;&lt;span class=&quot;n&quot;&gt;03&lt;/span&gt;&lt;h4&gt;Prepare&lt;/h4&gt;&lt;p&gt;Deadline-aware plan: timezone-aware slots, 15% buffer, dependency-greedy scheduler, bounded JD matching, direct learning links.&lt;/p&gt;&lt;/div&gt;
+    &lt;div class=&quot;arrow&quot;&gt;→&lt;/div&gt;
+    &lt;div class=&quot;step&quot;&gt;&lt;span class=&quot;n&quot;&gt;04&lt;/span&gt;&lt;h4&gt;Practice&lt;/h4&gt;&lt;p&gt;Role-specific prompts, timer, dictation, self-review; optional AI coaching with quoted-evidence validation. Saved attempts feed back into the plan.&lt;/p&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;p class=&quot;note&quot;&gt;&lt;code&gt;workflow.js → synchronizePreparation()&lt;/code&gt; is the single transition shared by job edits, research, and practice reviews. A planning failure &lt;strong&gt;never blocks saving&lt;/strong&gt; — it returns an actionable notice.&lt;/p&gt;
+
+  &lt;h2&gt;2 · System architecture&lt;/h2&gt;
+  &lt;div class=&quot;grid cols-3&quot;&gt;
+    &lt;div class=&quot;card&quot;&gt;&lt;h3&gt;Client (browser)&lt;/h3&gt;&lt;p&gt;React 19 SPA. Landing page, Google PKCE login, authenticated workspace. &lt;span class=&quot;mono&quot;&gt;src/AppNew.jsx&lt;/span&gt;, &lt;span class=&quot;mono&quot;&gt;src/career/*&lt;/span&gt;.&lt;/p&gt;&lt;/div&gt;
+    &lt;div class=&quot;card&quot;&gt;&lt;h3&gt;Storage&lt;/h3&gt;&lt;p&gt;Demo = browser localStorage. Cloud = Supabase &lt;span class=&quot;mono&quot;&gt;jobs&lt;/span&gt; table with optimistic &lt;span class=&quot;mono&quot;&gt;revision&lt;/span&gt; concurrency. &lt;span class=&quot;mono&quot;&gt;repository.js&lt;/span&gt;.&lt;/p&gt;&lt;/div&gt;
+    &lt;div class=&quot;card&quot;&gt;&lt;h3&gt;API (Netlify Functions)&lt;/h3&gt;&lt;p&gt;Three authenticated endpoints. Vite serves them locally via &lt;span class=&quot;mono&quot;&gt;vite.config.js&lt;/span&gt;; &lt;span class=&quot;mono&quot;&gt;netlify.toml&lt;/span&gt; maps them in production.&lt;/p&gt;&lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;h2&gt;3 · Request pipeline — POST /api/career-research&lt;/h2&gt;
+  &lt;div class=&quot;pipe&quot;&gt;
+    &lt;span class=&quot;node&quot;&gt;POST body&lt;/span&gt;&lt;span class=&quot;sep&quot;&gt;→&lt;/span&gt;
+    &lt;span class=&quot;node gate&quot;&gt;validateInput (size/length)&lt;/span&gt;&lt;span class=&quot;sep&quot;&gt;→&lt;/span&gt;
+    &lt;span class=&quot;node gate&quot;&gt;Bearer token → Supabase getUser&lt;/span&gt;&lt;span class=&quot;sep&quot;&gt;→&lt;/span&gt;
+    &lt;span class=&quot;node gate&quot;&gt;claim_career_research() quota (8/hr)&lt;/span&gt;&lt;span class=&quot;sep&quot;&gt;→&lt;/span&gt;
+    &lt;span class=&quot;node hi&quot;&gt;read JD (safe-source)&lt;/span&gt;&lt;span class=&quot;sep&quot;&gt;→&lt;/span&gt;
+    &lt;span class=&quot;node&quot;&gt;seed catalogue + Brave search&lt;/span&gt;&lt;span class=&quot;sep&quot;&gt;→&lt;/span&gt;
+    &lt;span class=&quot;node hi&quot;&gt;polite crawl (robots + rate limit)&lt;/span&gt;&lt;span class=&quot;sep&quot;&gt;→&lt;/span&gt;
+    &lt;span class=&quot;node hi&quot;&gt;Gemini extract accounts (exact-substring spans)&lt;/span&gt;&lt;span class=&quot;sep&quot;&gt;→&lt;/span&gt;
+    &lt;span class=&quot;node&quot;&gt;200 JSON (jd, sources, accounts, warnings)&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;legend&quot;&gt;
+    &lt;span&gt;&lt;span class=&quot;dot&quot; style=&quot;background:#bcdcc6&quot;&gt;&lt;/span&gt;gate / boundary&lt;/span&gt;
+    &lt;span&gt;&lt;span class=&quot;dot&quot; style=&quot;background:#ecd7ac&quot;&gt;&lt;/span&gt;honest partial states (no fabricated results)&lt;/span&gt;
+  &lt;/div&gt;
+
+  &lt;h2&gt;4 · Evidence &amp;amp; scheduling core (deterministic, no LLM)&lt;/h2&gt;
+  &lt;div class=&quot;grid cols-2&quot;&gt;
+    &lt;div class=&quot;card&quot;&gt;&lt;h3&gt;assembleProcessMap()&lt;/h3&gt;&lt;p&gt;Hard exclusions (wrong company, unread body, unapproved rights, private-source ownership, missing provenance), event-based freshness, dedup by independence group, separate variants, format-confirmation flags. Scores order evidence — &lt;strong&gt;not probabilities&lt;/strong&gt;.&lt;/p&gt;&lt;/div&gt;
+    &lt;div class=&quot;card&quot;&gt;&lt;h3&gt;schedulePreparation()&lt;/h3&gt;&lt;p&gt;Absolute timestamps, dependency DAG with cycle detection, buffer, per-slot &amp;amp; overall budget, prerequisite promotion, completed-task preservation, explicit &lt;span class=&quot;mono&quot;&gt;deferred[]&lt;/span&gt; work. Oversized mocks are deferred, never split silently.&lt;/p&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;p class=&quot;note&quot;&gt;&lt;span class=&quot;mono&quot;&gt;src/lib/prepEngine.js&lt;/span&gt; — rank weights &lt;code&gt;0.55 scope fit + 0.25 freshness + 0.20 source weight&lt;/code&gt;; &quot;historical&quot; begins at 365 days (UI heuristic, not a factual expiry).&lt;/p&gt;
+
+  &lt;h2&gt;5 · Safety boundaries (verified in code)&lt;/h2&gt;
+  &lt;table&gt;
+    &lt;tr&gt;&lt;th&gt;Boundary&lt;/th&gt;&lt;th&gt;Where&lt;/th&gt;&lt;th&gt;What it enforces&lt;/th&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td&gt;SSRF / DNS-rebinding&lt;/td&gt;&lt;td class=&quot;mono&quot;&gt;lib/safe-source.mjs&lt;/td&gt;&lt;td&gt;HTTPS-only, DNS resolved &amp;amp; pinned to socket, private/link-local IPv4 blocked, redirect host checks, size/time/content-type caps, X/Twitter blocked&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td&gt;Evidence grounding&lt;/td&gt;&lt;td class=&quot;mono&quot;&gt;career-research.mjs:33&lt;/td&gt;&lt;td&gt;Extraction requires exact substring in source text, ≤25 words/source, capped accounts/stages&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td&gt;Coaching quotes&lt;/td&gt;&lt;td class=&quot;mono&quot;&gt;career-coach.mjs:5&lt;/td&gt;&lt;td&gt;Quotes must appear verbatim in the answer; no fabricated evidence; labeled fallible&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td&gt;Row-level security&lt;/td&gt;&lt;td class=&quot;mono&quot;&gt;202609080001_*.sql&lt;/td&gt;&lt;td&gt;Restrictive owner guard, revision trigger, persistent quota function, &lt;span class=&quot;mono&quot;&gt;anon&lt;/span&gt; revoked&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td&gt;Legacy endpoint&lt;/td&gt;&lt;td class=&quot;mono&quot;&gt;research-role.mjs&lt;/td&gt;&lt;td&gt;Unauthenticated crawler returns &lt;strong&gt;410 Gone&lt;/strong&gt;&lt;/td&gt;&lt;/tr&gt;
+  &lt;/table&gt;
+
+  &lt;h2&gt;6 · Plan vs. reality&lt;/h2&gt;
+  &lt;div class=&quot;grid cols-3&quot;&gt;
+    &lt;div class=&quot;card&quot;&gt;&lt;h3&gt;Specified (V1/V2 docs)&lt;/h3&gt;&lt;p&gt;Cross-language research, branching process graphs, trained extraction model, shared evidence store. Explicitly labeled design targets, not claims of deployment.&lt;/p&gt;&lt;/div&gt;
+    &lt;div class=&quot;card&quot;&gt;&lt;h3&gt;Shipped&lt;/h3&gt;&lt;p&gt;Deterministic evidence gating + dedup, dependency scheduler, four-step loop, authenticated research/coach/brief, SSRF-safe fetcher, RLS migration.&lt;/p&gt;&lt;/div&gt;
+    &lt;div class=&quot;card&quot;&gt;&lt;h3&gt;Honest states&lt;/h3&gt;&lt;p&gt;No config → labeled demo mode. Missing functions/config → visible warnings, never fabricated research. Unsupported role families → JD-based checklist.&lt;/p&gt;&lt;/div&gt;
+  &lt;/div&gt;
+  &lt;p class=&quot;note&quot;&gt;Docs updated in this pass: &lt;span class=&quot;mono&quot;&gt;docs/workspace-release.md&lt;/span&gt; now reports 117 tests across 8 files (was &quot;71 across six&quot;).&lt;/p&gt;
+&lt;/main&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+    </section>
+  </main>
+</body>
+</html>
